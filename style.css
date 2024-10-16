@@ -1,0 +1,24 @@
+#header {
+  height: 50vh;
+  width: 100%;
+}
+
+#header a {
+  color: black;
+  text-decoration: none;
+}
+
+#botoes a {
+  max-width: 80vw;
+}
+
+* {
+  font-family: 'Old London', sans-serif;
+}
+
+@font-face {
+  font-family: 'Old London';
+  src: url('assets/OldLondon.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
