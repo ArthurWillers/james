@@ -1,18 +1,18 @@
-#header {
+#header, #voceecontraapirataria {
   height: 50vh;
   width: 100%;
 }
 
-#header a {
+#header a, #voceecontraapirataria a {
   color: black;
   text-decoration: none;
 }
 
-#botoes a {
+#botoes {
   max-width: 80vw;
 }
 
-* {
+.oldLondon {
   font-family: 'Old London', sans-serif;
 }
 

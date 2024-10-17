@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,23 +12,35 @@
   <body>
 
     <div class="container">
-      <div class="d-flex justify-content-center align-items-center" id="header">
-        <a href="#" onclick="tocarSom()"><h1 class="display-1">James</h1></a>
+      <div class="d-flex justify-content-center align-items-center oldLondon" id="header">
+        <a href="#" onclick="tocarSom('somJames')"><h1 class="display-1">James</h1></a>
       </div>
-      <div class="row d-flex justify-content-center mt-2">
-        <a href="./pdf.html" class="btn btn-outline-dark col-sm-12 col-xl-3 m-4" style="--bs-btn-padding-y: 5rem; --bs-btn-padding-x: 5rem; --bs-btn-font-size: 3rem;""><h1>PDF</h1></a>
-        <a href="./software.html" class="btn btn-outline-dark col-sm-12 col-xl-3 m-4" style="--bs-btn-padding-y: 5rem; --bs-btn-padding-x: 5rem; --bs-btn-font-size: 3rem;"><h1>Software</h1></a>
-        <a href="./links.html" class="btn btn-outline-dark col-sm-12 col-xl-3 m-4" style="--bs-btn-padding-y: 5rem; --bs-btn-padding-x: 5rem; --bs-btn-font-size: 3rem;"><h1>Links</h1></a>
+      <div class="row d-flex justify-content-center mt-2 p-2">
+        <a href="./pdf.html" class="btn btn-outline-dark col-sm-12 col-xl-3 m-4 oldLondon" style="--bs-btn-padding-y: 5rem; --bs-btn-padding-x: 5rem; --bs-btn-font-size: 3rem;""><h1>PDF</h1></a>
+        <a href="./software.html" class="btn btn-outline-dark col-sm-12 col-xl-3 m-4 oldLondon" style="--bs-btn-padding-y: 5rem; --bs-btn-padding-x: 5rem; --bs-btn-font-size: 3rem;"><h1>Software</h1></a>
+        <a href="./links.html" class="btn btn-outline-dark col-sm-12 col-xl-3 m-4 oldLondon" style="--bs-btn-padding-y: 5rem; --bs-btn-padding-x: 5rem; --bs-btn-font-size: 3rem;"><h1>Links</h1></a>
       </div>
     </div>
 
-    <audio id="som" src="./assets/james.mp3"></audio>
+    <div class="d-flex justify-content-center align-items-center" id="voceecontraapirataria">
+      <a href="#voceecontraapirataria" onclick="tocarSom('somMonark')"><h1 class="oldLondon">Você é contra a pirataria?</h1></a>
+    </div>
+
+    <audio id="somJames" src="./assets/james.mp3"></audio>
+    <audio id="somMonark" src="./assets/monark.mp3"></audio>
+    <audio id="somSecret" src="./assets/secret.mp3"></audio>
+
     <script>
-      // Função para tocar o som
-      function tocarSom() {
-          var som = document.getElementById("som");
+      function tocarSom(som) {
+          som = document.getElementById(som);
           som.play();
       }
+
+      document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.altKey && event.key === 'u') {
+                tocarSom("somSecret")
+            }
+        });
   </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
