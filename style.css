@@ -8,6 +8,10 @@
   text-decoration: none;
 }
 
+p {
+  text-align: justify;
+}
+
 #botoes {
   max-width: 80vw;
 }
