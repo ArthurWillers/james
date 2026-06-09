@@ -142,11 +142,11 @@ return [
     |
     */
 
-    'passkeys' => [
-        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
-        'allowed_origins' => [config('app.url')],
-        'timeout' => 60000,
-    ],
+    // 'passkeys' => [
+    //     'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+    //     'allowed_origins' => [config('app.url')],
+    //     'timeout' => 60000,
+    // ],
 
     /*
     |--------------------------------------------------------------------------
