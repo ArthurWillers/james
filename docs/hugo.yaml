@@ -4,6 +4,7 @@ baseURL: "https://ArthurWillers.github.io/james/"
 description: "Documentação do projeto James. Feito com Hugo e o tema Hextra."
 enableGitInfo: true
 enableRobotsTXT: true
+enableInlineShortcodes: true
 defaultContentLanguage: pt-br
 languages:
   pt-br:
