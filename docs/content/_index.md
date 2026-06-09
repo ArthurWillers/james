@@ -27,7 +27,7 @@ layout: hextra-home
     title="Guias e Manuais"
     subtitle="Acesse a documentação técnica detalhada."
     icon="book-open"
-    link="/docs"
+    link="docs/"
     class="hx:min-h-[280px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.1),hsla(0,0%,100%,0));"
   >}}
