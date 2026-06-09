@@ -22,67 +22,11 @@
                 </button>
             </div>
 
-            <div class="flex flex-col py-3 gap-2">
-                <form action="{{ route('month.update') }}" method="POST">
-                    @csrf
-                    <x-form-input type="month" name="month" label="Mês de Referência" labelClass="!text-xs"
-                        value="{{ session('selected_month', now()->format('Y-m')) }}" onchange="form.submit()"
-                        required />
-                </form>
-
-                @php
-                    $currentMonth = session('selected_month', now()->format('Y-m'));
-                    $prevMonth = \Carbon\Carbon::createFromFormat('Y-m', $currentMonth)->subMonth()->format('Y-m');
-                    $nextMonth = \Carbon\Carbon::createFromFormat('Y-m', $currentMonth)->addMonth()->format('Y-m');
-                @endphp
-
-                <div class="grid grid-cols-2 gap-2">
-                    <form action="{{ route('month.update') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="month" value="{{ $prevMonth }}">
-                        <button type="submit" class="w-full flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 cursor-pointer">
-                            <x-icon name="chevron-left" class="w-4 h-4 shrink-0" />
-                            <span>Anterior</span>
-                        </button>
-                    </form>
-
-                    <form action="{{ route('month.update') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="month" value="{{ $nextMonth }}">
-                        <button type="submit" class="w-full flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 cursor-pointer">
-                            <span>Próximo</span>
-                            <x-icon name="chevron-right" class="w-4 h-4 shrink-0" />
-                        </button>
-                    </form>
-                </div>
-            </div>
-
             <nav class="flex flex-col overflow-visible min-h-auto space-y-[2px]">
                 <x-nav-link :href="route('dashboard')" :current="request()->routeIs('dashboard')">
                     <x-icon name="home" class="w-4 h-4" />
                     Dashboard
                 </x-nav-link>
-
-                <x-nav-link :href="route('daily-summary')" :current="request()->routeIs('daily-summary')">
-                    <x-icon name="calendar-days" class="w-4 h-4" />
-                    Resumo Diário
-                </x-nav-link>
-
-                <x-nav-link :href="route('incomes.index')" :current="request()->routeIs('incomes.*')">
-                    <x-icon name="arrow-trending-up" class="w-4 h-4" />
-                    Receitas
-                </x-nav-link>
-
-                <x-nav-link :href="route('expenses.index')" :current="request()->routeIs('expenses.*')">
-                    <x-icon name="arrow-trending-down" class="w-4 h-4" />
-                    Despesas
-                </x-nav-link>
-
-                <x-nav-link :href="route('categories.index')" :current="request()->routeIs('categories.*')">
-                    <x-icon name="tag" class="w-4 h-4" />
-                    Categorias
-                </x-nav-link>
-
             </nav>
 
             <x-dropdown position="top" class="mt-auto hidden lg:block" accent contentClass="w-full">
