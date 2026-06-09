@@ -54,7 +54,11 @@ params:
 
   navbar:
     displayTitle: true
-    displayLogo: false
+    displayLogo: true
+    logo:
+      path: "logo.svg"
+      width: 32
+      height: 32
 
   footer:
     displayCopyright: true
