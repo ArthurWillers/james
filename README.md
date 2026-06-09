@@ -8,7 +8,7 @@ James é um ERP pessoal, de usuário único e auto-hospedado.
 
 ## Módulos Planejados
 
-- Finanças
+- Finanças (inspirado no [Aurum2.0](https://github.com/ArthurWillers/Aurum2.0))
 - Imposto de Renda
 - Patrimônio
 - Documentos
