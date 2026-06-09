@@ -12,6 +12,12 @@
     "skills": [
         "laravel-best-practices",
         "pest-testing",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "hugo-fundamentals",
+        "hugo-templating",
+        "hugo-content-structure",
+        "hugo-asset-pipeline",
+        "hugo-testing",
+        "hugo-deployment-aws"
     ]
 }
