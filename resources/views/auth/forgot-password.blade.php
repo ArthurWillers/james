@@ -13,7 +13,7 @@
 
         {{-- Botão para enviar link de redefinição de senha --}}
         <x-button type="submit" class="w-full">
-            <x-icon name="inbox-arrow-down" class="w-6 h-6" />
+            <x-icons.outline.inbox-arrow-down class="w-6 h-6" />
             Enviar link de redefinição
         </x-button>
 

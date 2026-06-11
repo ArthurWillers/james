@@ -27,7 +27,7 @@
 
         {{-- Botão para redefinir senha --}}
         <x-button type="submit" class="w-full">
-            <x-icon name="key" class="w-6 h-6" />
+            <x-icons.outline.key class="w-6 h-6" />
             Redefinir Senha
         </x-button>
 

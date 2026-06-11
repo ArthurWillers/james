@@ -4,7 +4,7 @@
     @if ($icon)
         <div class="flex justify-center mb-4">
             <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center">
-                <x-icon :name="$icon" class="w-8 h-8 text-neutral-400" />
+                <x-dynamic-component :component="'icons.outline.' . $icon" class="w-8 h-8 text-neutral-400" />
             </div>
         </div>
     @endif

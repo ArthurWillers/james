@@ -14,7 +14,7 @@
 
 <div class="flex items-center gap-3 mb-6">
     <div class="w-12 h-12 {{ $bgClass }} rounded-lg flex items-center justify-center">
-        <x-icon :name="$icon" class="w-6 h-6" />
+        <x-dynamic-component :component="'icons.outline.' . $icon" class="w-6 h-6" />
     </div>
     <h3 class="text-xl font-bold text-neutral-800">{{ $title }}</h3>
 </div>
