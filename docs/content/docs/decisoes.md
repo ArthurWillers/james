@@ -53,3 +53,25 @@ python3 scripts/sync-heroicons.py
 - Os ícones gerados ficam em `resources/views/components/icons/` e são versionados no Git
 - Ao atualizar os ícones, basta rodar o script e commitar o resultado
 - O script suporta `--dry-run` e `--verbose` para depuração
+
+## 005 — Ambiente de Desenvolvimento com Laravel Sail e Docker
+
+**Data:** 2026-06-11
+
+**Decisão:** Utilizar o [Laravel Sail](https://laravel.com/docs/sail) como ambiente de desenvolvimento Docker principal contendo os serviços: PostgreSQL e Mailpit.
+
+**Motivação:** Manter o ambiente padronizado, simplificando a inicialização de serviços pesados localmente, sem a necessidade de instalar instâncias separadas na máquina hospedeira.
+
+**Uso:**
+Para subir os containers:
+```bash
+./vendor/bin/sail up
+```
+Para acessar os recursos expostos:
+- **Aplicação web:** `http://localhost`
+- **Mailpit Dashboard:** `http://localhost:8025`
+
+Para executar comandos Artisan, use o prefixo `sail`:
+```bash
+./vendor/bin/sail artisan migrate
+```
