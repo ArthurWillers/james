@@ -6,6 +6,19 @@ draft: false
 
 Funcionalidades planejadas por módulo. Atualizado conforme o desenvolvimento avança.
 
+## Finanças
+- [ ] Múltiplas contas (dinheiro físico, conta corrente, investimentos)
+- [ ] Correção manual de saldo mensal com registro de variação
+- [ ] Cartão de crédito com fatura, data de fechamento e vencimento
+- [ ] Compras parceladas com geração automática de parcelas futuras
+- [ ] Transações recorrentes via Laravel Scheduler (salário, aluguel, assinaturas)
+- [ ] Transferências entre contas
+- [ ] Sistema de tags (no lugar de categorias, polimórfico, múltiplas por transação)
+- [ ] Leitura de QR Code de cupom fiscal (NFC-e) com consulta à SEFAZ-RS (por enquanto, objetivo é ser nacional de alguma forma)
+- [ ] Itens da nota fiscal como subtransações com tags individuais
+- [ ] Integração com módulo de Despesas Compartilhadas
+- [ ] Classificação automática de tags via IA (futuro — James JARVIS)
+
 ## Hábitos
 
 ## Tarefas/Projetos
@@ -26,10 +39,7 @@ Funcionalidades planejadas por módulo. Atualizado conforme o desenvolvimento av
 
 ## Patrimônio
 
-## Finanças
-
 ## Despesas Compartilhadas
-Gestão de despesas em grupo com divisão de custos e controle de pagamentos entre participantes.
 
 ## Imposto de Renda
 
