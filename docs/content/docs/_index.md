@@ -20,6 +20,13 @@ layout: "docs"
 
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
+    title="Instalação"
+    subtitle="Guia de configuração do ambiente de desenvolvimento local"
+    icon="code"
+    link="instalacao/"
+    class="hx:min-h-[280px]"
+  >}}
+  {{< hextra/feature-card
     title="Módulos"
     subtitle="Documentação de cada módulo do sistema"
     icon="puzzle"
