@@ -75,3 +75,21 @@ Para executar comandos Artisan, use o prefixo `sail`:
 ```bash
 ./vendor/bin/sail artisan migrate
 ```
+
+## 006 — Adoção da Spatie Media Library com Armazenamento Privado
+
+**Data:** 12 de Junho de 2026
+
+### Contexto
+Com o desenvolvimento do módulo CRM e planeamento para os módulos de Finanças, surgiu a necessidade de gerir ficheiros anexos, como fotos de perfil (avatares) de contactos, recibos e documentos financeiros. Historicamente, isto envolveria a criação de colunas específicas de caminhos (paths) em múltiplas tabelas, levando a duplicação de lógica de *upload* e inconsistência na gestão de ficheiros do sistema. Era imperativo encontrar uma solução unificada e robusta para anexar ficheiros a qualquer modelo do Eloquent.
+
+### Decisão
+Foi decidido adotar o pacote `spatie/laravel-medialibrary`. Esta biblioteca permite associar ficheiros a modelos do Eloquent de forma elegante através de relacionamentos polimórficos, implementando a interface `HasMedia` e o *trait* `InteractsWithMedia`. Isto centraliza a gestão de *media* numa única estrutura de base de dados polimórfica, facilitando a expansão futura.
+
+### Segurança e Privacidade (Crucial)
+Sendo o James um "Life OS" focado na privacidade rigorosa e num ambiente "Single User", **é estritamente proibido guardar dados pessoais ou anexos de contactos no disco público (`public`)**. O vazamento de dados do círculo social do utilizador ou de documentos financeiros é inaceitável.
+
+Para garantir 100% de privacidade:
+- O pacote foi configurado globalmente através da variável de ambiente no ficheiro `.env` (`MEDIA_DISK=private`), forçando a utilização do disco privado do servidor.
+- Nenhum ficheiro será acessível diretamente através de um URL estático da web.
+- As imagens, avatares e documentos serão servidos de forma dinâmica e exclusiva através de rotas dedicadas no Laravel, as quais estão estritamente protegidas pelo *middleware* de autenticação (`auth`). Apenas o próprio utilizador logado no sistema poderá visualizar estes recursos.

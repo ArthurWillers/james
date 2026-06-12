@@ -5,19 +5,25 @@ date: 2026-06-09T12:41:14-03:00
 draft: false
 ---
 
-# Módulo CRM (Personal CRM)
+# Módulo CRM
 
-O Módulo CRM é a espinha dorsal de identificação do "James". Dentro do contexto de um "Life OS", ele atua como a **Fonte Única de Verdade (Single Source of Truth - SSOT)** para todas as pessoas com quem o usuário interage.
+O Módulo CRM do James atua como o diretório central e privado de todos os contactos do utilizador. É desenhado sob o princípio da simplicidade e da máxima privacidade.
 
-O objetivo principal é centralizar os dados de contatos, evitando duplicação em outros módulos e permitindo que qualquer parte do sistema que necessite identificar uma pessoa o faça referenciando os registros do CRM.
+## Propósito: A Fonte Única de Verdade
 
-## Regras de Negócio e Decisões Arquiteturais
+O CRM não é um sistema complexo de gestão de clientes tradicionais, mas sim a **"Fonte Única de Verdade"** (Single Source of Truth) para todas as pessoas e entidades com as quais o utilizador interage no seu dia a dia. Este módulo não possui lógica de negócio complexa isolada; pelo contrário, ele serve como uma fundação passiva e essencial para os módulos adjacentes, nomeadamente o Módulo de Acertos e o Módulo de Finanças. Qualquer transação, dívida partilhada ou registo financeiro estará sempre ancorado a um contacto gerido por este CRM.
 
-### 1. Entidades Passivas (Sem Autenticação)
-Os contatos cadastrados no CRM são entidades puramente passivas. O James é um sistema *Single User*, o que significa que os contatos **não possuem login, senha ou acesso ao sistema**. Eles existem unicamente como referência interna para o próprio usuário gerenciar seus relacionamentos, dívidas, tarefas delegadas, etc.
+## Entidades Passivas
 
-### 2. Escopo Minimalista Inicial
-Nesta primeira versão, o CRM adota uma abordagem extremamente minimalista e enxuta, contendo apenas o estritamente necessário para viabilizar as funcionalidades dos próximos módulos (como Finanças e Acertos). Não há campos complexos de endereço, múltiplos e-mails ou histórico corporativo neste momento inicial.
+De acordo com o princípio "Single User" do James, os contactos aqui registados são estritamente **entidades passivas** ou meras "etiquetas de relacionamento".
+- **Sem Logins:** Nenhum contacto possui credenciais de acesso ao sistema.
+- **Sem Painéis:** Não existe portal do cliente ou áreas partilhadas. O James é um cofre digital exclusivo do utilizador administrador.
 
-### 3. Extensibilidade e Chaves Estrangeiras
-A estrutura foi desenhada pensando na integração. Outros módulos irão utilizar o ID do contato como Chave Estrangeira (Foreign Key). Isso garante que, se o nome ou a chave PIX de um contato for atualizada no CRM, essa alteração refletirá imediatamente em todos os acertos, transações ou atividades atreladas a ele.
+## Gestão de Avatares Segura e Privacidade Total
+
+A privacidade do círculo social do utilizador é um pilar inegociável da arquitetura do James. Para gerir as fotos de perfil (avatares) dos contactos, o módulo delega a gestão de ficheiros ao pacote `spatie/laravel-medialibrary`.
+
+**A proteção de dados é garantida pelo design do sistema:**
+- **Armazenamento Privado:** Todos os avatares são guardados de forma segura no disco privado do servidor local, nunca sendo expostos na pasta pública do servidor web.
+- **Invisibilidade Web:** As imagens são 100% invisíveis para a web externa. Não existem URLs diretos para aceder aos ficheiros.
+- **Acesso Autenticado:** A visualização de qualquer avatar ou documento no sistema é sempre mediada pelo Laravel através de rotas protegidas pelo *middleware* de autenticação, garantindo que apenas o utilizador dono do sistema consegue ver a face e os dados dos seus contactos.
