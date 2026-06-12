@@ -1,32 +1,43 @@
 ---
-title: "Decisões Arquiteturais"
+title: "Decisões"
 date: 2026-06-09T12:41:14-03:00
 draft: false
 ---
 
-Registro de decisões arquiteturais do projeto.
+Registro de decisões do projeto.
 
 ## 001 — Laravel Puro sem Livewire
 
+**Data:** 09 de Junho de 2026
+
+### Decisão
 Decisão de usar Laravel puro com Blade, sem Livewire.
 
 ## 002 — PostgreSQL em Dev e Prod
 
+**Data:** 09 de Junho de 2026
+
+### Decisão
 Decisão de usar PostgreSQL tanto no ambiente de desenvolvimento quanto em produção.
 
 ## 003 — Identidade Visual
 
+**Data:** 09 de Junho de 2026
+
+### Decisão
 Cor principal #DAA520, design minimalista e sidebar fixa.
 
 ## 004 — Pipeline Automatizado de Ícones (Heroicons)
 
-**Data:** 2026-06-11
+**Data:** 11 de Junho de 2026
 
-Ícones SVG gerados automaticamente a partir do repositório oficial [tailwindlabs/heroicons](https://github.com/tailwindlabs/heroicons) via script Python (`scripts/sync-heroicons.py`).
+### Contexto
+O componente monolítico `icon.blade.php` com SVGs hardcoded era difícil de manter e limitava a quantidade de ícones disponíveis. Era necessário um pipeline automatizado para disponibilizar todos os 300+ ícones e mantê-los atualizáveis facilmente.
 
-**Motivação:** O componente monolítico `icon.blade.php` com SVGs hardcoded era difícil de manter e limitava a quantidade de ícones disponíveis. Com o pipeline automatizado, todos os 300+ ícones do Heroicons ficam disponíveis e atualizáveis com um único comando.
+### Decisão
+Foi decidido adotar a geração automática de ícones SVG a partir do repositório oficial [tailwindlabs/heroicons](https://github.com/tailwindlabs/heroicons) via script Python (`scripts/sync-heroicons.py`). Com isso, todos os ícones ficam disponíveis e atualizáveis com um único comando.
 
-**Uso:**
+### Uso
 ```blade
 {{-- Outline (24px, stroke) --}}
 <x-icons.outline.home class="size-6" />
@@ -44,25 +55,28 @@ Cor principal #DAA520, design minimalista e sidebar fixa.
 <x-dynamic-component :component="'icons.outline.' . $icon" class="size-6" />
 ```
 
-**Atualização:** Para atualizar os ícones para a versão mais recente do Heroicons:
+### Atualização
+Para atualizar os ícones para a versão mais recente do Heroicons:
 ```bash
 python3 scripts/sync-heroicons.py
 ```
 
-**Observações:**
-- Os ícones gerados ficam em `resources/views/components/icons/` e são versionados no Git
-- Ao atualizar os ícones, basta rodar o script e commitar o resultado
-- O script suporta `--dry-run` e `--verbose` para depuração
+### Observações
+- Os ícones gerados ficam em `resources/views/components/icons/` e são versionados no Git.
+- Ao atualizar os ícones, basta rodar o script e commitar o resultado.
+- O script suporta `--dry-run` e `--verbose` para depuração.
 
 ## 005 — Ambiente de Desenvolvimento com Laravel Sail e Docker
 
-**Data:** 2026-06-11
+**Data:** 11 de Junho de 2026
 
-**Decisão:** Utilizar o [Laravel Sail](https://laravel.com/docs/sail) como ambiente de desenvolvimento Docker principal contendo os serviços: PostgreSQL e Mailpit.
+### Contexto
+Havia a necessidade de manter o ambiente padronizado, simplificando a inicialização de serviços pesados localmente, sem a necessidade de instalar instâncias separadas (como base de dados ou servidor de emails) na máquina hospedeira.
 
-**Motivação:** Manter o ambiente padronizado, simplificando a inicialização de serviços pesados localmente, sem a necessidade de instalar instâncias separadas na máquina hospedeira.
+### Decisão
+Foi decidido utilizar o [Laravel Sail](https://laravel.com/docs/sail) como ambiente de desenvolvimento Docker principal contendo os serviços essenciais para o projeto, nomeadamente: PostgreSQL e Mailpit.
 
-**Uso:**
+### Uso
 Para subir os containers:
 ```bash
 ./vendor/bin/sail up
