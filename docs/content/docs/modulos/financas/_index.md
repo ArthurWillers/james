@@ -1,37 +1,60 @@
 ---
 title: "Finanças"
-weight: 2
+weight: 3
 date: 2026-06-09T12:41:14-03:00
 draft: false
 ---
 
-## Visão Geral
+### Visão Geral
+O módulo Financeiro é o núcleo de controle patrimonial do James. 
+A regra de ouro é estruturação relacional — dados financeiros precisam 
+ser somados, agrupados e cruzados em relatórios. O uso de JSONB foi 
+descartado para garantir integridade e performance nas consultas.
 
-O módulo de Finanças tem como objetivo principal o controle e planejamento da vida financeira do usuário, consolidando diferentes tipos de contas e monitorando entradas, saídas e movimentações. Ele proporciona uma visão clara do patrimônio e dos gastos, facilitando o acompanhamento mensal e a tomada de decisão através de funcionalidades ricas como tags, controle de cartões de crédito e automações.
+### Contas (`financial_accounts`)
+Tabela única para todas as carteiras — dinheiro físico, conta corrente 
+e investimentos. Sem tabela de bancos separada.
+Colunas visuais para identificação rápida na UI: `logo_path` e `color_hex`.
+Correção manual de saldo mensal com registro automático da variação 
+(útil para renda variável).
 
-## Contas
+### Transações — Estrutura Pai e Filho
+- `financial_transactions` (Pai) — o registro do pagamento na totalidade: 
+  conta, valor, data, cartão, status de efetivação.
+- `financial_transaction_items` (Filhos) — detalhamento dos itens, 
+  especialmente útil para itens de nota fiscal. Garante relatórios 
+  precisos por item.
 
-Este submódulo permite o gerenciamento de múltiplos tipos de contas, sendo elas dinheiro físico, conta corrente e contas de investimentos. O sistema suporta a correção manual de saldo mensal, que realiza automaticamente o registro de variação patrimonial, garantindo que o saldo no sistema reflita a realidade sem perder o histórico das atualizações.
+### Cartão de Crédito
+Controle de fatura com data de fechamento e vencimento. Gastos no cartão 
+não afetam o saldo imediatamente — a saída ocorre quando a fatura é paga.
 
-## Cartão de Crédito
+### Parcelamentos e Recorrências
+Compras parceladas geram parcelas futuras automaticamente vinculadas à 
+transação original. Transações recorrentes (salário, aluguel, assinaturas) 
+são processadas via Laravel Scheduler diariamente.
 
-A gestão de cartões de crédito é focada no ciclo de faturamento. Cada cartão possui uma fatura consolidada, com suas respectivas datas de fechamento e vencimento. O sistema diferencia o momento em que a compra ocorre do momento em que o dinheiro efetivamente sai do saldo do usuário, ocorrendo apenas no pagamento da fatura, permitindo um planejamento financeiro mais preciso para os meses seguintes.
+### Transferências entre Contas
+Gera duas transações vinculadas — saída na conta A e entrada na conta B. 
+O saldo total não é afetado.
 
-## Transações
+### Sistema de Tags
+Substitui o sistema de categorias. Tabela `financial_tags` com apenas 
+`name` e `icon` (componentes Blade via Heroicons). Sem cores para evitar 
+poluição visual.
+Tabela pivot polimórfica `taggables` — permite vincular uma tag tanto 
+na transação pai quanto em um item filho específico da nota fiscal.
 
-As transações englobam todas as entradas e saídas de valores do sistema. Em vez de utilizar um sistema rígido de categorias, as transações utilizam um sistema polimórfico de tags, permitindo que múltiplas tags sejam associadas a uma mesma transação.
-Além disso, o sistema suporta compras parceladas, gerando automaticamente as parcelas futuras e integrando-as nos meses correspondentes. Também é possível configurar transações recorrentes utilizando o Laravel Scheduler, sendo ideal para automatizar lançamentos de salário, aluguel, assinaturas de serviços, entre outros.
+### Nota Fiscal (NFC-e)
+Leitura de QR Code do cupom fiscal com consulta à SEFAZ-RS.
+Cada item da nota vira um `financial_transaction_item` com suas próprias tags. 
+Suporte futuro a outros estados.
+IA para classificação automática de tags prevista para o James JARVIS.
 
-## Transferências entre Contas
+### Integrações
+- Módulo Acertos — pagamentos do grupo refletem como transação efetivada
+- James JARVIS (futuro) — classificação automática de tags via IA
 
-Transferências são tratadas como duas transações vinculadas: uma saída na conta de origem e uma entrada na conta de destino. Essa lógica garante o equilíbrio contábil do sistema, evitando a criação de "dinheiro invisível" ou perdas injustificadas no saldo total.
-
-## Nota Fiscal
-
-Para facilitar o registro de despesas, o módulo possui uma funcionalidade de leitura de QR Code de cupom fiscal (NFC-e), realizando a consulta automática à SEFAZ-RS. Ao ler uma nota, os itens da nota fiscal são registrados como subtransações, onde cada item pode ter suas próprias tags individuais. Isso permite uma granularidade muito maior no controle de despesas de supermercado, farmácia, etc.
-
-## Integrações
-
-O módulo de Finanças foi projetado para integrar-se ativamente com outras áreas do sistema:
-- **Despesas Compartilhadas**: Lançamentos financeiros podem ser integrados diretamente no módulo de divisão de custos com outros participantes.
-- **Assistente IA (James JARVIS)**: Futuramente, a IA realizará a classificação automática das tags com base no histórico do usuário e nos padrões de gastos.
+### Referências
+- [Roadmap — Módulo Finanças](/james/docs/roadmap/#fase-3-módulo-financeiro)
+- [Decisão 007 — Padronização de Data e Moeda](/james/docs/decisoes/#007--padronização-de-data-moeda-e-locale)

@@ -14,7 +14,7 @@ Funcionalidades planejadas por projeto. Atualizado conforme o desenvolvimento av
 - [x] Configuração Docker/Sail com PostgreSQL
 - [x] Documentação Hugo (Hextra)
 
-### Fase 2: Módulo CRM
+### Fase 2: Módulo Contatos
 - [ ] Cadastro minimalista de contatos (Nome, Telefone, PIX, Grau de Relacionamento e Foto)
 - [ ] Entidades puramente passivas sem acesso ao sistema
 - [ ] Servirá de Single Source of Truth (SSOT) para o restante do sistema

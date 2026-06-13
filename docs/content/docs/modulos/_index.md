@@ -3,58 +3,26 @@ title: "Módulos"
 weight: 2
 ---
 
-
 O sistema é dividido em diversos módulos temáticos para facilitar a organização e gestão de diferentes áreas da sua vida. Abaixo está a lista de todos os módulos disponíveis:
 
-### Finanças
-Módulo dedicado à gestão financeira pessoal abrangente, permitindo o controle centralizado de contas, cartões de crédito, transações, transferências e armazenamento de notas fiscais.
-
-[Mais informações sobre o módulo de Finanças](./financas)
-
-### CRM
-
-[Mais informações sobre o módulo de CRM](./crm)
-
-### Conhecimento
-
-[Mais informações sobre o módulo de Conhecimento](./conhecimento)
-
 ### Dashboard
+Visão geral consolidada dos indicadores e atalhos rápidos para as principais áreas do sistema.
 
-[Mais informações sobre o módulo de Dashboard](./dashboard)
+[Ver documentação →](./dashboard/)
 
-### Despensa
+### Contatos
+Registro pessoal centralizado de contatos e relacionamentos, atuando como base (Single Source of Truth) do sistema.
 
-[Mais informações sobre o módulo de Despensa](./despensa)
+[Ver documentação →](./contatos/)
 
-### Hábitos
+### Finanças
+Gestão financeira pessoal com controle de contas, cartões, tags dinâmicas e leitura de notas fiscais.
 
-[Mais informações sobre o módulo de Hábitos](./habitos)
+[Ver documentação →](./financas/)
 
-### Imposto de Renda (IR)
+### Acertos
+Controle de dívidas informais e despesas compartilhadas com outras pessoas (regime de competência).
 
-[Mais informações sobre o módulo de Imposto de Renda (IR)](./ir)
+[Ver documentação →](./acertos/)
 
-### Manutenção
-
-[Mais informações sobre o módulo de Manutenção](./manutencao)
-
-### Patrimônio
-
-[Mais informações sobre o módulo de Patrimônio](./patrimonio)
-
-### Receitas
-
-[Mais informações sobre o módulo de Receitas](./receitas)
-
-### Saúde
-
-[Mais informações sobre o módulo de Saúde](./saude)
-
-### Tarefas
-
-[Mais informações sobre o módulo de Tarefas](./tarefas)
-
-### Viagens
-
-[Mais informações sobre o módulo de Viagens](./viagens)
+Para a lista completa de módulos planejados, consulte o [Roadmap](/james/docs/roadmap).

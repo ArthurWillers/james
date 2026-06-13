@@ -1,9 +1,9 @@
 ---
-title: "Visão Geral"
-weight: 3
+title: "Acertos"
+weight: 4
 ---
 
-# Módulo de Acertos
+### Visão Geral
 
 O Módulo de Acertos foi idealizado para substituir o uso de planilhas e aplicativos como o Splitwise.
 
