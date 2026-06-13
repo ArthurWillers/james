@@ -107,3 +107,13 @@ Para garantir 100% de privacidade:
 - O pacote foi configurado globalmente através da variável de ambiente no ficheiro `.env` (`MEDIA_DISK=private`), forçando a utilização do disco privado do servidor.
 - Nenhum ficheiro será acessível diretamente através de um URL estático da web.
 - As imagens, avatares e documentos serão servidos de forma dinâmica e exclusiva através de rotas dedicadas no Laravel, as quais estão estritamente protegidas pelo *middleware* de autenticação (`auth`). Apenas o próprio utilizador logado no sistema poderá visualizar estes recursos.
+
+## 007 — Padronização de Data, Moeda e Locale
+
+**Data:** 13 de Junho de 2026
+
+### Decisão
+- Locale e moeda configuráveis via `.env` (`APP_LOCALE` e `APP_CURRENCY`)
+- Sem pacote de tradução inicialmente
+- Criação do Helper `DateHelper` para formatação de datas
+- Uso nativo da classe `Number::currency()` para valores monetários
