@@ -2,42 +2,67 @@ name: "CI Test"
 
 on:
   push:
-    branches:
-      - dev
-      - master
+    branches: [dev, master]
   pull_request:
-    branches:
-      - dev
-      - master
+    branches: [dev, master]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: james
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           tools: composer
           coverage: none
+          extensions: pdo_pgsql
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-
-      - name: Start Sail (PostgreSQL & Application)
-        run: ./vendor/bin/sail up -d
+        run: cp .env.example .env
 
       - name: Generate app key
-        run: ./vendor/bin/sail artisan key:generate
+        run: php artisan key:generate
 
       - name: Create test database
-        run: sleep 5 && ./vendor/bin/sail psql -c "CREATE DATABASE james_test;"
+        run: PGPASSWORD=password psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE james_test;"
 
-      - name: Execute tests (Pest)
-        run: ./vendor/bin/sail test --compact
+      - name: Run migrations on test database
+        run: php artisan migrate
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: james_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+
+      - name: Execute tests
+        run: php artisan test --compact
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: james_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password

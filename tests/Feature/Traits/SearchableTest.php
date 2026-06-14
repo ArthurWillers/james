@@ -16,65 +16,88 @@ beforeEach(function () {
     });
 });
 
-it('retorna query sem modificação quando termo é nulo', function () {
-    $sql = SearchTestModel::search(null, 'name')->toSql();
-    expect($sql)->toBe(SearchTestModel::query()->toSql());
+describe('query generation', function () {
+    it('retorna query sem modificação', function (?string $term, array|string $columns) {
+        $sql = SearchTestModel::search($term, $columns)->toSql();
+
+        expect($sql)->toBe(SearchTestModel::query()->toSql());
+    })->with([
+        'quando termo é nulo' => [null, 'name'],
+        'quando termo é string vazia' => ['', 'name'],
+        'quando colunas são vazias' => ['jose', []],
+    ]);
 });
 
-it('retorna query sem modificação quando termo é string vazia', function () {
-    $sql = SearchTestModel::search('', 'name')->toSql();
-    expect($sql)->toBe(SearchTestModel::query()->toSql());
+describe('search functionality', function () {
+    it('encontra registro com acento ao buscar sem acento', function () {
+        SearchTestModel::create(['name' => 'José Silva']);
+
+        $results = SearchTestModel::search('jose', 'name')->get();
+
+        expect($results->pluck('name')->all())->toBe(['José Silva']);
+    });
+
+    it('encontra registro ao buscar com acento diferente', function () {
+        SearchTestModel::create(['name' => 'Ação']);
+
+        $results = SearchTestModel::search('acao', 'name')->get();
+
+        expect($results->pluck('name')->all())->toBe(['Ação']);
+    });
+
+    it('não retorna registro que não corresponde ao termo', function () {
+        SearchTestModel::create(['name' => 'Carlos']);
+
+        $results = SearchTestModel::search('jose', 'name')->get();
+
+        expect($results)->toBeEmpty();
+    });
+
+    it('busca em múltiplas colunas com OR', function () {
+        SearchTestModel::create(['name' => 'Carlos', 'notes' => 'reunião']);
+
+        $results = SearchTestModel::search('reuniao', ['name', 'notes'])->get();
+
+        expect($results->pluck('name')->all())->toBe(['Carlos']);
+    });
+
+    it('busca em múltiplas colunas retorna registros de colunas diferentes', function () {
+        SearchTestModel::create(['name' => 'PHP Avançado', 'notes' => 'Web']);
+        SearchTestModel::create(['name' => 'JavaScript', 'notes' => 'Linguagem PHP']);
+        SearchTestModel::create(['name' => 'Python', 'notes' => 'Data Science']);
+
+        $results = SearchTestModel::search('php', ['name', 'notes'])->get();
+
+        $names = $results->pluck('name')->all();
+
+        expect($names)
+            ->toHaveCount(2)
+            ->toContain('PHP Avançado', 'JavaScript');
+    });
 });
 
-it('retorna query sem modificação quando colunas são vazias', function () {
-    $sql = SearchTestModel::search('jose', [])->toSql();
-    expect($sql)->toBe(SearchTestModel::query()->toSql());
-});
+describe('similarity ordering', function () {
+    it('resultado mais similar vem primeiro entre dois registros', function () {
+        SearchTestModel::create(['name' => 'José Alberto']);
+        SearchTestModel::create(['name' => 'José']);
 
-it('encontra registro com acento ao buscar sem acento', function () {
-    SearchTestModel::create(['name' => 'José Silva']);
+        $results = SearchTestModel::search('jose', 'name')->get();
 
-    $results = SearchTestModel::search('jose', 'name')->get();
+        expect($results->pluck('name')->all())->toBe(['José', 'José Alberto']);
+    });
 
-    expect($results)->toHaveCount(1);
-    expect($results->first()->name)->toBe('José Silva');
-});
+    it('resultado mais similar vem primeiro entre três registros', function () {
+        SearchTestModel::create(['name' => 'Laravel Framework']);
+        SearchTestModel::create(['name' => 'Aprendendo Laravel Avançado']);
+        SearchTestModel::create(['name' => 'PHP Moderno']);
 
-it('encontra registro ao buscar com acento diferente', function () {
-    SearchTestModel::create(['name' => 'Ação']);
+        $results = SearchTestModel::search('laravel', 'name')->get();
 
-    $results = SearchTestModel::search('acao', 'name')->get();
-
-    expect($results)->toHaveCount(1);
-    expect($results->first()->name)->toBe('Ação');
-});
-
-it('busca em múltiplas colunas com OR', function () {
-    SearchTestModel::create(['name' => 'Carlos', 'notes' => 'reunião']);
-
-    $results = SearchTestModel::search('reuniao', ['name', 'notes'])->get();
-
-    expect($results)->toHaveCount(1);
-    expect($results->first()->name)->toBe('Carlos');
-});
-
-it('resultado mais similar vem primeiro', function () {
-    SearchTestModel::create(['name' => 'José Alberto']);
-    SearchTestModel::create(['name' => 'José']);
-
-    $results = SearchTestModel::search('jose', 'name')->get();
-
-    expect($results)->toHaveCount(2);
-    expect($results->first()->name)->toBe('José');
-    expect($results->last()->name)->toBe('José Alberto');
-});
-
-it('não retorna registro que não corresponde ao termo', function () {
-    SearchTestModel::create(['name' => 'Carlos']);
-
-    $results = SearchTestModel::search('jose', 'name')->get();
-
-    expect($results)->toHaveCount(0);
+        expect($results->pluck('name')->all())->toBe([
+            'Laravel Framework',
+            'Aprendendo Laravel Avançado',
+        ]);
+    });
 });
 
 class SearchTestModel extends Model
