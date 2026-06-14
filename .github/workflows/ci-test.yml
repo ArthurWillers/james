@@ -36,5 +36,8 @@ jobs:
       - name: Generate app key
         run: ./vendor/bin/sail artisan key:generate
 
+      - name: Create test database
+        run: sleep 5 && ./vendor/bin/sail psql -c "CREATE DATABASE james_test;"
+
       - name: Execute tests (Pest)
         run: ./vendor/bin/sail test --compact
