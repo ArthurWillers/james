@@ -20,6 +20,7 @@ return new class extends Migration
             $table->jsonb('pix_keys')->nullable();
             $table->jsonb('addresses')->nullable();
             $table->text('notes')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
