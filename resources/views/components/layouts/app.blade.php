@@ -32,21 +32,18 @@
             <x-dropdown position="top" class="mt-auto hidden lg:block" accent contentClass="w-full">
                 <x-slot name="trigger">
                     <button class="w-full flex items-center rounded-lg p-1 hover:bg-neutral-800/5 group cursor-pointer">
-                        <div class="shrink-0 border rounded-md p-1 font-medium bg-neutral-200 border-neutral-300">
-                            {{ auth()->user()->initials() }}
-                        </div>
+                        <x-avatar :model="auth()->user()" />
                         <span
                             class="mx-2 text-sm font-medium truncate text-neutral-800/80 group-hover:text-neutral-800">{{ auth()->user()->name }}</span>
                         <div class="ms-auto text-neutral-800/80 group-hover:text-neutral-800">
                             <x-icons.outline.chevron-up-down class="w-6 h-6" />
                         </div>
+                    </button>
                 </x-slot>
 
                 <x-slot name="content">
                     <div class="flex items-center gap-2 p-2">
-                        <div class="shrink-0 border rounded-md p-1 font-medium bg-neutral-200 border-neutral-300">
-                            {{ auth()->user()->initials() }}
-                        </div>
+                        <x-avatar :model="auth()->user()" />
                         <div class="truncate">
                             <div class="text-sm font-semibold text-neutral-800 truncate">
                                 {{ auth()->user()->name }}</div>
@@ -87,9 +84,7 @@
                 <x-slot name="trigger">
                     <button
                         class="w-full flex items-center rounded-lg p-1 hover:bg-neutral-800/5 group cursor-pointer gap-2">
-                        <div class="shrink-0 border rounded-md p-1 font-medium bg-neutral-200 border-neutral-300">
-                            {{ auth()->user()->initials() }}
-                        </div>
+                        <x-avatar :model="auth()->user()" />
 
                         <div class="ms-auto text-neutral-800/80 group-hover:text-neutral-800">
                             <x-icons.mini.chevron-down class="w-4 h-4" />
@@ -99,9 +94,7 @@
 
                 <x-slot name="content">
                     <div class="flex items-center gap-2 p-2">
-                        <div class="shrink-0 border rounded-md p-1 font-medium bg-neutral-200 border-neutral-300">
-                            {{ auth()->user()->initials() }}
-                        </div>
+                        <x-avatar :model="auth()->user()" />
                         <div class="truncate">
                             <div class="text-sm font-semibold text-neutral-800 truncate">
                                 {{ auth()->user()->name }}</div>
