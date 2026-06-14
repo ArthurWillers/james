@@ -155,3 +155,23 @@ A necessidade de registrar anotações ricas para os contatos (e futuramente em 
 
 **Decisão:**
 Adoção de Markdown puro no banco de dados para os campos de anotações (ex: campo `notes` em `contacts`). Na interface de usuário, será utilizado um editor visual que exporta em Markdown (como EasyMDE). O Markdown será renderizado em HTML de forma segura apenas no momento da exibição.
+
+## 010 — Busca Textual com PostgreSQL (unaccent + pg_trgm)
+
+**Data:** 13 de Junho de 2026
+
+**Contexto:**
+O James possui múltiplos módulos com campos de texto livre (nome, notas, descrições, etc.) que precisam de busca eficiente e sem acentuação.
+
+**Decisão:**
+- Extensões unaccent e pg_trgm habilitadas via migration inicial, garantindo que rodem antes de qualquer outra migration
+- Trait Searchable criado em app/Traits/Searchable.php com escopo search() que aceita um termo e uma ou mais colunas
+- Busca via unaccent() + ILIKE para matching sem acento
+- Ordenação por relevância via similarity() do pg_trgm
+- Para múltiplas colunas, usa GREATEST() para rankear pelo melhor match
+- Índice GIN criado por model nas colunas que serão buscadas
+
+**Observações:**
+- O trait é aplicado individualmente por model, apenas onde há busca textual
+- Colunas numéricas e de relacionamento não usam o trait
+- A busca global do Dashboard agregará resultados de múltiplos models usando o mesmo escopo

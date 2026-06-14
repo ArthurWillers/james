@@ -85,6 +85,18 @@ npm run dev
 
 > Mantenha a aba do `npm run dev` aberta no seu terminal enquanto estiver desenvolvendo.
 
+## Testes
+
+Para executar a suíte de testes do projeto (que utiliza o framework Pest), é necessário garantir que o banco de dados de testes (`james_test`) exista no seu ambiente (no container do PostgreSQL).
+
+```bash
+# Cria o banco de dados de testes dentro do container (apenas na primeira vez)
+./vendor/bin/sail psql -c "CREATE DATABASE james_test;"
+
+# Executa a suíte de testes
+./vendor/bin/sail test
+```
+
 ---
 
 ## Acessando o projeto
