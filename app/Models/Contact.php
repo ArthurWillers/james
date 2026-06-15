@@ -10,11 +10,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Override;
 use Spatie\Image\Enums\Fit;
+use Spatie\Image\Image;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[Fillable([
     'name',
@@ -48,10 +50,10 @@ class Contact extends Model implements HasMedia
     /**
      * Get the contact's avatar URL.
      */
-    protected function avatarUrl(): Attribute
+    protected function avatar(): Attribute
     {
         return Attribute::get(function (): ?string {
-            return $this->getFirstMediaUrl('avatar', 'avatar') ?: null;
+            return $this->getFirstMediaUrl('avatar') ?: null;
         });
     }
 
@@ -66,12 +68,18 @@ class Contact extends Model implements HasMedia
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
     }
 
-    #[Override]
-    public function registerMediaConversions(?Media $media = null): void
+    /**
+     * Convert and save the avatar.
+     */
+    public function saveAvatar(UploadedFile $file): void
     {
-        $this->addMediaConversion('avatar')
+        Image::load($file->getPathname())
             ->format('webp')
             ->fit(Fit::Crop, 200, 200)
-            ->nonQueued();
+            ->save();
+
+        $this->addMedia($file)
+            ->usingFileName(Str::random(40).'.webp')
+            ->toMediaCollection('avatar');
     }
 }

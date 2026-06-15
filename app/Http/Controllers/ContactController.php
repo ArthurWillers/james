@@ -40,7 +40,7 @@ class ContactController extends Controller
         $contact = Contact::create($request->validated());
 
         if ($request->hasFile('avatar')) {
-            $contact->addMediaFromRequest('avatar')->toMediaCollection('avatar');
+            $contact->saveAvatar($request->file('avatar'));
         }
 
         return redirect()
@@ -72,7 +72,7 @@ class ContactController extends Controller
         $contact->update($request->validated());
 
         if ($request->hasFile('avatar')) {
-            $contact->addMediaFromRequest('avatar')->toMediaCollection('avatar');
+            $contact->saveAvatar($request->file('avatar'));
         }
 
         return redirect()
