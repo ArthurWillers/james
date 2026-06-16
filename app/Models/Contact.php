@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Override;
 use Spatie\Image\Enums\Fit;
@@ -81,5 +82,19 @@ class Contact extends Model implements HasMedia
         $this->addMedia($file)
             ->usingFileName(Str::random(40).'.webp')
             ->toMediaCollection('avatar');
+    }
+
+    /**
+     * Get the distinct relationship categories in use.
+     *
+     * @return Collection<int, string>
+     */
+    public static function getRelationshipCategories(): Collection
+    {
+        return static::query()
+            ->whereNotNull('relationship_category')
+            ->distinct()
+            ->orderBy('relationship_category', 'asc')
+            ->pluck('relationship_category');
     }
 }

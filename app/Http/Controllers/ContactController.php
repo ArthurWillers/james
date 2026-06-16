@@ -16,12 +16,16 @@ class ContactController extends Controller
     public function index(): View
     {
         $contacts = Contact::query()
-            ->search(request('search'), 'name')
+            ->select(['id', 'name', 'relationship_category', 'created_at'])
+            ->when(request('category'), fn ($query, $category) => $query->where('relationship_category', $category))
+            ->when(request('search'), fn ($query, $search) => $query->search($search, ['name', 'notes']))
             ->latest()
             ->paginate(18)
             ->withQueryString();
 
-        return view('contacts.index', compact('contacts'));
+        $categories = Contact::getRelationshipCategories();
+
+        return view('contacts.index', compact('contacts', 'categories'));
     }
 
     /**
