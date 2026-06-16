@@ -5,13 +5,11 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen antialiased bg-neutral-50/50 text-neutral-900 relative">
-    <!-- Glow de fundo sutil com a cor de destaque -->
-    <div class="fixed top-0 left-0 w-full h-96 bg-gradient-to-b from-accent/5 via-accent/2 to-transparent -z-10 pointer-events-none"></div>
+<body class="min-h-screen antialiased bg-neutral-50 text-neutral-900">
 
     <div x-data="{ open: false }">
         <aside
-            class="fixed top-0 left-0 h-screen w-64 border-e bg-white border-neutral-200 p-4 flex flex-col gap-4 z-40 transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]"
+            class="fixed top-0 left-0 h-screen w-64 border-e bg-neutral-100 border-neutral-300 p-4 flex flex-col gap-4 z-40 transition-transform duration-300 ease-in-out lg:translate-x-0"
             :class="{ '-translate-x-full': !open }" x-cloak>
             <div class="flex items-center">
                 <a href="{{ route('dashboard') }}">
