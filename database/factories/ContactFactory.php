@@ -23,6 +23,10 @@ class ContactFactory extends Factory
             'birthdate' => fake()->boolean(70) ? fake()->dateTimeBetween('-60 years', '-18 years')->format('Y-m-d') : null,
             'phones' => fake()->boolean(80) ? [fake()->phoneNumber()] : null,
             'pix_keys' => fake()->boolean(50) ? [fake()->cpf(), fake()->email()] : null,
+            'emails' => fake()->boolean(60) ? [
+                ['label' => 'Pessoal', 'value' => fake()->safeEmail()],
+                ['label' => 'Trabalho', 'value' => fake()->companyEmail()],
+            ] : null,
             'addresses' => fake()->boolean(40) ? [fake()->address()] : null,
             'notes' => fake()->boolean(30) ? '### '.fake()->sentence()."\n\n".fake()->realText()."\n\n- ".fake()->word()."\n- ".fake()->word() : null,
         ];

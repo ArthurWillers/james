@@ -25,6 +25,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'birthdate',
     'phones',
     'pix_keys',
+    'emails',
     'addresses',
     'notes',
 ])]
@@ -44,6 +45,7 @@ class Contact extends Model implements HasMedia
             'birthdate' => 'date',
             'phones' => 'array',
             'pix_keys' => 'array',
+            'emails' => 'array',
             'addresses' => 'array',
         ];
     }
