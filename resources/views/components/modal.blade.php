@@ -1,7 +1,7 @@
 @props([
     'name',
     'title',
-    'message',
+    'message' => null,
     'confirmVariant' => 'danger'
 ])
 
@@ -59,9 +59,15 @@
                                     {{ $title }}
                                 </h3>
                                 <div class="mt-2">
-                                    <p class="text-sm text-neutral-500">
-                                        {{ $message }}
-                                    </p>
+                                    @if($message)
+                                        <p class="text-sm text-neutral-500">
+                                            {{ $message }}
+                                        </p>
+                                    @elseif(isset($content))
+                                        <div class="text-sm text-neutral-500">
+                                            {{ $content }}
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
