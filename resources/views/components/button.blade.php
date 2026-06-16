@@ -31,9 +31,9 @@
         {{ $slot }}
     </a>
 @else
-    <button type="{{ $type }}" :disabled="loading" {{ $attributes->merge(['class' => $finalClasses]) }}>
+    <button type="{{ $type }}" :disabled="typeof loading !== 'undefined' && loading" {{ $attributes->merge(['class' => $finalClasses]) }}>
         {{-- O spinner é mostrado quando 'loading' é true --}}
-        <svg x-show="loading" class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
+        <svg x-show="typeof loading !== 'undefined' && loading" class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24" style="display: none;">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
             </circle>
@@ -43,7 +43,7 @@
         </svg>
 
         {{-- O conteúdo original é mostrado quando 'loading' é false --}}
-        <span x-show="!loading" class="inline-flex items-center gap-1">
+        <span x-show="typeof loading === 'undefined' || !loading" class="inline-flex items-center gap-1">
             {{ $slot }}
         </span>
     </button>

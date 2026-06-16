@@ -1,23 +1,16 @@
 @props([
+    'name',
     'title',
     'message',
-    'confirmLabel' => 'Confirmar',
     'confirmVariant' => 'danger'
 ])
 
 <div x-data="{ open: false }" 
-     @modal-open.window="if ($event.detail === '{{ $attributes->get('id') }}') open = true"
-     @modal-close.window="if ($event.detail === '{{ $attributes->get('id') }}') open = false"
+     @modal-open.window="if ($event.detail === '{{ $name }}') open = true"
+     @modal-close.window="if ($event.detail === '{{ $name }}') open = false"
      @keydown.escape.window="open = false"
-     class="inline-block"
+     class="contents"
 >
-    <!-- Trigger -->
-    @if (isset($trigger))
-        <div @click="open = true">
-            {{ $trigger }}
-        </div>
-    @endif
-
     <!-- Modal -->
     <template x-teleport="body">
         <div x-show="open" 
@@ -78,11 +71,12 @@
                         <div class="sm:ml-3 sm:w-auto" @click="open = false; $dispatch('modal-confirm')">
                             {{ $slot }}
                         </div>
-                        <button type="button" 
-                                @click="open = false; $dispatch('modal-cancel')" 
-                                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 sm:mt-0 sm:w-auto">
+                        <x-button type="button" 
+                                  color="outline"
+                                  @click="open = false; $dispatch('modal-cancel')" 
+                                  class="mt-3 w-full sm:mt-0 sm:w-auto">
                             Cancelar
-                        </button>
+                        </x-button>
                     </div>
                 </div>
             </div>
