@@ -18,7 +18,7 @@ class ContactController extends Controller
         $contacts = Contact::query()
             ->search(request('search'), 'name')
             ->latest()
-            ->paginate(15)
+            ->paginate(18)
             ->withQueryString();
 
         return view('contacts.index', compact('contacts'));
@@ -99,7 +99,7 @@ class ContactController extends Controller
     {
         $contacts = Contact::onlyTrashed()
             ->latest('deleted_at')
-            ->paginate(15)
+            ->paginate(18)
             ->withQueryString();
 
         return view('contacts.trashed', compact('contacts'));
