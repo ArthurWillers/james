@@ -1,5 +1,12 @@
 <x-layouts.app>
-    <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="plus" />
+    <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="plus">
+        @if ($hasTrashed)
+            <x-button color="outline" href="{{ route('contacts.trashed') }}">
+                <x-icons.outline.trash class="size-5!" />
+                Excluídos
+            </x-button>
+        @endif
+    </x-page-header>
 
     <x-filter-bar 
         action="{{ route('contacts.index') }}" 

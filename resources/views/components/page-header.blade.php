@@ -3,12 +3,16 @@
 <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold">{{ $title }}</h2>
 
-    @if ($action)
-        <x-button :href="$action">
-            @if ($icon)
-                <x-dynamic-component :component="'icons.outline.' . $icon" class="size-5!" />
-            @endif
-            {{ $actionText }}
-        </x-button>
-    @endif
+    <div class="flex items-center gap-3">
+        {{ $slot }}
+        
+        @if ($action)
+            <x-button :href="$action">
+                @if ($icon)
+                    <x-dynamic-component :component="'icons.outline.' . $icon" class="size-5!" />
+                @endif
+                {{ $actionText }}
+            </x-button>
+        @endif
+    </div>
 </div>

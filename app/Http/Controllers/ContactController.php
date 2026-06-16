@@ -24,8 +24,9 @@ class ContactController extends Controller
             ->withQueryString();
 
         $categories = Contact::getRelationshipCategories();
+        $hasTrashed = Contact::onlyTrashed()->exists();
 
-        return view('contacts.index', compact('contacts', 'categories'));
+        return view('contacts.index', compact('contacts', 'categories', 'hasTrashed'));
     }
 
     /**
