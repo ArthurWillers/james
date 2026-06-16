@@ -1,6 +1,22 @@
 <x-layouts.app>
     <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="plus" />
 
+    <x-filter-bar 
+        action="{{ route('contacts.index') }}" 
+        searchPlaceholder="Buscar nome ou anotações..." 
+        :filters="['search', 'category']">
+        
+        <div class="w-full sm:w-auto">
+            <select name="category" onchange="this.form.submit()" 
+                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 cursor-pointer">
+                <option value="">Todas categorias</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat }}" @selected(request('category') === $cat)>{{ $cat }}</option>
+                @endforeach
+            </select>
+        </div>
+    </x-filter-bar>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($contacts as $contact)
             <x-card href="{{ route('contacts.show', $contact) }}" size="sm" class="flex items-center gap-4">
