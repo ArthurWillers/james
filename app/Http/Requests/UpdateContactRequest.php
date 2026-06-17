@@ -49,4 +49,20 @@ class UpdateContactRequest extends FormRequest
             'avatar' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp,heic,heif', 'max:10240'],
         ];
     }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'phones.*.label.required' => 'O rótulo do telefone é obrigatório.',
+            'phones.*.value.required' => 'O número do telefone é obrigatório.',
+            'emails.*.label.required' => 'O rótulo do e-mail é obrigatório.',
+            'emails.*.value.required' => 'O endereço de e-mail é obrigatório.',
+            'emails.*.value.email' => 'O campo deve ser um endereço de e-mail válido.',
+        ];
+    }
 }

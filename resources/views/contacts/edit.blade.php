@@ -143,7 +143,7 @@
                 
                 <div class="flex-1 w-full flex flex-col gap-4">
                     <div>
-                        <x-form-input name="name" label="Nome" value="{{ old('name', $contact->name) }}" required />
+                        <x-form-input name="name" label="Nome" value="{{ old('name', $contact->name) }}" />
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -166,6 +166,7 @@
             <!-- Phones -->
             <x-card class="h-full p-6 flex flex-col" x-data="{
                 phones: {{ Js::from($phones) }},
+                serverErrors: {{ Js::from($errors->messages()) }},
                 addPhone() {
                     this.phones.push({ label: 'Principal', value: '' });
                 },
@@ -183,14 +184,20 @@
                 <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
                     <div class="flex flex-col gap-4">
                         <template x-for="(phone, index) in phones" :key="index">
-                            <div class="flex gap-2 items-center">
+                            <div class="flex gap-2 items-start">
                                 <div class="w-1/3">
-                                    <x-form-input required x-model="phone.label" x-bind:name="`phones[${index}][label]`" placeholder="Rótulo" />
+                                    <x-form-input x-model="phone.label" x-bind:name="`phones[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`phones.${index}.label`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
+                                    <template x-if="serverErrors[`phones.${index}.label`]">
+                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`phones.${index}.label`][0]"></p>
+                                    </template>
                                 </div>
                                 <div class="flex-1">
-                                    <x-form-input required x-model="phone.value" x-bind:name="`phones[${index}][value]`" placeholder="Número" />
+                                    <x-form-input x-model="phone.value" x-bind:name="`phones[${index}][value]`" placeholder="Número" x-bind:class="serverErrors[`phones.${index}.value`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
+                                    <template x-if="serverErrors[`phones.${index}.value`]">
+                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`phones.${index}.value`][0]"></p>
+                                    </template>
                                 </div>
-                                <x-button type="button" @click="removePhone(index)" color="danger-ghost" class="p-1.5! shrink-0" aria-label="Remover">
+                                <x-button type="button" @click="removePhone(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
                                     <x-icons.outline.trash class="size-4" />
                                 </x-button>
                             </div>
@@ -203,6 +210,7 @@
             <!-- Emails -->
             <x-card class="h-full p-6 flex flex-col" x-data="{
                 emails: {{ Js::from($emails) }},
+                serverErrors: {{ Js::from($errors->messages()) }},
                 addEmail() {
                     this.emails.push({ label: 'Principal', value: '' });
                 },
@@ -220,14 +228,20 @@
                 <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
                     <div class="flex flex-col gap-4">
                         <template x-for="(email, index) in emails" :key="index">
-                            <div class="flex gap-2 items-center">
+                            <div class="flex gap-2 items-start">
                                 <div class="w-1/3">
-                                    <x-form-input required x-model="email.label" x-bind:name="`emails[${index}][label]`" placeholder="Rótulo" />
+                                    <x-form-input x-model="email.label" x-bind:name="`emails[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`emails.${index}.label`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
+                                    <template x-if="serverErrors[`emails.${index}.label`]">
+                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`emails.${index}.label`][0]"></p>
+                                    </template>
                                 </div>
                                 <div class="flex-1">
-                                    <x-form-input type="email" required x-model="email.value" x-bind:name="`emails[${index}][value]`" placeholder="Endereço de e-mail" />
+                                    <x-form-input x-model="email.value" x-bind:name="`emails[${index}][value]`" placeholder="Endereço de e-mail" x-bind:class="serverErrors[`emails.${index}.value`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
+                                    <template x-if="serverErrors[`emails.${index}.value`]">
+                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`emails.${index}.value`][0]"></p>
+                                    </template>
                                 </div>
-                                <x-button type="button" @click="removeEmail(index)" color="danger-ghost" class="p-1.5! shrink-0" aria-label="Remover">
+                                <x-button type="button" @click="removeEmail(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
                                     <x-icons.outline.trash class="size-4" />
                                 </x-button>
                             </div>
