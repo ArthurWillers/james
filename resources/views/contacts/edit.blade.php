@@ -179,7 +179,7 @@
                     </x-button>
                 </div>
                 
-                <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
+                <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
                     <div class="flex flex-col gap-4">
                         <template x-for="(phone, index) in phones" :key="index">
                             <div class="flex gap-2 items-start">
@@ -223,7 +223,7 @@
                     </x-button>
                 </div>
                 
-                <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
+                <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
                     <div class="flex flex-col gap-4">
                         <template x-for="(email, index) in emails" :key="index">
                             <div class="flex gap-2 items-start">

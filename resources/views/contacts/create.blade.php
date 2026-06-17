@@ -23,19 +23,19 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Contato">
+    <x-page-header title="Novo Contato">
         <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
             <x-icons.outline.arrow-left class="size-4" />
             Cancelar
         </x-button>
 
-        <x-button type="submit" form="edit-contact-form">
+        <x-button type="submit" form="create-contact-form">
             <x-icons.outline.check class="size-4" />
             Salvar
         </x-button>
     </x-page-header>
 
-    <form id="edit-contact-form" action="{{ route('contacts.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="create-contact-form" action="{{ route('contacts.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <x-card class="mb-4 p-6">
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -103,7 +103,7 @@
 
                     <div class="flex flex-col items-center gap-2">
                         <label class="cursor-pointer">
-                            <span class="text-sm font-medium text-accent hover:text-accent/80 transition-colors">Alterar foto</span>
+                            <span class="text-sm font-medium text-accent hover:text-accent/80 transition-colors">Adicionar foto</span>
                             <input type="file" x-ref="fileInput" name="avatar" class="hidden" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" @change="fileSelected">
                         </label>
                         
@@ -173,7 +173,7 @@
                     </x-button>
                 </div>
                 
-                <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
+                <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
                     <div class="flex flex-col gap-4">
                         <template x-for="(phone, index) in phones" :key="index">
                             <div class="flex gap-2 items-start">
@@ -217,7 +217,7 @@
                     </x-button>
                 </div>
                 
-                <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
+                <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
                     <div class="flex flex-col gap-4">
                         <template x-for="(email, index) in emails" :key="index">
                             <div class="flex gap-2 items-start">
