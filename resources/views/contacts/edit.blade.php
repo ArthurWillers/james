@@ -105,10 +105,18 @@
                         </div>
                     </template>
 
-                    <label class="cursor-pointer">
-                        <span class="text-sm font-medium text-accent hover:text-accent/80 transition-colors">Alterar foto</span>
-                        <input type="file" x-ref="fileInput" name="avatar" class="hidden" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" @change="fileSelected">
-                    </label>
+                    <div class="flex flex-col items-center gap-2">
+                        <label class="cursor-pointer">
+                            <span class="text-sm font-medium text-accent hover:text-accent/80 transition-colors">Alterar foto</span>
+                            <input type="file" x-ref="fileInput" name="avatar" class="hidden" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" @change="fileSelected">
+                        </label>
+                        
+                        @if($contact->getFirstMedia('avatar'))
+                            <x-modal.trigger name="remove-avatar-{{ $contact->id }}">
+                                <button type="button" class="text-sm font-medium text-red-500 hover:text-red-600 transition-colors cursor-pointer">Remover foto</button>
+                            </x-modal.trigger>
+                        @endif
+                    </div>
                     <x-form-error name="avatar" />
 
                     <!-- Modal Cropper -->
@@ -238,4 +246,18 @@
             </div>
         </x-card>
     </form>
+
+    <x-modal 
+        name="remove-avatar-{{ $contact->id }}"
+        title="Remover foto de perfil" 
+        message="Tem certeza que deseja remover a foto atual? Esta ação apagará a imagem permanentemente." 
+        confirmVariant="danger">
+        <form action="{{ route('contacts.destroy-avatar', $contact) }}" method="POST" class="m-0">
+            @csrf
+            @method('DELETE')
+            <x-button type="submit" color="red" class="w-full sm:w-auto cursor-pointer">
+                Sim, remover
+            </x-button>
+        </form>
+    </x-modal>
 </x-layouts.app>
