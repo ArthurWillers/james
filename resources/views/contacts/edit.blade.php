@@ -175,7 +175,7 @@
             }">
                 <div class="flex justify-between items-center mb-6 shrink-0">
                     <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Telefones</h3>
-                    <x-button type="button" @click="addPhone" color="accent-ghost" class="!text-xs !py-1 !px-2">
+                    <x-button type="button" @click="addPhone" color="accent-ghost" class="text-xs! py-1! px-2!">
                         <x-icons.outline.plus class="size-3" /> Adicionar
                     </x-button>
                 </div>
@@ -190,7 +190,7 @@
                                 <div class="flex-1">
                                     <x-form-input required x-model="phone.value" x-bind:name="`phones[${index}][value]`" placeholder="Número" />
                                 </div>
-                                <x-button type="button" @click="removePhone(index)" color="danger-ghost" class="!p-1.5 shrink-0" aria-label="Remover">
+                                <x-button type="button" @click="removePhone(index)" color="danger-ghost" class="p-1.5! shrink-0" aria-label="Remover">
                                     <x-icons.outline.trash class="size-4" />
                                 </x-button>
                             </div>
@@ -212,7 +212,7 @@
             }">
                 <div class="flex justify-between items-center mb-6 shrink-0">
                     <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">E-mails</h3>
-                    <x-button type="button" @click="addEmail" color="accent-ghost" class="!text-xs !py-1 !px-2">
+                    <x-button type="button" @click="addEmail" color="accent-ghost" class="text-xs! py-1! px-2!">
                         <x-icons.outline.plus class="size-3" /> Adicionar
                     </x-button>
                 </div>
@@ -227,7 +227,7 @@
                                 <div class="flex-1">
                                     <x-form-input type="email" required x-model="email.value" x-bind:name="`emails[${index}][value]`" placeholder="Endereço de e-mail" />
                                 </div>
-                                <x-button type="button" @click="removeEmail(index)" color="danger-ghost" class="!p-1.5 shrink-0" aria-label="Remover">
+                                <x-button type="button" @click="removeEmail(index)" color="danger-ghost" class="p-1.5! shrink-0" aria-label="Remover">
                                     <x-icons.outline.trash class="size-4" />
                                 </x-button>
                             </div>
