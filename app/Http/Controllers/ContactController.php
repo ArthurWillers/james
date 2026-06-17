@@ -35,7 +35,8 @@ class ContactController extends Controller
      */
     public function create(): View
     {
-        return view('contacts.create');
+        $categories = Contact::relationshipCategories();
+        return view('contacts.create', compact('categories'));
     }
 
     /**
@@ -67,7 +68,8 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact): View
     {
-        return view('contacts.edit', compact('contact'));
+        $categories = Contact::relationshipCategories();
+        return view('contacts.edit', compact('contact', 'categories'));
     }
 
     /**

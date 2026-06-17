@@ -139,7 +139,12 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <x-form-input name="relationship_category" label="Categoria" value="{{ old('relationship_category', $contact->relationship_category) }}" />
+                            <x-form-combobox 
+                                name="relationship_category" 
+                                label="Categoria" 
+                                :value="old('relationship_category', $contact->relationship_category)" 
+                                :options="$categories" 
+                            />
                         </div>
                         <div>
                             <x-form-input type="date" name="birthdate" label="Data de Nascimento" value="{{ old('birthdate', $contact->birthdate?->format('Y-m-d')) }}" />
@@ -177,7 +182,7 @@
                                 <div class="flex-1">
                                     <x-form-input required x-model="phone.value" x-bind:name="`phones[${index}][value]`" placeholder="Número" />
                                 </div>
-                                <button type="button" @click="removePhone(index)" class="text-red-400 hover:text-red-600 transition-colors">
+                                <button type="button" @click="removePhone(index)" class="text-red-400 hover:text-red-600 transition-colors cursor-pointer">
                                     <x-icons.outline.trash class="size-5" />
                                 </button>
                             </div>
@@ -214,7 +219,7 @@
                                 <div class="flex-1">
                                     <x-form-input type="email" required x-model="email.value" x-bind:name="`emails[${index}][value]`" placeholder="Endereço de e-mail" />
                                 </div>
-                                <button type="button" @click="removeEmail(index)" class="text-red-400 hover:text-red-600 transition-colors">
+                                <button type="button" @click="removeEmail(index)" class="text-red-400 hover:text-red-600 transition-colors cursor-pointer">
                                     <x-icons.outline.trash class="size-5" />
                                 </button>
                             </div>
