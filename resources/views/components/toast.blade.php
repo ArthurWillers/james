@@ -1,8 +1,14 @@
-@if (session()->has('toast'))
+@if (session()->has('toast') || session()->has('success'))
     @php
-        $toast = session('toast');
-        $type = $toast['type'] ?? 'info';
-        $message = $toast['message'] ?? '';
+        if (session()->has('toast')) {
+            $toast = session('toast');
+            $type = $toast['type'] ?? 'info';
+            $message = $toast['message'] ?? '';
+        } else {
+            $type = 'success';
+            $message = session('success');
+        }
+        
         $progressColor = match ($type) {
             'success' => 'bg-green-600',
             'error' => 'bg-red-600',

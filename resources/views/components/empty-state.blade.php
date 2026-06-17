@@ -1,4 +1,4 @@
-@props(['message', 'icon' => null, 'actionText' => null, 'actionRoute' => null])
+@props(['title' => null, 'description' => null, 'message' => null, 'icon' => null, 'actionText' => null, 'actionRoute' => null])
 
 <div class="py-12 px-4 text-center">
     @if ($icon)
@@ -10,7 +10,14 @@
     @endif
 
     <div class="text-neutral-600">
-        <p class="font-medium text-base">{{ $message }}</p>
+        @if($title)
+            <h3 class="text-lg font-medium text-neutral-900">{{ $title }}</h3>
+        @endif
+        @if($description || $message)
+            <p class="{{ $title ? 'mt-1 text-sm text-neutral-500' : 'font-medium text-base' }}">
+                {{ $description ?? $message }}
+            </p>
+        @endif
     </div>
 
     @if ($actionText && $actionRoute)
