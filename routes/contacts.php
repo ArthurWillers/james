@@ -15,6 +15,6 @@ Route::prefix('contacts')->name('contacts.')->group(function () {
     Route::delete('/{contact}', [ContactController::class, 'destroy'])->name('destroy');
     Route::patch('/{contact}/restore', [ContactController::class, 'restore'])->name('restore')->withTrashed();
     Route::delete('/{contact}/force', [ContactController::class, 'forceDestroy'])->name('force')->withTrashed();
-    Route::get('/{contact}/avatar', [ContactController::class, 'avatar'])->name('avatar');
+    Route::get('/{contact}/avatar', [ContactController::class, 'avatar'])->name('avatar')->withTrashed();
     Route::delete('/{contact}/avatar', [ContactController::class, 'destroyAvatar'])->name('destroy-avatar');
 });
