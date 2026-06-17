@@ -153,4 +153,18 @@ class ContactController extends Controller
             ->route('contacts.edit', $contact)
             ->with('success', 'Avatar removido com sucesso.');
     }
+
+    /**
+     * Serve the contact's avatar image.
+     */
+    public function avatar(Contact $contact)
+    {
+        $media = $contact->getFirstMedia('avatar');
+
+        if (! $media) {
+            abort(404);
+        }
+
+        return response()->file($media->getPath());
+    }
 }

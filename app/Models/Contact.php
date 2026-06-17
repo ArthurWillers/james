@@ -52,7 +52,7 @@ class Contact extends Model implements HasMedia
     protected function avatar(): Attribute
     {
         return Attribute::get(function (): ?string {
-            return $this->getFirstMediaUrl('avatar') ?: null;
+            return $this->getFirstMediaUrl('avatar') ? route('contacts.avatar', $this) : null;
         });
     }
 
