@@ -24,9 +24,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'relationship_category',
     'birthdate',
     'phones',
-    'pix_keys',
     'emails',
-    'addresses',
     'notes',
 ])]
 class Contact extends Model implements HasMedia
@@ -44,9 +42,7 @@ class Contact extends Model implements HasMedia
         return [
             'birthdate' => 'date',
             'phones' => 'array',
-            'pix_keys' => 'array',
             'emails' => 'array',
-            'addresses' => 'array',
         ];
     }
 
@@ -89,12 +85,12 @@ class Contact extends Model implements HasMedia
     /**
      * Get the distinct relationship categories in use.
      *
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @return Collection<int, string>
      */
-    public static function getRelationshipCategories(): Collection
+    public function scopeRelationshipCategories($query): Collection
     {
-        return static::query()
-            ->whereNotNull('relationship_category')
+        return $query->whereNotNull('relationship_category')
             ->distinct()
             ->orderBy('relationship_category', 'asc')
             ->pluck('relationship_category');

@@ -17,9 +17,7 @@ return new class extends Migration
             $table->string('relationship_category')->nullable();
             $table->date('birthdate')->nullable();
             $table->jsonb('phones')->nullable();
-            $table->jsonb('pix_keys')->nullable();
             $table->jsonb('emails')->nullable();
-            $table->jsonb('addresses')->nullable();
             $table->text('notes')->nullable();
             $table->softDeletes();
             $table->timestamps();
