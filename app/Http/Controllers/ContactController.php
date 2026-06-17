@@ -21,7 +21,7 @@ class ContactController extends Controller
             ->when(request('category'), fn ($query, $category) => $query->where('relationship_category', $category))
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name', 'notes']))
             ->latest()
-            ->paginate(50)
+            ->paginate(18)
             ->withQueryString();
 
         $categories = Contact::relationshipCategories();
