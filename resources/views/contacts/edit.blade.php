@@ -113,7 +113,7 @@
                         
                         @if($contact->getFirstMedia('avatar'))
                             <x-modal.trigger name="remove-avatar-{{ $contact->id }}">
-                                <button type="button" class="text-sm font-medium text-red-500 hover:text-red-600 transition-colors cursor-pointer">Remover foto</button>
+                                <x-button type="button" color="danger-ghost" class="text-sm font-medium">Remover foto</x-button>
                             </x-modal.trigger>
                         @endif
                     </div>
@@ -175,9 +175,9 @@
             }">
                 <div class="flex justify-between items-center mb-6 shrink-0">
                     <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Telefones</h3>
-                    <button type="button" @click="addPhone" class="text-xs font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer">
-                        + Adicionar
-                    </button>
+                    <x-button type="button" @click="addPhone" color="accent-ghost" class="!text-xs !py-1 !px-2">
+                        <x-icons.outline.plus class="size-3" /> Adicionar
+                    </x-button>
                 </div>
                 
                 <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
@@ -190,9 +190,9 @@
                                 <div class="flex-1">
                                     <x-form-input required x-model="phone.value" x-bind:name="`phones[${index}][value]`" placeholder="Número" />
                                 </div>
-                                <button type="button" @click="removePhone(index)" class="text-red-400 hover:text-red-600 transition-colors cursor-pointer">
-                                    <x-icons.outline.trash class="size-5" />
-                                </button>
+                                <x-button type="button" @click="removePhone(index)" color="danger-ghost" class="!p-1.5 shrink-0" aria-label="Remover">
+                                    <x-icons.outline.trash class="size-4" />
+                                </x-button>
                             </div>
                         </template>
                         <p x-show="phones.length === 0" class="text-sm text-neutral-400 italic">Nenhum telefone cadastrado.</p>
@@ -212,9 +212,9 @@
             }">
                 <div class="flex justify-between items-center mb-6 shrink-0">
                     <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">E-mails</h3>
-                    <button type="button" @click="addEmail" class="text-xs font-medium text-accent hover:text-accent/80 transition-colors cursor-pointer">
-                        + Adicionar
-                    </button>
+                    <x-button type="button" @click="addEmail" color="accent-ghost" class="!text-xs !py-1 !px-2">
+                        <x-icons.outline.plus class="size-3" /> Adicionar
+                    </x-button>
                 </div>
                 
                 <div class="overflow-y-auto max-h-[400px] pr-2 -mr-2">
@@ -227,9 +227,9 @@
                                 <div class="flex-1">
                                     <x-form-input type="email" required x-model="email.value" x-bind:name="`emails[${index}][value]`" placeholder="Endereço de e-mail" />
                                 </div>
-                                <button type="button" @click="removeEmail(index)" class="text-red-400 hover:text-red-600 transition-colors cursor-pointer">
-                                    <x-icons.outline.trash class="size-5" />
-                                </button>
+                                <x-button type="button" @click="removeEmail(index)" color="danger-ghost" class="!p-1.5 shrink-0" aria-label="Remover">
+                                    <x-icons.outline.trash class="size-4" />
+                                </x-button>
                             </div>
                         </template>
                         <p x-show="emails.length === 0" class="text-sm text-neutral-400 italic">Nenhum e-mail cadastrado.</p>

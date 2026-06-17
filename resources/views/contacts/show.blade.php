@@ -18,7 +18,7 @@
         </x-button>
 
         <x-modal.trigger name="delete-contact-{{ $contact->id }}">
-            <x-button type="button" color="outline" class="bg-white text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50">
+            <x-button type="button" color="danger-outline">
                 <x-icons.outline.trash class="size-4" />
                 Excluir
             </x-button>

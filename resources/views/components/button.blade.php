@@ -10,16 +10,19 @@
         'cursor-pointer inline-flex items-center justify-center font-semibold px-3 py-2 text-sm rounded-lg disabled:opacity-75 disabled:cursor-default gap-1';
 
     $colorClasses = match ($color) {
-        'red' => 'bg-red-500 hover:bg-red-700 text-white',
-        'accent' => 'bg-accent hover:bg-[color-mix(in_srgb,var(--color-accent),#000_10%)] text-white',
+        'red' => 'bg-red-500 hover:bg-red-700 text-white border-transparent',
+        'accent' => 'bg-accent hover:bg-[color-mix(in_srgb,var(--color-accent),#000_10%)] text-white border-transparent',
         'outline' => 'border border-neutral-300 hover:bg-neutral-100 text-neutral-500 hover:text-neutral-900',
+        'danger-outline' => 'bg-white text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 hover:bg-red-50',
+        'ghost' => 'bg-transparent text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 border-transparent',
+        'danger-ghost' => 'bg-transparent text-red-400 hover:text-red-600 hover:bg-red-50 border-transparent',
+        'accent-ghost' => 'bg-transparent text-accent hover:text-[color-mix(in_srgb,var(--color-accent),#000_10%)] hover:bg-accent/10 border-transparent',
         'none' => '',
         default => 'bg-neutral-800 hover:bg-neutral-700 text-white border border-black/10',
     };
 
     $shadowClasses = match ($color) {
-        'none' => '',
-        'outline' => '',
+        'none', 'outline', 'danger-outline', 'ghost', 'danger-ghost', 'accent-ghost' => '',
         default => 'shadow-[inset_0px_1px_rgba(255,255,255,0.5)]',
     };
 
