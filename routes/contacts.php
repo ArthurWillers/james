@@ -13,7 +13,7 @@ Route::prefix('contacts')->name('contacts.')->group(function () {
     Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit');
     Route::put('/{contact}', [ContactController::class, 'update'])->name('update');
     Route::delete('/{contact}', [ContactController::class, 'destroy'])->name('destroy');
-    Route::patch('/{contact}/restore', [ContactController::class, 'restore'])->name('restore');
-    Route::delete('/{contact}/force', [ContactController::class, 'forceDestroy'])->name('force');
+    Route::patch('/{contact}/restore', [ContactController::class, 'restore'])->name('restore')->withTrashed();
+    Route::delete('/{contact}/force', [ContactController::class, 'forceDestroy'])->name('force')->withTrashed();
     Route::delete('/{contact}/avatar', [ContactController::class, 'destroyAvatar'])->name('destroy-avatar');
 });

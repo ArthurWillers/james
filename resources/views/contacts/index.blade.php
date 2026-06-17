@@ -3,7 +3,7 @@
         @if ($hasTrashed)
             <x-button color="outline" href="{{ route('contacts.trashed') }}">
                 <x-icons.outline.trash class="size-5!" />
-                Excluídos
+                Lixeira
             </x-button>
         @endif
     </x-page-header>

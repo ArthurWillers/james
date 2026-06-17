@@ -17,13 +17,14 @@ class ContactController extends Controller
     {
         $contacts = Contact::query()
             ->select(['id', 'name', 'relationship_category', 'created_at'])
+            ->with('media')
             ->when(request('category'), fn ($query, $category) => $query->where('relationship_category', $category))
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name', 'notes']))
             ->latest()
-            ->paginate(18)
+            ->paginate(50)
             ->withQueryString();
 
-        $categories = Contact::getRelationshipCategories();
+        $categories = Contact::relationshipCategories();
         $hasTrashed = Contact::onlyTrashed()->exists();
 
         return view('contacts.index', compact('contacts', 'categories', 'hasTrashed'));
@@ -103,11 +104,17 @@ class ContactController extends Controller
     public function trashed(): View
     {
         $contacts = Contact::onlyTrashed()
+            ->select(['id', 'name', 'relationship_category', 'deleted_at'])
+            ->with('media')
+            ->when(request('category'), fn ($query, $category) => $query->where('relationship_category', $category))
+            ->when(request('search'), fn ($query, $search) => $query->search($search, ['name', 'notes']))
             ->latest('deleted_at')
-            ->paginate(18)
+            ->paginate(50)
             ->withQueryString();
 
-        return view('contacts.trashed', compact('contacts'));
+        $categories = Contact::onlyTrashed()->relationshipCategories();
+
+        return view('contacts.trashed', compact('contacts', 'categories'));
     }
 
     /**

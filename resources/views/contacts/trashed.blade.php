@@ -1,3 +1,189 @@
-<div>
-    <!-- It always seems impossible until it is done. - Nelson Mandela -->
-</div>
+<x-layouts.app>
+    <div class="flex justify-between items-center mb-6">
+        <x-breadcrumbs>
+            <x-breadcrumbs.item href="{{ route('contacts.index') }}">Contatos</x-breadcrumbs.item>
+            <x-breadcrumbs.item>Lixeira</x-breadcrumbs.item>
+        </x-breadcrumbs>
+    </div>
+
+    <x-page-header 
+        title="Lixeira" 
+        description="Contatos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
+    >
+        <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
+            <x-icons.outline.arrow-left class="size-4" />
+            Voltar
+        </x-button>
+    </x-page-header>
+
+    <x-filter-bar 
+        action="{{ route('contacts.trashed') }}" 
+        searchPlaceholder="Buscar na lixeira..." 
+        :filters="['search', 'category']">
+        
+        <div class="w-full sm:w-auto">
+            <select name="category" onchange="this.form.submit()" 
+                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 cursor-pointer">
+                <option value="">Todas categorias</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat }}" @selected(request('category') === $cat)>{{ $cat }}</option>
+                @endforeach
+            </select>
+        </div>
+    </x-filter-bar>
+
+    <div class="w-full rounded-lg shadow-sm border border-neutral-200 bg-white lg:mb-8"
+         x-data="{
+             selectedContactId: null,
+             selectedContactName: '',
+             openRestore(id, name) {
+                 this.selectedContactId = id;
+                 this.selectedContactName = name;
+                 $dispatch('modal-open', 'restore-contact');
+             },
+             openForceDelete(id, name) {
+                 this.selectedContactId = id;
+                 this.selectedContactName = name;
+                 $dispatch('modal-open', 'force-delete-contact');
+             }
+         }">
+        @if($contacts->isNotEmpty())
+            {{-- Header - Desktop --}}
+            <div class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr] border-b border-neutral-200 bg-neutral-50 rounded-t-lg">
+                <div class="px-4 lg:px-6 py-4 text-left">
+                    <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Contato</span>
+                </div>
+                <div class="px-4 lg:px-6 py-4 text-left">
+                    <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Data da Exclusão</span>
+                </div>
+                <div class="px-4 lg:px-6 py-4 text-end">
+                    <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ações</span>
+                </div>
+            </div>
+        @endif
+
+        <div class="divide-y divide-neutral-200">
+            @forelse($contacts as $contact)
+                <div class="relative">
+                    {{-- Versão Desktop/Tablet --}}
+                    <div class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr] items-center hover:bg-neutral-50 transition-colors">
+                        <div class="px-4 lg:px-6 py-4 flex items-center gap-3 overflow-hidden">
+                            <x-avatar :model="$contact" size="lg" class="shrink-0 grayscale opacity-80" />
+                            <div class="overflow-hidden">
+                                <div class="font-medium text-neutral-900 truncate">{{ $contact->name }}</div>
+                                @if($contact->relationship_category)
+                                    <div class="mt-1">
+                                        <x-badge color="accent" size="sm">{{ $contact->relationship_category }}</x-badge>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="px-4 lg:px-6 py-4">
+                            <span class="text-sm text-neutral-500">
+                                {{ $contact->deleted_at->format('d/m/Y \à\s H:i') }}
+                            </span>
+                        </div>
+                        <div class="px-4 lg:px-6 py-4 flex justify-end gap-2">
+                            <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
+                                <x-icons.outline.arrow-uturn-left class="size-4" />
+                                Restaurar
+                            </x-button>
+
+                            <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
+                                <x-icons.outline.trash class="size-4" />
+                                Excluir
+                            </x-button>
+                        </div>
+                    </div>
+
+                    {{-- Versão Mobile --}}
+                    <div class="sm:hidden p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1 min-w-0 flex items-center gap-3">
+                                <x-avatar :model="$contact" size="lg" class="shrink-0 grayscale opacity-80" />
+                                <div class="overflow-hidden">
+                                    <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 truncate">
+                                        {{ $contact->name }}
+                                    </h3>
+                                    <div class="flex flex-col gap-1 text-sm text-neutral-500 mt-1">
+                                        @if($contact->relationship_category)
+                                            <div class="truncate">
+                                                <x-badge color="accent" size="sm">{{ $contact->relationship_category }}</x-badge>
+                                            </div>
+                                        @endif
+                                        <span class="text-xs">Excluído em {{ $contact->deleted_at->format('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <x-dropdown position="bottom-end" accent>
+                                    <x-slot name="trigger">
+                                        <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
+                                            <x-icons.outline.ellipsis-horizontal class="size-5" />
+                                        </button>
+                                    </x-slot>
+
+                                    <x-slot name="content">
+                                        <button type="button" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                            <x-icons.outline.arrow-uturn-left class="size-5" />
+                                            Restaurar
+                                        </button>
+
+                                        <button type="button" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
+                                            <x-icons.outline.trash class="size-5" />
+                                            Excluir Permanentemente
+                                        </button>
+                                    </x-slot>
+                                </x-dropdown>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <x-empty-state 
+                    icon="trash" 
+                    title="Nenhum contato excluído" 
+                    description="Não há contatos excluídos recentemente." 
+                />
+            @endforelse
+        </div>
+
+        <x-modal 
+            name="restore-contact"
+            title="Restaurar Contato" 
+            confirmVariant="success">
+            <x-slot name="content">
+                Tem certeza que deseja restaurar o contato de <span class="font-medium text-neutral-900" x-text="selectedContactName"></span>? Ele voltará para a sua lista de contatos ativos.
+            </x-slot>
+            <form :action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)" method="POST" class="m-0">
+                @csrf
+                @method('PATCH')
+                <x-button type="submit" class="w-full sm:w-auto">
+                    Confirmar Restauração
+                </x-button>
+            </form>
+        </x-modal>
+
+        <x-modal 
+            name="force-delete-contact"
+            title="Exclusão Permanente" 
+            confirmVariant="danger">
+            <x-slot name="content">
+                Tem certeza que deseja excluir o contato de <span class="font-medium text-neutral-900" x-text="selectedContactName"></span> permanentemente? Esta ação é irreversível e todos os dados serão perdidos.
+            </x-slot>
+            <form :action="'{{ route('contacts.force', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)" method="POST" class="m-0">
+                @csrf
+                @method('DELETE')
+                <x-button type="submit" color="red" class="w-full sm:w-auto">
+                    Excluir Permanentemente
+                </x-button>
+            </form>
+        </x-modal>
+    </div>
+
+    @if($contacts->hasPages())
+        <div class="mt-6">
+            {{ $contacts->links() }}
+        </div>
+    @endif
+</x-layouts.app>
