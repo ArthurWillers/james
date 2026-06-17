@@ -8,5 +8,5 @@ Route::middleware('auth')->group(function () {
     Route::view('/dashboard', 'dashboard')->name('dashboard');
     Route::view('/settings', 'settings')->name('settings');
 
-    require_once __DIR__.'/contacts.php';
+    require __DIR__.'/contacts.php';
 });
