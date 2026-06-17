@@ -9,22 +9,20 @@ Os ícones do projeto são provenientes do [Heroicons](https://heroicons.com/).
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 
-## Módulos Planejados
+## Módulos do Sistema
 
-- Finanças (inspirado no [Aurum2.0](https://github.com/ArthurWillers/Aurum2.0))
-- Imposto de Renda
-- Patrimônio
-- Documentos
-- CRM Pessoal
-- Tarefas/Projetos
-- Hábitos
-- Saúde
-- Despensa
-- Receitas Culinárias
-- Manutenção
-- Viagens
-- Conhecimento
-- Dashboard
+- [x] **Fundação & Autenticação** (Setup inicial, segurança e layout base)
+- [x] **Contatos (CRM Pessoal)** (Gerenciamento de rede, soft deletes, avatares dinâmicos)
+- [ ] **Finanças** (inspirado no [Aurum2.0](https://github.com/ArthurWillers/Aurum2.0))
+- [ ] **Acertos** (Gestão de "Eu Devo" e "Me Devem")
+- [ ] **Imposto de Renda & Patrimônio**
+- [ ] **Documentos**
+- [ ] **Tarefas / Projetos**
+- [ ] **Hábitos & Saúde**
+- [ ] **Despensa & Receitas Culinárias**
+- [ ] **Manutenção & Viagens**
+- [ ] **Conhecimento**
+- [ ] **Dashboard Unificado**
 
 ## Documentação
 
