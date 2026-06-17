@@ -20,4 +20,37 @@ class DateHelper
     {
         return Carbon::parse($date)->diffForHumans();
     }
+
+    public static function formatDateTime(string|Carbon $date): string
+    {
+        return Carbon::parse($date)->format('d/m/Y \à\s H:i');
+    }
+}
+
+if (! function_exists('formatDate')) {
+    function formatDate($date)
+    {
+        return DateHelper::format($date);
+    }
+}
+
+if (! function_exists('formatShort')) {
+    function formatShort($date)
+    {
+        return DateHelper::formatShort($date);
+    }
+}
+
+if (! function_exists('formatDateTime')) {
+    function formatDateTime($date)
+    {
+        return DateHelper::formatDateTime($date);
+    }
+}
+
+if (! function_exists('formatRelative')) {
+    function formatRelative($date)
+    {
+        return DateHelper::formatRelative($date);
+    }
 }
