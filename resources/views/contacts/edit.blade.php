@@ -100,9 +100,7 @@
                         <img :src="previewUrl" alt="{{ $contact->name }}" class="shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] w-24 h-24 text-4xl">
                     </template>
                     <template x-if="!previewUrl">
-                        <div class="shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 w-24 h-24 text-4xl">
-                            {{ method_exists($contact, 'initials') ? $contact->initials() : '?' }}
-                        </div>
+                        <x-avatar :model="$contact" size="2xl" />
                     </template>
 
                     <div class="flex flex-col items-center gap-2">
