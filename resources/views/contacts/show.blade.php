@@ -39,7 +39,6 @@
         </x-modal>
     </x-page-header>
 
-    <!-- Main Card -->
     <x-card class="mb-4 p-6">
         <div class="flex items-center gap-6">
             <x-avatar :model="$contact" size="2xl"/>
@@ -63,9 +62,7 @@
         @endif
     </x-card>
 
-    <!-- Phones and Emails Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <!-- Phones -->
         <x-card class="h-full p-6 flex flex-col">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">Telefones</h3>
             @if(!empty($contact->phones))
@@ -73,13 +70,11 @@
                     <div class="divide-y divide-neutral-100">
                         @foreach($contact->phones as $phone)
                             @php
-                                $label = is_array($phone) ? ($phone['label'] ?? '') : '';
+                                $label = is_array($phone) && !empty($phone['label']) ? $phone['label'] : 'Principal';
                                 $value = is_array($phone) ? ($phone['value'] ?? '') : $phone;
                             @endphp
                             <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
-                                @if($label) 
-                                    <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span> 
-                                @endif
+                                <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span>
                                 <span class="text-[15px] text-neutral-800 break-all">{{ $value }}</span>
                             </div>
                         @endforeach
@@ -90,7 +85,6 @@
             @endif
         </x-card>
 
-        <!-- Emails -->
         <x-card class="h-full p-6 flex flex-col">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">E-mails</h3>
             @if(!empty($contact->emails))
@@ -98,13 +92,11 @@
                     <div class="divide-y divide-neutral-100">
                         @foreach($contact->emails as $email)
                             @php
-                                $label = is_array($email) ? ($email['label'] ?? '') : '';
+                                $label = is_array($email) && !empty($email['label']) ? $email['label'] : 'Principal';
                                 $value = is_array($email) ? ($email['value'] ?? '') : $email;
                             @endphp
                             <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
-                                @if($label) 
-                                    <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span> 
-                                @endif
+                                <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span>
                                 <span class="text-[15px] text-neutral-800 break-all">{{ $value }}</span>
                             </div>
                         @endforeach
@@ -117,7 +109,6 @@
     </div>
 
 
-    <!-- Notes -->
     <x-card class="mb-4 p-6">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Notas</h3>
         @if($contact->notes)
