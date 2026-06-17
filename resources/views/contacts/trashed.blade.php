@@ -80,7 +80,7 @@
                         </div>
                         <div class="px-4 lg:px-6 py-4">
                             <span class="text-sm text-neutral-500">
-                                {{ $contact->deleted_at->format('d/m/Y \à\s H:i') }}
+                                {{ $contact->deleted_at->formatDateTime() }}
                             </span>
                         </div>
                         <div class="px-4 lg:px-6 py-4 flex justify-end gap-2">
@@ -111,7 +111,7 @@
                                                 <x-badge color="accent" size="sm">{{ $contact->relationship_category }}</x-badge>
                                             </div>
                                         @endif
-                                        <span class="text-xs">Excluído em {{ $contact->deleted_at->format('d/m/Y') }}</span>
+                                        <span class="text-xs">Excluído em {{ $contact->deleted_at->formatShort() }}</span>
                                     </div>
                                 </div>
                             </div>
