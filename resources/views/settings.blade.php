@@ -22,11 +22,9 @@
                 @method('put')
 
                 <div class="space-y-3">
-                    <x-form-input name="name" type="text" label="Nome" class="w-full" :value="old('name', auth()->user()->name)"
-                        required />
+                    <x-form-input name="name" type="text" label="Nome" class="w-full" :value="old('name', auth()->user()->name)" bag="updateProfileInformation" />
 
-                    <x-form-input name="email" type="email" label="Email" class="w-full" :value="old('email', auth()->user()->email)"
-                        required />
+                    <x-form-input name="email" type="email" label="Email" class="w-full" :value="old('email', auth()->user()->email)" bag="updateProfileInformation" />
                 </div>
 
                 <div class="flex items-center gap-4">
@@ -55,13 +53,13 @@
                     <x-password-rules />
 
                     <x-form-input name="current_password" type="password" label="Senha Atual" class="w-full" bag="updatePassword"
-                        viewable required />
+                        viewable />
 
                     <x-form-input name="password" type="password" label="Nova Senha" class="w-full" bag="updatePassword"
-                        viewable required />
+                        viewable />
 
                     <x-form-input name="password_confirmation" type="password" label="Confirmar Nova Senha" class="w-full" bag="updatePassword"
-                        viewable required />
+                        viewable />
                 </div>
 
                 <div class="flex items-center gap-4">
