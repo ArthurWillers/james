@@ -7,12 +7,13 @@
     'viewable' => false,
     'labelClass' => '',
     'numeric' => false,
+    'bag' => 'default',
 ])
 
 @php
     $baseClasses =
         'w-full border appearance-none text-sm rounded-xl block py-2.5 px-4 bg-white disabled:shadow-none shadow-xs focus:shadow-lg text-neutral-700 disabled:text-neutral-400 placeholder-neutral-400 disabled:placeholder-neutral-400/70 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors duration-300';
-    $errorClasses = $errors->has($name)
+    $errorClasses = $errors->getBag($bag)->has($name)
         ? 'border-red-500 focus:border-red-500 focus:ring-red-400/30'
         : 'border-neutral-200';
     $classes = $baseClasses . ' ' . $errorClasses;
@@ -64,5 +65,5 @@
         @endif
     </div>
 
-    <x-form-error name="{{ $name }}" />
+    <x-form-error name="{{ $name }}" bag="{{ $bag }}" />
 </div>

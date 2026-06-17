@@ -1,6 +1,6 @@
-@props(['name'])
+@props(['name', 'bag' => 'default'])
 
-@error($name)
+@error($name, $bag)
     <div {{ $attributes->merge(['class' => 'flex items-center gap-x-2 text-sm text-red-500 mt-1.5 animate-shake']) }}>
         {{-- Ícone de Erro --}}
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 shrink-0">

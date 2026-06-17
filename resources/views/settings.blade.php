@@ -51,15 +51,17 @@
                 @csrf
                 @method('put')
 
-                <div class="space-y-3">
-                    <x-form-input name="current_password" type="password" label="Senha Atual" class="w-full"
-                        required />
+                <div class="space-y-3" x-data="{ showRules: false }">
+                    <x-password-rules />
 
-                    <x-form-input name="password" type="password" label="Nova Senha" class="w-full"
-                        required />
+                    <x-form-input name="current_password" type="password" label="Senha Atual" class="w-full" bag="updatePassword"
+                        viewable required />
 
-                    <x-form-input name="password_confirmation" type="password" label="Confirmar Nova Senha" class="w-full"
-                        required />
+                    <x-form-input name="password" type="password" label="Nova Senha" class="w-full" bag="updatePassword"
+                        viewable required />
+
+                    <x-form-input name="password_confirmation" type="password" label="Confirmar Nova Senha" class="w-full" bag="updatePassword"
+                        viewable required />
                 </div>
 
                 <div class="flex items-center gap-4">
