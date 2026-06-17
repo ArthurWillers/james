@@ -36,6 +36,7 @@ class ContactController extends Controller
     public function create(): View
     {
         $categories = Contact::relationshipCategories();
+
         return view('contacts.create', compact('categories'));
     }
 
@@ -69,6 +70,7 @@ class ContactController extends Controller
     public function edit(Contact $contact): View
     {
         $categories = Contact::relationshipCategories();
+
         return view('contacts.edit', compact('contact', 'categories'));
     }
 

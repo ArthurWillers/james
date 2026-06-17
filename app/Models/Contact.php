@@ -6,6 +6,7 @@ use App\Traits\HasInitials;
 use App\Traits\Searchable;
 use Database\Factories\ContactFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,7 +54,8 @@ class Contact extends Model implements HasMedia
     {
         return Attribute::get(function (): ?string {
             $media = $this->getFirstMedia('avatar');
-            return $media ? route('contacts.avatar', $this) . '?v=' . $media->updated_at->timestamp : null;
+
+            return $media ? route('contacts.avatar', $this).'?v='.$media->updated_at->timestamp : null;
         });
     }
 
@@ -86,7 +88,7 @@ class Contact extends Model implements HasMedia
     /**
      * Get the distinct relationship categories in use.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  Builder  $query
      * @return Collection<int, string>
      */
     public function scopeRelationshipCategories($query): Collection
