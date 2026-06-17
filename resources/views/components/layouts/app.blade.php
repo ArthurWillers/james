@@ -27,6 +27,11 @@
                     <x-icons.outline.home class="w-4 h-4" />
                     Dashboard
                 </x-nav-link>
+
+                <x-nav-link :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
+                    <x-icons.outline.users class="w-4 h-4" />
+                    Contatos
+                </x-nav-link>
             </nav>
 
             <x-dropdown position="top" class="mt-auto hidden lg:block" accent contentClass="w-full">

@@ -19,5 +19,9 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@james.test',
         ]);
+
+        if (app()->environment('local', 'testing')) {
+            $this->call(ContactSeeder::class);
+        }
     }
 }

@@ -1,11 +1,27 @@
-@props(['tag' => 'div', 'href' => null])
+@props([
+    'tag' => 'div',
+    'href' => null,
+    'size' => null,
+])
 
 @php
     $tag = $href ? 'a' : $tag;
-    $classes = $attributes->get('class', '');
+    $isInteractive = (bool) $href;
+
+    $baseClasses = 'bg-white dark:bg-white/10 border border-accent/30 dark:border-accent/20 shadow-sm transition-all duration-200';
+    
+    $sizeClasses = match ($size) {
+        'sm' => 'p-4 rounded-lg',
+        default => 'p-6 rounded-xl',
+    };
+
+    $interactiveClasses = $isInteractive 
+        ? 'hover:border-accent hover:shadow-md hover:-translate-y-1' 
+        : '';
+
+    $classes = trim("$baseClasses $sizeClasses $interactiveClasses");
 @endphp
 
-<{{ $tag }} @if ($href) href="{{ $href }}" @endif
-    {{ $attributes->merge(['class' => 'bg-white rounded-lg shadow-lg p-6 border border-neutral-200 ' . $classes]) }}>
+<{{ $tag }} @if($href) href="{{ $href }}" @endif {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
-    </{{ $tag }}>
+</{{ $tag }}>
