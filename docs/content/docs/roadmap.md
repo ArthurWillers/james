@@ -15,10 +15,10 @@ Funcionalidades planejadas por projeto. Atualizado conforme o desenvolvimento av
 - [x] Documentação Hugo (Hextra)
 
 ### Fase 2: Módulo Contatos
-- [ ] Cadastro minimalista de contatos (Nome, Telefone, PIX, Grau de Relacionamento e Foto)
-- [ ] Entidades puramente passivas sem acesso ao sistema
-- [ ] Servirá de Single Source of Truth (SSOT) para o restante do sistema
-- [ ] Extensibilidade estruturada para uso de `contact_id` como chave estrangeira por outros módulos
+- [x] Cadastro dinâmico de contatos (Nome, Múltiplos Telefones e E-mails em JSON, Categoria, Foto)
+- [x] Gestão e edição ricas (Soft Deletes, lixeira de contatos, anotações em Markdown com EasyMDE)
+- [x] Gerenciamento automático de Avatar com conversão para WebP usando Spatie MediaLibrary
+- [x] Entidades puramente passivas sem acesso ao sistema
 
 ### Fase 3: Módulo Financeiro
 - [ ] Múltiplas contas (dinheiro físico, conta corrente, investimentos)
