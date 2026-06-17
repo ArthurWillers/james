@@ -11,7 +11,7 @@
      @keydown.escape.window="open = false"
      class="contents"
 >
-    <!-- Modal -->
+
     <template x-teleport="body">
         <div x-show="open" 
              style="display: none;" 
@@ -20,7 +20,7 @@
              role="dialog" 
              aria-modal="true">
             
-            <!-- Backdrop -->
+
             <div x-show="open" 
                  x-transition:enter="ease-out duration-300"
                  x-transition:enter-start="opacity-0"
@@ -32,7 +32,7 @@
                  @click="open = false"
                  aria-hidden="true"></div>
 
-            <!-- Modal Panel -->
+
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                 <div x-show="open" 
                      x-transition:enter="ease-out duration-300"

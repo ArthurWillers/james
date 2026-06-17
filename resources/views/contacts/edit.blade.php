@@ -41,7 +41,7 @@
 
         <x-card class="mb-4 p-6">
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                <!-- Avatar -->
+
                 <div class="flex flex-col items-center gap-4 shrink-0" x-data="{
                     previewUrl: '{{ $contact->avatar }}',
                     isModalOpen: false,
@@ -95,7 +95,7 @@
                         }, 'image/webp', 0.9);
                     }
                 }">
-                    <!-- Custom Avatar Preview -->
+
                     <template x-if="previewUrl">
                         <img :src="previewUrl" alt="{{ $contact->name }}" class="shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] w-24 h-24 text-4xl">
                     </template>
@@ -117,7 +117,7 @@
                     </div>
                     <x-form-error name="avatar" />
 
-                    <!-- Modal Cropper -->
+
                     <div x-show="isModalOpen" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @keydown.escape.window="closeModal">
                         <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden flex flex-col" @click.away="closeModal">
                             <div class="p-4 border-b flex justify-between items-center">
@@ -161,7 +161,7 @@
         </x-card>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <!-- Phones -->
+
             <x-card class="h-full p-6 flex flex-col" x-data="{
                 phones: {{ Js::from($phones) }},
                 serverErrors: {{ Js::from($errors->messages()) }},
@@ -205,7 +205,7 @@
                 </div>
             </x-card>
 
-            <!-- Emails -->
+
             <x-card class="h-full p-6 flex flex-col" x-data="{
                 emails: {{ Js::from($emails) }},
                 serverErrors: {{ Js::from($errors->messages()) }},
