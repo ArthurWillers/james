@@ -2,7 +2,7 @@
     <div class="flex justify-between items-center mb-6">
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('contacts.index') }}">Contatos</x-breadcrumbs.item>
-            <x-breadcrumbs.item>Detalhes</x-breadcrumbs.item>
+            <x-breadcrumbs.item>{{ $contact->name }}</x-breadcrumbs.item>
         </x-breadcrumbs>
     </div>
 
