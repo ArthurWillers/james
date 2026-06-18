@@ -1,0 +1,50 @@
+@props([
+    'name',
+    'title',
+    'items' => [],
+    'valuePlaceholder' => 'Valor',
+    'emptyMessage' => 'Nenhum item cadastrado.',
+])
+
+<x-card {{ $attributes->merge(['class' => 'h-full p-6 flex flex-col']) }} x-data="{
+    items: {{ Js::from($items) }},
+    serverErrors: {{ Js::from($errors->messages()) }},
+    addItem() {
+        this.items.push({ label: 'Principal', value: '' });
+    },
+    removeItem(index) {
+        this.items.splice(index, 1);
+    }
+}">
+    <div class="flex justify-between items-center mb-6 shrink-0">
+        <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">{{ $title }}</h3>
+        <x-button type="button" @click="addItem" color="accent-ghost" class="text-xs! py-1! px-2!">
+            <x-icons.outline.plus class="size-3" /> Adicionar
+        </x-button>
+    </div>
+    
+    <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
+        <div class="flex flex-col gap-4">
+            <template x-for="(item, index) in items" :key="index">
+                <div class="flex gap-2 items-start">
+                    <div class="w-1/3">
+                        <x-form-input x-model="item.label" x-bind:name="`{{ $name }}[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`{{ $name }}.${index}.label`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
+                        <template x-if="serverErrors[`{{ $name }}.${index}.label`]">
+                            <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`{{ $name }}.${index}.label`][0]"></p>
+                        </template>
+                    </div>
+                    <div class="flex-1">
+                        <x-form-input x-model="item.value" x-bind:name="`{{ $name }}[${index}][value]`" placeholder="{{ $valuePlaceholder }}" x-bind:class="serverErrors[`{{ $name }}.${index}.value`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
+                        <template x-if="serverErrors[`{{ $name }}.${index}.value`]">
+                            <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`{{ $name }}.${index}.value`][0]"></p>
+                        </template>
+                    </div>
+                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
+                        <x-icons.outline.trash class="size-4" />
+                    </x-button>
+                </div>
+            </template>
+            <p x-show="items.length === 0" class="text-sm text-neutral-400 italic">{{ $emptyMessage }}</p>
+        </div>
+    </div>
+</x-card>

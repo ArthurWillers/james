@@ -137,93 +137,21 @@
         </x-card>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <x-form-key-value-repeater 
+                name="phones" 
+                title="Telefones" 
+                :items="$phones" 
+                value-placeholder="Número" 
+                empty-message="Nenhum telefone cadastrado." 
+            />
 
-            <x-card class="h-full p-6 flex flex-col" x-data="{
-                phones: {{ Js::from($phones) }},
-                serverErrors: {{ Js::from($errors->messages()) }},
-                addPhone() {
-                    this.phones.push({ label: 'Principal', value: '' });
-                },
-                removePhone(index) {
-                    this.phones.splice(index, 1);
-                }
-            }">
-                <div class="flex justify-between items-center mb-6 shrink-0">
-                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Telefones</h3>
-                    <x-button type="button" @click="addPhone" color="accent-ghost" class="text-xs! py-1! px-2!">
-                        <x-icons.outline.plus class="size-3" /> Adicionar
-                    </x-button>
-                </div>
-                
-                <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
-                    <div class="flex flex-col gap-4">
-                        <template x-for="(phone, index) in phones" :key="index">
-                            <div class="flex gap-2 items-start">
-                                <div class="w-1/3">
-                                    <x-form-input x-model="phone.label" x-bind:name="`phones[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`phones.${index}.label`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
-                                    <template x-if="serverErrors[`phones.${index}.label`]">
-                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`phones.${index}.label`][0]"></p>
-                                    </template>
-                                </div>
-                                <div class="flex-1">
-                                    <x-form-input x-model="phone.value" x-bind:name="`phones[${index}][value]`" placeholder="Número" x-bind:class="serverErrors[`phones.${index}.value`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
-                                    <template x-if="serverErrors[`phones.${index}.value`]">
-                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`phones.${index}.value`][0]"></p>
-                                    </template>
-                                </div>
-                                <x-button type="button" @click="removePhone(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
-                                    <x-icons.outline.trash class="size-4" />
-                                </x-button>
-                            </div>
-                        </template>
-                        <p x-show="phones.length === 0" class="text-sm text-neutral-400 italic">Nenhum telefone cadastrado.</p>
-                    </div>
-                </div>
-            </x-card>
-
-
-            <x-card class="h-full p-6 flex flex-col" x-data="{
-                emails: {{ Js::from($emails) }},
-                serverErrors: {{ Js::from($errors->messages()) }},
-                addEmail() {
-                    this.emails.push({ label: 'Principal', value: '' });
-                },
-                removeEmail(index) {
-                    this.emails.splice(index, 1);
-                }
-            }">
-                <div class="flex justify-between items-center mb-6 shrink-0">
-                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">E-mails</h3>
-                    <x-button type="button" @click="addEmail" color="accent-ghost" class="text-xs! py-1! px-2!">
-                        <x-icons.outline.plus class="size-3" /> Adicionar
-                    </x-button>
-                </div>
-                
-                <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
-                    <div class="flex flex-col gap-4">
-                        <template x-for="(email, index) in emails" :key="index">
-                            <div class="flex gap-2 items-start">
-                                <div class="w-1/3">
-                                    <x-form-input x-model="email.label" x-bind:name="`emails[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`emails.${index}.label`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
-                                    <template x-if="serverErrors[`emails.${index}.label`]">
-                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`emails.${index}.label`][0]"></p>
-                                    </template>
-                                </div>
-                                <div class="flex-1">
-                                    <x-form-input x-model="email.value" x-bind:name="`emails[${index}][value]`" placeholder="Endereço de e-mail" x-bind:class="serverErrors[`emails.${index}.value`] ? '!border-red-500 focus:!border-red-500 focus:!ring-red-400/30' : ''" />
-                                    <template x-if="serverErrors[`emails.${index}.value`]">
-                                        <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`emails.${index}.value`][0]"></p>
-                                    </template>
-                                </div>
-                                <x-button type="button" @click="removeEmail(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
-                                    <x-icons.outline.trash class="size-4" />
-                                </x-button>
-                            </div>
-                        </template>
-                        <p x-show="emails.length === 0" class="text-sm text-neutral-400 italic">Nenhum e-mail cadastrado.</p>
-                    </div>
-                </div>
-            </x-card>
+            <x-form-key-value-repeater 
+                name="emails" 
+                title="E-mails" 
+                :items="$emails" 
+                value-placeholder="Endereço de e-mail" 
+                empty-message="Nenhum e-mail cadastrado." 
+            />
         </div>
 
         <x-card class="mb-4 p-6">
