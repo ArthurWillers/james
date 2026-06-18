@@ -37,7 +37,12 @@ class ContactController extends Controller
     {
         $categories = Contact::relationshipCategories();
 
-        return view('contacts.create', compact('categories'));
+        [$phones, $emails] = $this->formatPhonesAndEmails(
+            old('phones', []),
+            old('emails', [])
+        );
+
+        return view('contacts.create', compact('categories', 'phones', 'emails'));
     }
 
     /**
@@ -71,7 +76,12 @@ class ContactController extends Controller
     {
         $categories = Contact::relationshipCategories();
 
-        return view('contacts.edit', compact('contact', 'categories'));
+        [$phones, $emails] = $this->formatPhonesAndEmails(
+            old('phones', $contact->phones ?? []),
+            old('emails', $contact->emails ?? [])
+        );
+
+        return view('contacts.edit', compact('contact', 'categories', 'phones', 'emails'));
     }
 
     /**
@@ -170,5 +180,27 @@ class ContactController extends Controller
         }
 
         return response()->file($media->getPath());
+    }
+
+    /**
+     * Format phones and emails array for the view.
+     */
+    private function formatPhonesAndEmails(mixed $oldPhones, mixed $oldEmails): array
+    {
+        $phones = collect($oldPhones ?? [])->map(function ($phone) {
+            return [
+                'label' => is_array($phone) && ! empty($phone['label']) ? $phone['label'] : 'Principal',
+                'value' => is_array($phone) ? ($phone['value'] ?? '') : $phone,
+            ];
+        })->values()->all();
+
+        $emails = collect($oldEmails ?? [])->map(function ($email) {
+            return [
+                'label' => is_array($email) && ! empty($email['label']) ? $email['label'] : 'Principal',
+                'value' => is_array($email) ? ($email['value'] ?? '') : $email,
+            ];
+        })->values()->all();
+
+        return [$phones, $emails];
     }
 }

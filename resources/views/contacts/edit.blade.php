@@ -1,19 +1,3 @@
-@php
-    $phones = collect(old('phones', $contact->phones ?? []))->map(function($phone) {
-        return [
-            'label' => is_array($phone) && !empty($phone['label']) ? $phone['label'] : 'Principal',
-            'value' => is_array($phone) ? ($phone['value'] ?? '') : $phone,
-        ];
-    })->values()->all();
-
-    $emails = collect(old('emails', $contact->emails ?? []))->map(function($email) {
-        return [
-            'label' => is_array($email) && !empty($email['label']) ? $email['label'] : 'Principal',
-            'value' => is_array($email) ? ($email['value'] ?? '') : $email,
-        ];
-    })->values()->all();
-@endphp
-
 <x-layouts.app>
     <div class="flex justify-between items-center mb-6">
         <x-breadcrumbs>
