@@ -15,7 +15,7 @@
     
     <div class="relative w-full sm:w-80 flex items-center">
         <div class="absolute left-3 flex items-center pointer-events-none">
-            <x-icons.mini.magnifying-glass class="h-4 w-4 text-neutral-400" />
+            <x-icons.heroicons.mini.magnifying-glass class="h-4 w-4 text-neutral-400" />
         </div>
         <input type="text" name="{{ $searchName }}" value="{{ $searchValue }}" placeholder="{{ $searchPlaceholder }}" 
                class="w-full pl-9 pr-3 py-1.5 bg-transparent border-0 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-0">
@@ -35,7 +35,7 @@
 
     <div class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-1">
         <button type="submit" aria-label="Buscar" class="flex items-center justify-center w-full sm:w-8 h-8 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-500 hover:text-neutral-900 shadow-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-1">
-            <x-icons.mini.magnifying-glass class="w-4 h-4" />
+            <x-icons.heroicons.mini.magnifying-glass class="w-4 h-4" />
         </button>
     </div>
 </form>

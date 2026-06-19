@@ -9,7 +9,7 @@
 
             <button @click="open = !open"
                 class="ms-auto lg:hidden cursor-pointer p-1 rounded-md hover:bg-neutral-200">
-                <x-icons.outline.x-mark class="w-6 h-6" />
+                <x-icons.heroicons.outline.x-mark class="w-6 h-6" />
             </button>
         </div>
 
@@ -24,7 +24,7 @@
                     <span
                         class="mx-2 text-sm font-medium truncate text-neutral-800/80 group-hover:text-neutral-800">{{ auth()->user()->name }}</span>
                     <div class="ms-auto text-neutral-800/80 group-hover:text-neutral-800">
-                        <x-icons.outline.chevron-up-down class="w-6 h-6" />
+                        <x-icons.heroicons.outline.chevron-up-down class="w-6 h-6" />
                     </div>
                 </button>
             </x-slot>
@@ -44,14 +44,14 @@
 
                 <a href="{{ route('settings') }}" @click="open = !open"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-200">
-                    <x-icons.outline.cog-6-tooth class="w-5 h-5" />
+                    <x-icons.heroicons.outline.cog-6-tooth class="w-5 h-5" />
                     Configurações
                 </a>
                 <form method="POST" id="logout" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" @click="open = !open"
                         class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-red-500 hover:bg-neutral-200 cursor-pointer">
-                        <x-icons.mini.arrow-right-start-on-rectangle class="w-5 h-5" />
+                        <x-icons.heroicons.mini.arrow-right-start-on-rectangle class="w-5 h-5" />
                         Sair
                     </button>
                 </form>
@@ -65,7 +65,7 @@
 
     <header class="flex items-center px-6 w-full min-h-14 lg:hidden">
         <button @click="open = !open" class="cursor-pointer rounded-lg p-1 hover:bg-neutral-200">
-            <x-icons.outline.bars-3 class="w-6 h-6" />
+            <x-icons.heroicons.outline.bars-3 class="w-6 h-6" />
         </button>
 
         <x-ui.dropdown position="bottom-end" class="ms-auto" accent contentClass="w-60">
@@ -75,7 +75,7 @@
                     <x-ui.avatar :model="auth()->user()" />
 
                     <div class="ms-auto text-neutral-800/80 group-hover:text-neutral-800">
-                        <x-icons.mini.chevron-down class="w-4 h-4" />
+                        <x-icons.heroicons.mini.chevron-down class="w-4 h-4" />
                     </div>
                 </button>
             </x-slot>
@@ -95,13 +95,13 @@
 
                 <a href="{{ route('settings') }}" @click="open = !open"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-200">
-                    <x-icons.outline.cog-6-tooth class="w-5 h-5" />
+                    <x-icons.heroicons.outline.cog-6-tooth class="w-5 h-5" />
                     Configurações
                 </a>
 
                 <button type="submit" form="logout" @click="open = !open"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-red-500 hover:bg-neutral-200 cursor-pointer">
-                    <x-icons.mini.arrow-right-start-on-rectangle class="w-5 h-5" />
+                    <x-icons.heroicons.mini.arrow-right-start-on-rectangle class="w-5 h-5" />
                     Sair
                 </button>
 

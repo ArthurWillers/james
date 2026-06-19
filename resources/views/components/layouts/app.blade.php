@@ -9,12 +9,12 @@
 
     <x-layout.sidebar>
         <x-nav.nav-link :href="route('dashboard')" :current="request()->routeIs('dashboard')">
-            <x-icons.outline.home class="w-4 h-4" />
+            <x-icons.heroicons.outline.home class="w-4 h-4" />
             Dashboard
         </x-nav.nav-link>
 
         <x-nav.nav-link :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
-            <x-icons.outline.users class="w-4 h-4" />
+            <x-icons.heroicons.outline.users class="w-4 h-4" />
             Contatos
         </x-nav.nav-link>
     </x-layout.sidebar>

@@ -47,11 +47,11 @@
                         <div class="sm:flex sm:items-start">
                             @if($confirmVariant === 'danger')
                                 <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                    <x-icons.outline.exclamation-triangle class="h-6 w-6 text-red-600" />
+                                    <x-icons.heroicons.outline.exclamation-triangle class="h-6 w-6 text-red-600" />
                                 </div>
                             @else
                                 <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                                    <x-icons.outline.information-circle class="h-6 w-6 text-blue-600" />
+                                    <x-icons.heroicons.outline.information-circle class="h-6 w-6 text-blue-600" />
                                 </div>
                             @endif
                             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
