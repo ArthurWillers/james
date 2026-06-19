@@ -42,8 +42,9 @@
 }
 
 @layer base {
-    /* Focus global usando o sistema nativo do Tailwind para evitar conflitos com shadows */
-    :where(*:focus-visible) {
+    /* Focus global usando o sistema nativo do Tailwind para evitar conflitos com shadows.
+       Excluímos inputs, selects e textareas para que mantenham seu design suave original. */
+    :where(*:focus-visible):not(input, select, textarea) {
         @apply outline-hidden ring-2 ring-accent ring-offset-2 z-10 relative;
     }
     
