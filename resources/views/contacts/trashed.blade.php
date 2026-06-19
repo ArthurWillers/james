@@ -115,7 +115,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <x-dropdown position="bottom-end" accent>
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
