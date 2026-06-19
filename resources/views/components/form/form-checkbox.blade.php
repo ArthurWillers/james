@@ -33,5 +33,5 @@
     </label>
 
     {{-- Mensagem de Erro --}}
-    <x-form-error :name="$name" class="mt-3!" />
+    <x-form.error :name="$name" class="mt-3!" />
 </div>

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Helpers\DateHelper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Garante que componentes nas subpastas possam ser chamados sem o prefixo (retrocompatibilidade)
+        Blade::anonymousComponentPath(resource_path('views/components/ui'));
+        Blade::anonymousComponentPath(resource_path('views/components/form'));
+        Blade::anonymousComponentPath(resource_path('views/components/layout'));
+        Blade::anonymousComponentPath(resource_path('views/components/nav'));
+
         Model::preventLazyLoading(! app()->isProduction());
 
         Carbon::setLocale(config('app.locale'));

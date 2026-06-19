@@ -10,6 +10,6 @@
         </svg>
 
         {{-- Mensagem de Erro --}}
-        <span class="font-semibold break-words">{{ $message }}</span>
+        <span class="font-semibold wrap-break-words">{{ $message }}</span>
     </div>
 @enderror

@@ -97,9 +97,9 @@ class="relative"
     
     <ul x-show="open && filteredOptions.length > 0" 
         x-transition
+        x-cloak
         x-ref="listbox"
-        class="absolute z-10 w-full bg-white border border-neutral-200 rounded-xl mt-1 max-h-60 overflow-auto shadow-lg"
-        style="display: none;">
+        class="absolute z-10 w-full bg-white border border-neutral-200 rounded-xl mt-1 max-h-60 overflow-auto shadow-lg">
         <template x-for="(option, index) in filteredOptions" :key="option">
             <li @click="selectOption(option)" 
                 @mouseenter="focusedIndex = index"
