@@ -82,14 +82,14 @@
         @endif
     </div>
 
-    <x-form-error name="{{ $name }}" />
+    <x-form.error name="{{ $name }}" />
 
-    <div x-show="isModalOpen" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @keydown.escape.window="closeModal">
+    <div x-show="isModalOpen" x-transition.opacity x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @keydown.escape.window="closeModal">
         <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden flex flex-col" @click.away="closeModal">
             <div class="p-4 border-b flex justify-between items-center">
                 <h3 class="font-bold text-neutral-800">Recortar Foto</h3>
                 <button type="button" @click="closeModal" class="text-neutral-400 hover:text-neutral-600 cursor-pointer">
-                    <x-icons.outline.x-mark class="size-5" />
+                    <x-icons.heroicons.outline.x-mark class="size-5" />
                 </button>
             </div>
             <div class="bg-neutral-100 flex justify-center items-center overflow-hidden h-[60vh]">
@@ -98,7 +98,7 @@
             <div class="p-4 border-t bg-neutral-50 flex justify-end gap-2">
                 <x-button type="button" color="outline" class="bg-white cursor-pointer" @click="closeModal">Cancelar</x-button>
                 <x-button type="button" class="cursor-pointer" @click="applyCrop">
-                    <x-icons.outline.check class="size-4" /> Cortar e Aplicar
+                    <x-icons.heroicons.outline.check class="size-4" /> Cortar e Aplicar
                 </x-button>
             </div>
         </div>

@@ -24,7 +24,7 @@ import zipfile
 REPO_URL = "https://github.com/tailwindlabs/heroicons/archive/refs/heads/master.zip"
 ZIP_FILENAME = ".heroicons_temp.zip"
 EXTRACT_DIR = ".heroicons_temp_dir"
-OUTPUT_DIR = os.path.join("resources", "views", "components", "icons")
+OUTPUT_DIR = os.path.join("resources", "views", "components", "icons", "heroicons")
 
 # Caminhos relativos dentro do repositório extraído (sem a pasta raiz, que é dinâmica).
 # Formato: variante → (caminho relativo ao root do repo, viewBox, classe padrão, atributos SVG)

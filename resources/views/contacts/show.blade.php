@@ -8,18 +8,18 @@
 
     <x-page-header title="Detalhes do Contato">
         <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-icons.outline.arrow-left class="size-4" />
+            <x-icons.heroicons.outline.arrow-left class="size-4" />
             Voltar
         </x-button>
 
         <x-button color="outline" href="{{ route('contacts.edit', $contact) }}" class="bg-white">
-            <x-icons.outline.pencil-square class="size-4" />
+            <x-icons.heroicons.outline.pencil-square class="size-4" />
             Editar
         </x-button>
 
         <x-modal.trigger name="delete-contact-{{ $contact->id }}">
             <x-button type="button" color="danger-outline">
-                <x-icons.outline.trash class="size-4" />
+                <x-icons.heroicons.outline.trash class="size-4" />
                 Excluir
             </x-button>
         </x-modal.trigger>

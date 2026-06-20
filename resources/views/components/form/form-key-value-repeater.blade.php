@@ -19,7 +19,7 @@
     <div class="flex justify-between items-center mb-6 shrink-0">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">{{ $title }}</h3>
         <x-button type="button" @click="addItem" color="accent-ghost" class="text-xs! py-1! px-2!">
-            <x-icons.outline.plus class="size-3" /> Adicionar
+            <x-icons.heroicons.outline.plus class="size-3" /> Adicionar
         </x-button>
     </div>
     
@@ -40,7 +40,7 @@
                         </template>
                     </div>
                     <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
-                        <x-icons.outline.trash class="size-4" />
+                        <x-icons.heroicons.outline.trash class="size-4" />
                     </x-button>
                 </div>
             </template>

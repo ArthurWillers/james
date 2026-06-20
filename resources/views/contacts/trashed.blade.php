@@ -11,7 +11,7 @@
         description="Contatos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
         <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-icons.outline.arrow-left class="size-4" />
+            <x-icons.heroicons.outline.arrow-left class="size-4" />
             Voltar
         </x-button>
     </x-page-header>
@@ -32,7 +32,7 @@
         </div>
     </x-filter-bar>
 
-    <div class="w-full rounded-lg shadow-sm border border-neutral-200 bg-white lg:mb-8"
+    <x-ui.table class="lg:mb-8"
          x-data="{
              selectedContactId: null,
              selectedContactName: '',
@@ -49,25 +49,18 @@
          }">
         @if($contacts->isNotEmpty())
             {{-- Header - Desktop --}}
-            <div class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr] border-b border-neutral-200 bg-neutral-50 rounded-t-lg">
-                <div class="px-4 lg:px-6 py-4 text-left">
-                    <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Contato</span>
-                </div>
-                <div class="px-4 lg:px-6 py-4 text-left">
-                    <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Data da Exclusão</span>
-                </div>
-                <div class="px-4 lg:px-6 py-4 text-end">
-                    <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Ações</span>
-                </div>
-            </div>
+            <x-ui.table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
+                <x-ui.table.column>Contato</x-ui.table.column>
+                <x-ui.table.column>Data da Exclusão</x-ui.table.column>
+                <x-ui.table.column align="right">Ações</x-ui.table.column>
+            </x-ui.table.header>
         @endif
 
-        <div class="divide-y divide-neutral-200">
+        <x-ui.table.body>
             @forelse($contacts as $contact)
-                <div class="relative">
-                    {{-- Versão Desktop/Tablet --}}
-                    <div class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr] items-center hover:bg-neutral-50 transition-colors">
-                        <div class="px-4 lg:px-6 py-4 flex items-center gap-3 overflow-hidden">
+                <x-ui.table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
+                    <x-ui.table.cell>
+                        <div class="flex items-center gap-3 w-full">
                             <x-avatar :model="$contact" size="lg" class="shrink-0 grayscale opacity-80" />
                             <div class="overflow-hidden">
                                 <div class="font-medium text-neutral-900 truncate">{{ $contact->name }}</div>
@@ -78,26 +71,29 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="px-4 lg:px-6 py-4">
-                            <span class="text-sm text-neutral-500">
-                                {{ $contact->deleted_at->formatDateTime() }}
-                            </span>
-                        </div>
-                        <div class="px-4 lg:px-6 py-4 flex justify-end gap-2">
+                    </x-ui.table.cell>
+
+                    <x-ui.table.cell>
+                        <span class="text-sm text-neutral-500">
+                            {{ $contact->deleted_at->formatDateTime() }}
+                        </span>
+                    </x-ui.table.cell>
+
+                    <x-ui.table.cell align="right">
+                        <div class="flex justify-end gap-2 w-full">
                             <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
-                                <x-icons.outline.arrow-uturn-left class="size-4" />
+                                <x-icons.heroicons.outline.arrow-uturn-left class="size-4" />
                                 Restaurar
                             </x-button>
 
                             <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
-                                <x-icons.outline.trash class="size-4" />
+                                <x-icons.heroicons.outline.trash class="size-4" />
                                 Excluir
                             </x-button>
                         </div>
-                    </div>
+                    </x-ui.table.cell>
 
-                    {{-- Versão Mobile --}}
-                    <div class="sm:hidden p-4 space-y-3">
+                    <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 min-w-0 flex items-center gap-3">
                                 <x-avatar :model="$contact" size="lg" class="shrink-0 grayscale opacity-80" />
@@ -115,30 +111,30 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <x-dropdown position="bottom-end" accent>
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
-                                            <x-icons.outline.ellipsis-horizontal class="size-5" />
+                                            <x-icons.heroicons.outline.ellipsis-horizontal class="size-5" />
                                         </button>
                                     </x-slot>
 
                                     <x-slot name="content">
                                         <button type="button" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-icons.outline.arrow-uturn-left class="size-5" />
+                                            <x-icons.heroicons.outline.arrow-uturn-left class="size-5" />
                                             Restaurar
                                         </button>
 
                                         <button type="button" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-icons.outline.trash class="size-5" />
+                                            <x-icons.heroicons.outline.trash class="size-5" />
                                             Excluir Permanentemente
                                         </button>
                                     </x-slot>
                                 </x-dropdown>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </x-slot>
+                </x-ui.table.row>
             @empty
                 <x-empty-state 
                     icon="trash" 
@@ -146,7 +142,7 @@
                     description="Não há contatos excluídos recentemente." 
                 />
             @endforelse
-        </div>
+        </x-ui.table.body>
 
         <x-modal 
             name="restore-contact"
@@ -179,7 +175,7 @@
                 </x-button>
             </form>
         </x-modal>
-    </div>
+    </x-ui.table>
 
     @if($contacts->hasPages())
         <div class="mt-6">
