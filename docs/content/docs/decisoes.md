@@ -132,8 +132,8 @@ Para garantir 100% de privacidade:
 
 **Decisão:**
 - Locale e moeda configuráveis via `.env` (`APP_LOCALE` e `APP_CURRENCY`)
-- Sem pacote de tradução inicialmente
-- Criação do Helper `DateHelper` para formatação de datas
+- Adição dos arquivos nativos de tradução do Laravel para Inglês (`en`) e Português do Brasil (`pt_BR`) para mensagens do sistema e validação
+- Criação do Helper `DateHelper` e macros do Carbon (ex: `$date->formatDate()`) para formatação global padronizada de datas
 - Uso nativo da classe `Number::currency()` para valores monetários
 
 ## 008 — Nomenclatura Contatos vs CRM
@@ -175,3 +175,45 @@ O James possui múltiplos módulos com campos de texto livre (nome, notas, descr
 - O trait é aplicado individualmente por model, apenas onde há busca textual
 - Colunas numéricas e de relacionamento não usam o trait
 - A busca global do Dashboard agregará resultados de múltiplos models usando o mesmo escopo
+
+## 011 — Prevenção Estrita de Lazy Loading (Spatie Media Library)
+
+**Data:** 20 de Junho de 2026
+
+**Contexto:**
+O Laravel possui a proteção `Model::preventLazyLoading(! app()->isProduction())` ativada por padrão no ambiente local para evitar problemas de N+1 queries. No entanto, a biblioteca `spatie/laravel-medialibrary` possui um comportamento padrão que burla essa verificação utilizando carregamento explícito (via `loadMissing`) caso o relacionamento não esteja carregado. Isso esconde potenciais problemas de performance (N+1) durante o desenvolvimento.
+
+**Decisão:**
+A configuração `FORCE_MEDIA_LIBRARY_LAZY_LOADING` foi definida explicitamente como `false` nos arquivos de ambiente (`.env` e `.env.example`).
+Isso força a biblioteca a usar lazy loading implícito natural, permitindo que o Laravel intercepte e lance a exceção `LazyLoadingViolationException` caso o relacionamento `media` não seja carregado previamente via Eager Loading.
+
+**Observações:**
+- Esta configuração garante que qualquer lista ou loop envolvendo avatares/documentos alerte o desenvolvedor sobre o N+1.
+- Deve-se sempre usar `->with('media')` nas queries do Eloquent quando iterar sobre múltiplos models com arquivos vinculados.
+
+## 012 — Reorganização e Namespaces de Componentes Blade
+
+**Data:** 20 de Junho de 2026
+
+**Contexto:**
+Com o crescimento da aplicação, o diretório `resources/views/components/` começou a ficar poluído. Componentes estruturais (layouts), elementos genéricos de interface (UI), inputs (form) e itens de navegação (nav) estavam todos misturados na raiz, dificultando a manutenção.
+
+**Decisão:**
+Os componentes foram fisicamente separados em subdiretórios lógicos (`ui/`, `form/`, `layout/`, `nav/`). 
+Para evitar verbosidade no uso (ex: ter que digitar `<x-ui.button>`) e para manter retrocompatibilidade com views já escritas, esses diretórios foram registrados diretamente no `boot()` do `AppServiceProvider` usando o `Blade::anonymousComponentPath()`. Assim, continua sendo possível chamar `<x-button>` de forma limpa, mas o projeto fica organizado nos bastidores.
+
+## 013 — Abstração de Componentes Complexos de Formulário
+
+**Data:** 20 de Junho de 2026
+
+**Contexto:**
+As views de criação e edição (ex: de Contatos) estavam se tornando excessivamente grandes e complexas, misturando HTML estrutural com lógicas extensas em Alpine.js para funcionalidades avançadas como crop de avatar, campos dinâmicos e editor Markdown.
+
+**Decisão:**
+Foi decidido extrair essas lógicas para componentes Blade altamente reutilizáveis e isolados:
+- `form-image-cropper`: Encapsula toda a interface e scripts do Alpine para seleção, preview e recorte (crop) de imagens em formulários.
+- `form-markdown-editor`: Isola a integração e inicialização do editor visual (EasyMDE) para campos de texto rico.
+- `form-key-value-repeater`: Componente para gerenciamento dinâmico (adicionar/remover/editar) de pares de chave e valor (ex: múltiplos e-mails e telefones salvos em JSON).
+
+**Observações:**
+Essa abstração limpou massivamente as views (reduzindo centenas de linhas na criação de contatos), melhorou a legibilidade e pavimentou a reutilização imediata para os futuros módulos do sistema.
