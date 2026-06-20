@@ -11,7 +11,7 @@
 @endphp
 
 <form action="{{ $action }}" method="GET" x-data="{ loading: false }" @submit="loading = true"
-    class="flex flex-col sm:flex-row items-center gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full lg:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40">
+    class="flex flex-col sm:flex-row items-center gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40">
     
     <div class="relative w-full sm:w-80 flex items-center">
         <div class="absolute left-3 flex items-center pointer-events-none">
