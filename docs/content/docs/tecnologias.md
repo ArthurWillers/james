@@ -8,9 +8,13 @@ O James é construído sobre uma fundação moderna, robusta e focada em simplic
 
 ### Back-end e Infraestrutura
 - **Linguagem / Framework**: PHP com Laravel.
+- **Autenticação Headless**: [Laravel Fortify](https://laravel.com/docs/fortify) gerencia todo o core de autenticação permitindo focar apenas nas views personalizadas.
 - **Banco de Dados**: PostgreSQL.
 - **Infraestrutura Local**: Docker gerenciado via [Laravel Sail](https://laravel.com/docs/sail).
-- **Testes**: [Pest PHP](https://pestphp.com/) para testes unitários e de feature.
+- **Ferramentas de Desenvolvimento**: 
+  - [Pest PHP](https://pestphp.com/) (Testes Unitários e de Feature)
+  - [Laravel Pint](https://laravel.com/docs/pint) (Padronização e formatação de código)
+  - [Laravel Pail](https://laravel.com/docs/pail) (Visualização moderna de logs)
 
 ### Front-end e UI
 - **Páginas e Estrutura**: Blade Components altamente modularizados (namespaces lógicos como `ui`, `form`, `layout`).
