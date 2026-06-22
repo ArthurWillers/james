@@ -17,6 +17,11 @@
             <x-icons.heroicons.outline.users class="w-4 h-4" />
             Contatos
         </x-nav.nav-link>
+
+        <x-nav.nav-link :href="route('financial.dashboard')" :current="request()->routeIs('financial.*')">
+            <x-icons.heroicons.outline.banknotes class="w-4 h-4" />
+            Finanças
+        </x-nav.nav-link>
     </x-layout.sidebar>
 
     <main class="lg:ml-64 p-6 lg:pt-8 lg:px-8 lg:pb-0">

@@ -9,4 +9,5 @@ Route::middleware('auth')->group(function () {
     Route::view('/settings', 'settings')->name('settings');
 
     require __DIR__.'/contacts.php';
+    require __DIR__.'/financial.php';
 });
