@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Traits\HasInitials;
 use App\Traits\Searchable;
-use Database\Factories\ContactFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -30,7 +29,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 ])]
 class Contact extends Model implements HasMedia
 {
-    /** @use HasFactory<ContactFactory> */
     use HasFactory, HasInitials, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**

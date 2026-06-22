@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
 
         if (app()->environment('local', 'testing')) {
             $this->call(ContactSeeder::class);
+            $this->call(FinancialAccountSeeder::class);
         }
     }
 }
