@@ -10,5 +10,7 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('/accounts/trashed', [FinancialAccountController::class, 'trashed'])->name('accounts.trashed');
     Route::patch('/accounts/{financialAccount}/restore', [FinancialAccountController::class, 'restore'])->name('accounts.restore')->withTrashed();
     Route::delete('/accounts/{financialAccount}/force', [FinancialAccountController::class, 'forceDestroy'])->name('accounts.forceDestroy')->withTrashed();
-    Route::resource('accounts', FinancialAccountController::class);
+    Route::resource('accounts', FinancialAccountController::class)->parameters([
+        'accounts' => 'financialAccount',
+    ]);
 });

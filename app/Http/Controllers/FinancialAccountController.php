@@ -57,7 +57,37 @@ class FinancialAccountController extends Controller
      */
     public function show(FinancialAccount $financialAccount): View
     {
-        return view('finance.accounts.show', compact('financialAccount'));
+        $account = FinancialAccount::withBalance()->findOrFail($financialAccount->id);
+
+        $globalIncome = $account->transactions()
+            ->where('type', 'income')
+            ->where('is_posted', true)
+            ->sum('amount');
+
+        $globalExpense = $account->transactions()
+            ->where('type', 'expense')
+            ->where('is_posted', true)
+            ->sum('amount');
+
+        $creditCards = $account->creditCards()
+            ->with(['invoices' => function ($query) {
+                $query->whereNull('paid_at')->orderBy('due_date', 'asc');
+            }])
+            ->get();
+
+        $recentTransactions = $account->transactions()
+            ->latest('date')
+            ->latest('id')
+            ->limit(10)
+            ->get();
+
+        return view('finance.accounts.show', compact(
+            'account',
+            'globalIncome',
+            'globalExpense',
+            'creditCards',
+            'recentTransactions'
+        ));
     }
 
     /**
