@@ -11,9 +11,9 @@ enum FinancialAccountType: string
     public function label(): string
     {
         return match ($this) {
-            self::Checking => 'Conta Corrente / Reserva',
+            self::Checking => 'Conta Corrente',
             self::Investment => 'Investimentos',
-            self::Wallet => 'Carteira / Dinheiro Físico',
+            self::Wallet => 'Carteira',
         };
     }
 }

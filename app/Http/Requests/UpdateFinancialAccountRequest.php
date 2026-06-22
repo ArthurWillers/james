@@ -27,7 +27,22 @@ class UpdateFinancialAccountRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(FinancialAccountType::class)],
-            'pix_keys' => ['nullable', 'array'],
+            'pix_keys' => ['nullable', 'array', 'prohibited_unless:type,checking'],
+            'pix_keys.*.label' => ['required', 'string', 'max:255'],
+            'pix_keys.*.value' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'pix_keys.*.label.required' => 'O rótulo da chave é obrigatório.',
+            'pix_keys.*.value.required' => 'O valor da chave é obrigatório.',
         ];
     }
 }

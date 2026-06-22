@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FinancialAccountType;
 use App\Http\Requests\StoreFinancialAccountRequest;
 use App\Http\Requests\UpdateFinancialAccountRequest;
 use App\Models\FinancialAccount;
@@ -32,7 +33,11 @@ class FinancialAccountController extends Controller
      */
     public function create(): View
     {
-        return view('finance.accounts.create');
+        $types = FinancialAccountType::cases();
+
+        $pixKeys = old('pix_keys', []);
+
+        return view('finance.accounts.create', compact('types', 'pixKeys'));
     }
 
     /**
