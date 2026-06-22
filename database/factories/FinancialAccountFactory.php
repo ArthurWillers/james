@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\FinancialAccountType;
 use App\Models\FinancialAccount;
-use App\Models\FinancialInstitution;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 
