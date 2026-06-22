@@ -123,6 +123,14 @@ class FinancialAccountController extends Controller
      */
     public function forceDestroy(FinancialAccount $financialAccount): RedirectResponse
     {
+        if ($financialAccount->creditCards()->exists() ||
+            $financialAccount->transactions()->exists() ||
+            $financialAccount->recurrences()->exists()) {
+            return redirect()
+                ->route('financial.accounts.trashed')
+                ->with('error', 'Não é possível excluir permanentemente esta conta pois ela possui cartões de crédito, transações ou recorrências vinculadas. Remova os vínculos primeiro.');
+        }
+
         $financialAccount->forceDelete();
 
         return redirect()

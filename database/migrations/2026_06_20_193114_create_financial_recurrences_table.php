@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->string('type');
             $table->string('frequency');
-            $table->foreignIdFor(FinancialAccount::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(FinancialAccount::class)->nullable()->constrained()->restrictOnDelete();
             $table->foreignIdFor(FinancialCreditCard::class)->nullable()->constrained()->nullOnDelete();
             $table->date('start_date');
             $table->date('end_date')->nullable();

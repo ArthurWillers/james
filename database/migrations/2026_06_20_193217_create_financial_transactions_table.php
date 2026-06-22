@@ -17,7 +17,7 @@ return new class extends Migration
     {
         Schema::create('financial_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(FinancialAccount::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(FinancialAccount::class)->nullable()->constrained()->restrictOnDelete();
             $table->foreignIdFor(FinancialCreditCardInvoice::class)->nullable()->constrained()->nullOnDelete();
             $table->string('type');
             $table->decimal('amount', 10, 2);
