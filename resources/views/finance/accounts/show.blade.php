@@ -41,9 +41,7 @@
 
     <x-card class="mb-6 p-6">
         <div class="flex items-center gap-6">
-            <div class="shrink-0 flex items-center justify-center size-16 rounded-full bg-neutral-100 text-neutral-400">
-                <x-icons.heroicons.outline.building-library class="size-8" />
-            </div>
+            <x-ui.avatar :icon="$account->type->icon()" size="xl" />
             
             <div class="flex flex-col gap-2">
                 <h2 class="text-2xl font-bold text-neutral-900">{{ $account->name }}</h2>

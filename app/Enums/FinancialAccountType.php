@@ -16,4 +16,13 @@ enum FinancialAccountType: string
             self::Wallet => 'Carteira',
         };
     }
+
+    public function icon(): string
+    {
+        return match ($this) {
+            self::Checking => 'building-library',
+            self::Investment => 'chart-bar',
+            self::Wallet => 'wallet',
+        };
+    }
 }

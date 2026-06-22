@@ -18,7 +18,10 @@
         @forelse($accounts as $account)
             <x-card href="{{ route('financial.accounts.show', $account) }}" size="sm" class="flex flex-col gap-2 group">
                 <div class="flex justify-between items-center gap-3">
-                    <h3 class="font-semibold text-neutral-900 truncate">{{ $account->name }}</h3>
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <x-ui.avatar :icon="$account->type->icon()" size="md" />
+                        <h3 class="font-semibold text-neutral-900 truncate">{{ $account->name }}</h3>
+                    </div>
                     <div class="shrink-0">
                         <x-badge color="accent" size="sm">
                             {{ $account->type->label() }}
