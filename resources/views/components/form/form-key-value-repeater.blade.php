@@ -10,7 +10,7 @@
     items: {{ Js::from($items) }},
     serverErrors: {{ Js::from($errors->messages()) }},
     addItem() {
-        this.items.push({ label: 'Principal', value: '' });
+        this.items.push({ label: '', value: '' });
     },
     removeItem(index) {
         this.items.splice(index, 1);
@@ -30,13 +30,19 @@
                     <div class="w-1/3">
                         <x-form-input x-model="item.label" x-bind:name="`{{ $name }}[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`{{ $name }}.${index}.label`] ? '!border-red-500 focus:border-red-500! focus:!ring-red-400/30' : ''" />
                         <template x-if="serverErrors[`{{ $name }}.${index}.label`]">
-                            <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`{{ $name }}.${index}.label`][0]"></p>
+                            <div class="flex items-center gap-x-2 text-sm text-red-500 mt-1.5 animate-shake">
+                                <x-icons.heroicons.mini.exclamation-triangle class="size-5 shrink-0" />
+                                <span class="font-semibold wrap-break-words" x-text="serverErrors[`{{ $name }}.${index}.label`][0]"></span>
+                            </div>
                         </template>
                     </div>
                     <div class="flex-1">
                         <x-form-input x-model="item.value" x-bind:name="`{{ $name }}[${index}][value]`" placeholder="{{ $valuePlaceholder }}" x-bind:class="serverErrors[`{{ $name }}.${index}.value`] ? '!border-red-500 focus:border-red-500! focus:!ring-red-400/30' : ''" />
                         <template x-if="serverErrors[`{{ $name }}.${index}.value`]">
-                            <p class="mt-1 text-xs text-red-500" x-text="serverErrors[`{{ $name }}.${index}.value`][0]"></p>
+                            <div class="flex items-center gap-x-2 text-sm text-red-500 mt-1.5 animate-shake">
+                                <x-icons.heroicons.mini.exclamation-triangle class="size-5 shrink-0" />
+                                <span class="font-semibold wrap-break-words" x-text="serverErrors[`{{ $name }}.${index}.value`][0]"></span>
+                            </div>
                         </template>
                     </div>
                     <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
