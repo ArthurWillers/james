@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\Searchable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * Nota de Implementação (Validação):
+ * Em qualquer Form Request que manipule a criação ou edição de uma Recorrência,
+ * deve-se garantir a validação lógica XOR entre `financial_account_id` e `financial_credit_card_id`.
+ * Ou seja, exatamente UM dos dois campos deve estar preenchido (usando `required_without` / `prohibits`).
+ */
+#[Fillable([
+    'title',
+    'amount',
+    'type',
+    'frequency',
+    'financial_account_id',
+    'financial_credit_card_id',
+    'start_date',
+    'end_date',
+    'last_processed_date',
+    'is_active',
+])]
+class FinancialRecurrence extends Model
+{
+    use HasFactory, Searchable, SoftDeletes;
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'last_processed_date' => 'date',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get the financial account associated with the recurrence.
+     *
+     * @return BelongsTo<FinancialAccount, $this>
+     */
+    public function financialAccount(): BelongsTo
+    {
+        return $this->belongsTo(FinancialAccount::class);
+    }
+
+    /**
+     * Get the financial credit card associated with the recurrence.
+     *
+     * @return BelongsTo<FinancialCreditCard, $this>
+     */
+    public function financialCreditCard(): BelongsTo
+    {
+        return $this->belongsTo(FinancialCreditCard::class);
+    }
+
+    /**
+     * Get the transactions materialized from this recurrence.
+     *
+     * @return HasMany<FinancialTransaction, $this>
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(FinancialTransaction::class, 'financial_recurrence_id');
+    }
+
+    /**
+     * Return the day of the month on which the recurrence should be processed.
+     */
+    public function dayOfMonth(): int
+    {
+        return $this->start_date->day;
+    }
+}
