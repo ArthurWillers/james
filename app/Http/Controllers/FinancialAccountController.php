@@ -17,6 +17,7 @@ class FinancialAccountController extends Controller
     {
         $accounts = FinancialAccount::query()
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name']))
+            ->withBalance()
             ->latest()
             ->paginate(18)
             ->withQueryString();

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -63,13 +65,15 @@ class FinancialAccount extends Model
     }
 
     /**
-     * Calculate the current balance of the account.
+     * Scope a query to include the account balance.
      */
-    public function balance(): float
+    public function scopeWithBalance(Builder $query): void
     {
-        return (float) $this->transactions()
-            ->where('is_posted', true)
-            ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0) as balance")
-            ->value('balance');
+        $query->addSelect([
+            'balance' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0)")
+                ->whereColumn('financial_account_id', 'financial_accounts.id')
+                ->where('is_posted', true),
+        ])->withCasts(['balance' => 'float']);
     }
+
 }
