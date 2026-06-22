@@ -44,6 +44,6 @@ class FinancialAccountSeeder extends Seeder
         ]);
 
         // Criar mais algumas contas aleatórias variadas para volume de teste
-        FinancialAccount::factory()->count(10)->create();
+        FinancialAccount::factory()->count(20)->create();
     }
 }
