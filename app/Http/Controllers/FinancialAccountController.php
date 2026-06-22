@@ -95,7 +95,10 @@ class FinancialAccountController extends Controller
      */
     public function edit(FinancialAccount $financialAccount): View
     {
-        return view('finance.accounts.edit', compact('financialAccount'));
+        $types = FinancialAccountType::cases();
+        $pixKeys = old('pix_keys', $financialAccount->pix_keys ?? []);
+
+        return view('finance.accounts.edit', compact('financialAccount', 'types', 'pixKeys'));
     }
 
     /**
