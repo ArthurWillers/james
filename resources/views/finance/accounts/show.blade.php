@@ -183,15 +183,15 @@
         </div>
     @endif
 
-    <x-card class="p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Últimas Transações</h3>
-            <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700">
-                Ver todas &rarr;
-            </a>
-        </div>
+    @if($recentTransactions->isNotEmpty())
+        <x-card class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Últimas Transações</h3>
+                <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700">
+                    Ver todas &rarr;
+                </a>
+            </div>
 
-        @if($recentTransactions->isNotEmpty())
             <div class="divide-y divide-neutral-100">
                 @foreach($recentTransactions as $transaction)
                     <div class="py-3 first:pt-0 last:pb-0 flex items-center justify-between">
@@ -219,12 +219,6 @@
                     </div>
                 @endforeach
             </div>
-        @else
-            <x-empty-state 
-                icon="banknotes" 
-                title="Nenhuma transação" 
-                description="Esta conta ainda não possui movimentações." 
-            />
-        @endif
-    </x-card>
+        </x-card>
+    @endif
 </x-layouts.financial>
