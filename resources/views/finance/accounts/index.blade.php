@@ -14,35 +14,33 @@
         :filters="['search']">
     </x-filter-bar>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         @forelse($accounts as $account)
-            <x-card href="{{ route('financial.accounts.show', $account) }}" size="sm" class="flex flex-col gap-2 group">
-                <div class="flex justify-between items-center gap-3">
-                    <div class="flex items-center gap-3 overflow-hidden">
-                        <x-ui.avatar :icon="$account->type->icon()" size="md" />
+            <x-card href="{{ route('financial.accounts.show', $account) }}" size="sm" class="flex items-center gap-4 group">
+                <x-ui.avatar :icon="$account->type->icon()" size="lg" />
+                
+                <div class="overflow-hidden flex-1 flex flex-col justify-center">
+                    <div class="flex justify-between items-center gap-2">
                         <h3 class="font-semibold text-neutral-900 truncate">{{ $account->name }}</h3>
-                    </div>
-                    <div class="shrink-0">
-                        <x-badge color="accent" size="sm">
+                        <x-badge color="accent" size="sm" class="shrink-0 hidden sm:inline-flex">
                             {{ $account->type->label() }}
                         </x-badge>
                     </div>
-                </div>
-                
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1.5 {{ $account->balance < 0 ? 'text-red-600' : ($account->balance > 0 ? 'text-green-600' : 'text-neutral-700') }}">
-                        @if($account->balance < 0)
-                            <x-icons.heroicons.outline.arrow-trending-down class="size-4" />
-                        @elseif($account->balance > 0)
-                            <x-icons.heroicons.outline.arrow-trending-up class="size-4" />
-                        @endif
-                        <span class="font-bold text-lg leading-none tracking-tight">
-                            {{ formatCurrency($account->balance) }}
-                        </span>
-                    </div>
-                    <div class="text-neutral-300 group-hover:text-primary-600 transition-colors">
-                        <x-icons.heroicons.outline.chevron-right class="size-5" />
+                    
+                    <div class="flex items-center justify-between mt-1">
+                        <div class="flex items-center gap-1.5 {{ $account->balance < 0 ? 'text-red-600' : ($account->balance > 0 ? 'text-green-600' : 'text-neutral-700') }}">
+                            @if($account->balance < 0)
+                                <x-icons.heroicons.outline.arrow-trending-down class="size-4" />
+                            @elseif($account->balance > 0)
+                                <x-icons.heroicons.outline.arrow-trending-up class="size-4" />
+                            @endif
+                            <span class="font-bold text-base leading-none tracking-tight">
+                                {{ formatCurrency($account->balance) }}
+                            </span>
+                        </div>
+                        <div class="text-neutral-300 group-hover:text-primary-600 transition-colors">
+                            <x-icons.heroicons.outline.chevron-right class="size-5" />
+                        </div>
                     </div>
                 </div>
             </x-card>
