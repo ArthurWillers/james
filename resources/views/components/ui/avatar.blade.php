@@ -21,7 +21,7 @@
 
 @if($icon)
     <div {{ $attributes->merge(['class' => "shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-400 {$sizeClasses}"]) }}>
-        <x-dynamic-component :component="'icons.heroicons.outline.' . $icon" class="w-[50%] h-[50%]" />
+        <x-dynamic-component :component="'heroicon-o-' . $icon" class="w-[50%] h-[50%]" />
     </div>
 @elseif($avatarUrl)
     <img src="{{ $avatarUrl }}" alt="{{ $model->name ?? 'Avatar' }}" {{ $attributes->merge(['class' => "shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] {$sizeClasses}"]) }}>
