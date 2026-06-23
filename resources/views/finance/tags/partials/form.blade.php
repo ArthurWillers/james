@@ -89,8 +89,8 @@
                     <template x-for="color in colors" :key="color">
                         <button type="button" 
                             @click="selectedColor = color"
-                            class="w-10 h-10 rounded-full shrink-0 border-2 transition-all focus:outline-none"
-                            :class="selectedColor === color ? 'border-neutral-900 shadow-md scale-110' : 'border-transparent shadow-sm hover:scale-105'"
+                            class="w-10 h-10 rounded-full shrink-0 border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                            :class="selectedColor === color ? 'border-accent shadow-md scale-110' : 'border-transparent shadow-sm hover:scale-105'"
                             x-bind:style="`background-color: ${color};`">
                         </button>
                     </template>
@@ -116,7 +116,7 @@
                     @foreach($suggestedIcons as $icon)
                         <button type="button" 
                             @click="selectedIcon = '{{ $icon }}'"
-                            class="p-3 rounded-xl flex items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-neutral-100 hover:text-neutral-900 transition-all focus:outline-none"
+                            class="p-3 rounded-xl flex items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-neutral-100 hover:text-neutral-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105"
                             :class="selectedIcon === '{{ $icon }}' ? '!bg-accent/10 !text-accent ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
                             <x-dynamic-component :component="$icon" class="size-6" />
                         </button>
