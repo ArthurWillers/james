@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(FinancialTagSeeder::class);
+
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@james.test',

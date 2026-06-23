@@ -11,10 +11,17 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 #[Fillable([
     'name',
     'icon',
+    'color_hex',
 ])]
 class FinancialTag extends Model
 {
     use HasFactory, Searchable;
+
+    public const REEMBOLSO_ID = 1;
+
+    public const JUROS_ID = 2;
+
+    public const SALDO_INICIAL_ID = 3;
 
     /**
      * Get the transactions associated with the tag.

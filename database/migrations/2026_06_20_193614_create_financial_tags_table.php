@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('icon');
+            $table->string('color_hex')->nullable();
+            $table->boolean('is_protected')->default(false);
             $table->timestamps();
         });
     }
