@@ -12,7 +12,7 @@
     <div class="max-w-2xl mx-auto space-y-12 pb-5">
         {{-- Informações do Perfil --}}
         <section>
-            <x-section-header title="Informações do Perfil" icon="user" />
+            <x-section-header title="Informações do Perfil" icon="heroicon-o-user" />
             <p class="mt-1 text-sm text-neutral-600">
                 Atualize as informações de perfil da sua conta.
             </p>
@@ -40,7 +40,7 @@
 
         {{-- Atualizar Senha --}}
         <section>
-            <x-section-header title="Atualizar Senha" icon="key" />
+            <x-section-header title="Atualizar Senha" icon="heroicon-o-key" />
             <p class="mt-1 text-sm text-neutral-600">
                 Certifique-se de que sua conta esteja usando uma senha longa e aleatória para se manter segura.
             </p>

@@ -137,7 +137,7 @@
                 </x-ui.table.row>
             @empty
                 <x-empty-state 
-                    icon="trash" 
+                    icon="heroicon-o-trash" 
                     title="Nenhum contato excluído" 
                     description="Não há contatos excluídos recentemente." 
                 />

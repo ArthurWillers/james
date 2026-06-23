@@ -127,7 +127,7 @@
                 </x-ui.table.row>
             @empty
                 <x-empty-state 
-                    icon="trash" 
+                    icon="heroicon-o-trash" 
                     title="Nenhuma conta excluída" 
                     description="Não há contas excluídas recentemente na lixeira." 
                 />

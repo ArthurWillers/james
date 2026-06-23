@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="plus">
+    <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="heroicon-o-plus">
         @if ($hasTrashed)
             <x-button color="outline" href="{{ route('contacts.trashed') }}">
                 <x-heroicon-o-trash class="size-5!" />
@@ -41,7 +41,7 @@
         @empty
             <div class="col-span-full bg-white rounded-xl border border-neutral-200">
                 <x-empty-state 
-                    icon="users" 
+                    icon="heroicon-o-users" 
                     message="Nenhum contato encontrado." 
                     actionText="Novo Contato" 
                     :actionRoute="route('contacts.create')" 

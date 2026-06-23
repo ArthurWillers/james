@@ -20,9 +20,9 @@ enum FinancialAccountType: string
     public function icon(): string
     {
         return match ($this) {
-            self::Checking => 'building-library',
-            self::Investment => 'chart-bar',
-            self::Wallet => 'wallet',
+            self::Checking => 'heroicon-o-building-library',
+            self::Investment => 'heroicon-o-chart-bar',
+            self::Wallet => 'heroicon-o-wallet',
         };
     }
 }

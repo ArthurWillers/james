@@ -15,7 +15,7 @@
             @if ($action)
                 <x-button :href="$action" class="w-full sm:w-auto">
                     @if ($icon)
-                        <x-dynamic-component :component="'heroicon-o-' . $icon" class="size-5!" />
+                        <x-dynamic-component :component="$icon" class="size-5!" />
                     @endif
                     {{ $actionText }}
                 </x-button>
