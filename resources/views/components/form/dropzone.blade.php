@@ -56,12 +56,12 @@
             <template x-for="(file, index) in files" :key="index">
                 <li class="flex items-center justify-between p-2 text-sm bg-neutral-100 rounded-md border border-neutral-200">
                     <div class="flex items-center space-x-2 overflow-hidden">
-                        <x-icons.heroicons.outline.document class="w-4 h-4 text-neutral-500 shrink-0" />
+                        <x-heroicon-o-document class="w-4 h-4 text-neutral-500 shrink-0" />
                         <span class="truncate font-medium text-neutral-700" x-text="file.name"></span>
                         <span class="text-xs text-neutral-500 shrink-0" x-text="(file.size / 1024 / 1024).toFixed(2) + ' MB'"></span>
                     </div>
                     <button @click.prevent="removeFile(index)" type="button" class="p-1 text-neutral-400 hover:text-red-500 transition-colors">
-                        <x-icons.heroicons.outline.x-mark class="w-4 h-4" />
+                        <x-heroicon-o-x-mark class="w-4 h-4" />
                     </button>
                 </li>
             </template>

@@ -2,7 +2,7 @@
     <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="plus">
         @if ($hasTrashed)
             <x-button color="outline" href="{{ route('contacts.trashed') }}">
-                <x-icons.heroicons.outline.trash class="size-5!" />
+                <x-heroicon-o-trash class="size-5!" />
                 Lixeira
             </x-button>
         @endif

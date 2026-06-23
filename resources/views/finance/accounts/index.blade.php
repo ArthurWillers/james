@@ -2,7 +2,7 @@
     <x-page-header title="Contas Financeiras" :action="route('financial.accounts.create')" actionText="Nova Conta" icon="plus">
         @if ($hasTrashed)
             <x-button color="outline" href="{{ route('financial.accounts.trashed') }}" class="bg-white">
-                <x-icons.heroicons.outline.trash class="size-5!" />
+                <x-heroicon-o-trash class="size-5!" />
                 Lixeira
             </x-button>
         @endif
@@ -30,16 +30,16 @@
                     <div class="flex items-center justify-between mt-1">
                         <div class="flex items-center gap-1.5 {{ $account->balance < 0 ? 'text-red-600' : ($account->balance > 0 ? 'text-green-600' : 'text-neutral-700') }}">
                             @if($account->balance < 0)
-                                <x-icons.heroicons.outline.arrow-trending-down class="size-4" />
+                                <x-heroicon-o-arrow-trending-down class="size-4" />
                             @elseif($account->balance > 0)
-                                <x-icons.heroicons.outline.arrow-trending-up class="size-4" />
+                                <x-heroicon-o-arrow-trending-up class="size-4" />
                             @endif
                             <span class="font-bold text-base leading-none tracking-tight">
                                 {{ formatCurrency($account->balance) }}
                             </span>
                         </div>
                         <div class="text-neutral-300 group-hover:text-primary-600 transition-colors">
-                            <x-icons.heroicons.outline.chevron-right class="size-5" />
+                            <x-heroicon-o-chevron-right class="size-5" />
                         </div>
                     </div>
                 </div>

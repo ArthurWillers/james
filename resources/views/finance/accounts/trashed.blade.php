@@ -11,7 +11,7 @@
         description="Contas financeiras excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
         <x-button color="outline" href="{{ route('financial.accounts.index') }}" class="bg-white">
-            <x-icons.heroicons.outline.arrow-left class="size-4" />
+            <x-heroicon-o-arrow-left class="size-4" />
             Voltar
         </x-button>
     </x-page-header>
@@ -52,7 +52,7 @@
                     <x-ui.table.cell>
                         <div class="flex items-center gap-3 w-full">
                             <div class="shrink-0 flex items-center justify-center size-10 rounded-full bg-neutral-100 text-neutral-400 grayscale opacity-80">
-                                <x-icons.heroicons.outline.building-library class="size-5" />
+                                <x-heroicon-o-building-library class="size-5" />
                             </div>
                             <div class="overflow-hidden">
                                 <div class="font-medium text-neutral-900 truncate">{{ $account->name }}</div>
@@ -72,12 +72,12 @@
                     <x-ui.table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
                             <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $account->id }}, '{{ addslashes($account->name) }}')">
-                                <x-icons.heroicons.outline.arrow-uturn-left class="size-4" />
+                                <x-heroicon-o-arrow-uturn-left class="size-4" />
                                 Restaurar
                             </x-button>
 
                             <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $account->id }}, '{{ addslashes($account->name) }}')">
-                                <x-icons.heroicons.outline.trash class="size-4" />
+                                <x-heroicon-o-trash class="size-4" />
                                 Excluir
                             </x-button>
                         </div>
@@ -87,7 +87,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 min-w-0 flex items-center gap-3">
                                 <div class="shrink-0 flex items-center justify-center size-10 rounded-full bg-neutral-100 text-neutral-400 grayscale opacity-80">
-                                    <x-icons.heroicons.outline.building-library class="size-5" />
+                                    <x-heroicon-o-building-library class="size-5" />
                                 </div>
                                 <div class="overflow-hidden">
                                     <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 truncate">
@@ -105,18 +105,18 @@
                                 <x-dropdown position="bottom-end" accent>
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
-                                            <x-icons.heroicons.outline.ellipsis-horizontal class="size-5" />
+                                            <x-heroicon-o-ellipsis-horizontal class="size-5" />
                                         </button>
                                     </x-slot>
 
                                     <x-slot name="content">
                                         <button type="button" @click="openRestore({{ $account->id }}, '{{ addslashes($account->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-icons.heroicons.outline.arrow-uturn-left class="size-5" />
+                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
                                             Restaurar
                                         </button>
 
                                         <button type="button" @click="openForceDelete({{ $account->id }}, '{{ addslashes($account->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-icons.heroicons.outline.trash class="size-5" />
+                                            <x-heroicon-o-trash class="size-5" />
                                             Excluir Permanentemente
                                         </button>
                                     </x-slot>
@@ -159,7 +159,7 @@
                 <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
                     <div class="flex">
                         <div class="shrink-0">
-                            <x-icons.heroicons.mini.exclamation-triangle class="size-5 text-amber-400" />
+                            <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
                         </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-amber-800">Atenção aos vínculos</h3>

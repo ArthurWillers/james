@@ -9,17 +9,17 @@
 
     <x-layout.sidebar>
         <x-nav.nav-link :href="route('dashboard')" :current="request()->routeIs('dashboard')">
-            <x-icons.heroicons.outline.home class="w-4 h-4" />
+            <x-heroicon-o-home class="w-4 h-4" />
             Dashboard
         </x-nav.nav-link>
 
         <x-nav.nav-link :href="route('contacts.index')" :current="request()->routeIs('contacts.*')">
-            <x-icons.heroicons.outline.users class="w-4 h-4" />
+            <x-heroicon-o-users class="w-4 h-4" />
             Contatos
         </x-nav.nav-link>
 
         <x-nav.nav-link :href="route('financial.dashboard')" :current="request()->routeIs('financial.*')">
-            <x-icons.heroicons.outline.banknotes class="w-4 h-4" />
+            <x-heroicon-o-banknotes class="w-4 h-4" />
             Finanças
         </x-nav.nav-link>
     </x-layout.sidebar>

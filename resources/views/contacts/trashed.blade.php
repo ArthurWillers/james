@@ -11,7 +11,7 @@
         description="Contatos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
         <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-icons.heroicons.outline.arrow-left class="size-4" />
+            <x-heroicon-o-arrow-left class="size-4" />
             Voltar
         </x-button>
     </x-page-header>
@@ -82,12 +82,12 @@
                     <x-ui.table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
                             <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
-                                <x-icons.heroicons.outline.arrow-uturn-left class="size-4" />
+                                <x-heroicon-o-arrow-uturn-left class="size-4" />
                                 Restaurar
                             </x-button>
 
                             <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
-                                <x-icons.heroicons.outline.trash class="size-4" />
+                                <x-heroicon-o-trash class="size-4" />
                                 Excluir
                             </x-button>
                         </div>
@@ -115,18 +115,18 @@
                                 <x-dropdown position="bottom-end" accent>
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
-                                            <x-icons.heroicons.outline.ellipsis-horizontal class="size-5" />
+                                            <x-heroicon-o-ellipsis-horizontal class="size-5" />
                                         </button>
                                     </x-slot>
 
                                     <x-slot name="content">
                                         <button type="button" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-icons.heroicons.outline.arrow-uturn-left class="size-5" />
+                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
                                             Restaurar
                                         </button>
 
                                         <button type="button" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-icons.heroicons.outline.trash class="size-5" />
+                                            <x-heroicon-o-trash class="size-5" />
                                             Excluir Permanentemente
                                         </button>
                                     </x-slot>

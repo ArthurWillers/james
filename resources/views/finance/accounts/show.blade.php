@@ -8,18 +8,18 @@
 
     <x-page-header title="Detalhes da Conta">
         <x-button color="outline" href="{{ route('financial.accounts.index') }}" class="bg-white">
-            <x-icons.heroicons.outline.arrow-left class="size-4" />
+            <x-heroicon-o-arrow-left class="size-4" />
             Voltar
         </x-button>
 
         <x-button color="outline" href="{{ route('financial.accounts.edit', $account) }}" class="bg-white">
-            <x-icons.heroicons.outline.pencil-square class="size-4" />
+            <x-heroicon-o-pencil-square class="size-4" />
             Editar
         </x-button>
 
         <x-modal.trigger name="delete-account-{{ $account->id }}">
             <x-button type="button" color="danger-outline">
-                <x-icons.heroicons.outline.trash class="size-4" />
+                <x-heroicon-o-trash class="size-4" />
                 Excluir
             </x-button>
         </x-modal.trigger>
@@ -66,7 +66,7 @@
                     </p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
-                    <x-icons.heroicons.outline.arrow-trending-up class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 group-hover:scale-110 transition-transform" />
+                    <x-heroicon-o-arrow-trending-up class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 group-hover:scale-110 transition-transform" />
                 </div>
             </div>
         </x-card>
@@ -82,7 +82,7 @@
                     </p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-red-200 transition-colors">
-                    <x-icons.heroicons.outline.arrow-trending-down class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 group-hover:scale-110 transition-transform" />
+                    <x-heroicon-o-arrow-trending-down class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 group-hover:scale-110 transition-transform" />
                 </div>
             </div>
         </x-card>
@@ -98,7 +98,7 @@
                     </p>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 {{ $account->balance > 0 ? 'bg-green-100' : ($account->balance < 0 ? 'bg-red-100' : 'bg-neutral-100') }} rounded-lg flex items-center justify-center flex-shrink-0">
-                    <x-icons.heroicons.outline.scale class="w-5 h-5 sm:w-6 sm:h-6 {{ $account->balance > 0 ? 'text-green-600' : ($account->balance < 0 ? 'text-red-600' : 'text-neutral-500') }}" />
+                    <x-heroicon-o-scale class="w-5 h-5 sm:w-6 sm:h-6 {{ $account->balance > 0 ? 'text-green-600' : ($account->balance < 0 ? 'text-red-600' : 'text-neutral-500') }}" />
                 </div>
             </div>
         </x-card>
@@ -129,7 +129,7 @@
                             <div class="flex justify-between items-start mb-4">
                                 <div class="flex items-center gap-3">
                                     <div class="p-2 bg-neutral-100 rounded-lg text-neutral-600">
-                                        <x-icons.heroicons.outline.credit-card class="size-5" />
+                                        <x-heroicon-o-credit-card class="size-5" />
                                     </div>
                                     <div>
                                         <h3 class="font-bold text-neutral-900">{{ $card->name }}</h3>
@@ -198,9 +198,9 @@
                         <div class="flex items-center gap-3">
                             <div class="p-2 rounded-full {{ $transaction->type === 'income' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600' }}">
                                 @if($transaction->type === 'income')
-                                    <x-icons.heroicons.outline.arrow-down-left class="size-4" />
+                                    <x-heroicon-o-arrow-down-left class="size-4" />
                                 @else
-                                    <x-icons.heroicons.outline.arrow-up-right class="size-4" />
+                                    <x-heroicon-o-arrow-up-right class="size-4" />
                                 @endif
                             </div>
                             <div>

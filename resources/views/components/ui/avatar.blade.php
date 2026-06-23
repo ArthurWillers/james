@@ -31,6 +31,6 @@
     </div>
 @else
     <div {{ $attributes->merge(['class' => "shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-400 {$sizeClasses}"]) }}>
-        <x-icons.heroicons.outline.user class="w-[50%] h-[50%]" />
+        <x-heroicon-o-user class="w-[50%] h-[50%]" />
     </div>
 @endif
