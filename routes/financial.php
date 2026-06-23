@@ -16,6 +16,7 @@ Route::prefix('financial')->name('financial.')->group(function () {
     ]);
 
     // Tags
+    Route::post('tags/defaults', [FinancialTagController::class, 'storeDefaults'])->name('tags.storeDefaults');
     Route::resource('tags', FinancialTagController::class)->parameters([
         'tags' => 'financialTag',
     ]);

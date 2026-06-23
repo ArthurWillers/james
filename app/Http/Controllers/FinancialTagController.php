@@ -6,6 +6,7 @@ use App\Http\Requests\StoreFinancialTagRequest;
 use App\Http\Requests\UpdateFinancialTagRequest;
 use App\Models\FinancialTag;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class FinancialTagController extends Controller
@@ -21,7 +22,11 @@ class FinancialTagController extends Controller
             ->paginate(18)
             ->withQueryString();
 
-        return view('finance.tags.index', compact('tags'));
+        $allDefaultTags = config('finance.default_tags', []);
+        $existingTagNames = FinancialTag::whereIn('name', array_column($allDefaultTags, 'name'))->pluck('name')->toArray();
+        $availableDefaultTags = array_filter($allDefaultTags, fn ($tag) => ! in_array($tag['name'], $existingTagNames));
+
+        return view('finance.tags.index', compact('tags', 'availableDefaultTags'));
     }
 
     /**
@@ -42,6 +47,35 @@ class FinancialTagController extends Controller
         return redirect()
             ->route('financial.tags.index')
             ->with('success', 'Tag criada com sucesso.');
+    }
+
+    /**
+     * Store multiple default tags in storage.
+     */
+    public function storeDefaults(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'tags' => ['required', 'array'],
+            'tags.*' => ['required', 'string'],
+        ]);
+
+        $allDefaultTags = collect(config('finance.default_tags', []))->keyBy('name');
+
+        $tagsToInsert = [];
+        foreach ($request->tags as $tagName) {
+            if ($allDefaultTags->has($tagName) && ! FinancialTag::where('name', $tagName)->exists()) {
+                $tagData = $allDefaultTags->get($tagName);
+                $tagData['created_at'] = now();
+                $tagData['updated_at'] = now();
+                $tagsToInsert[] = $tagData;
+            }
+        }
+
+        if (! empty($tagsToInsert)) {
+            FinancialTag::insert($tagsToInsert);
+        }
+
+        return redirect()->route('financial.tags.index')->with('success', 'Tags padrão cadastradas com sucesso.');
     }
 
     /**

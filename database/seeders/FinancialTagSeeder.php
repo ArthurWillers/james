@@ -17,7 +17,7 @@ class FinancialTagSeeder extends Seeder
             [
                 'id' => FinancialTag::REEMBOLSO_ID,
                 'name' => 'Reembolso',
-                'icon' => 'arrow-uturn-left',
+                'icon' => 'heroicon-o-arrow-uturn-left',
                 'color_hex' => '#f59e0b', // amber-500
                 'is_protected' => true,
                 'created_at' => now(),
@@ -26,7 +26,7 @@ class FinancialTagSeeder extends Seeder
             [
                 'id' => FinancialTag::JUROS_ID,
                 'name' => 'Juros',
-                'icon' => 'percent',
+                'icon' => 'heroicon-o-percent',
                 'color_hex' => '#ef4444', // red-500
                 'is_protected' => true,
                 'created_at' => now(),
@@ -35,7 +35,7 @@ class FinancialTagSeeder extends Seeder
             [
                 'id' => FinancialTag::SALDO_INICIAL_ID,
                 'name' => 'Saldo Inicial',
-                'icon' => 'flag',
+                'icon' => 'heroicon-o-flag',
                 'color_hex' => '#3b82f6', // blue-500
                 'is_protected' => true,
                 'created_at' => now(),
