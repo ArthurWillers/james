@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFinancialTagRequest;
 use App\Http\Requests\UpdateFinancialTagRequest;
 use App\Models\FinancialTag;
+use BladeUI\Icons\Factory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,8 +19,9 @@ class FinancialTagController extends Controller
     {
         $tags = FinancialTag::query()
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name']))
+            ->withCount(['transactions', 'transactionItems'])
             ->orderBy('name')
-            ->paginate(18)
+            ->paginate(20)
             ->withQueryString();
 
         $allDefaultTags = config('finance.default_tags', []);
@@ -61,21 +63,38 @@ class FinancialTagController extends Controller
 
         $allDefaultTags = collect(config('finance.default_tags', []))->keyBy('name');
 
-        $tagsToInsert = [];
         foreach ($request->tags as $tagName) {
-            if ($allDefaultTags->has($tagName) && ! FinancialTag::where('name', $tagName)->exists()) {
+            if ($allDefaultTags->has($tagName)) {
                 $tagData = $allDefaultTags->get($tagName);
-                $tagData['created_at'] = now();
-                $tagData['updated_at'] = now();
-                $tagsToInsert[] = $tagData;
+
+                FinancialTag::firstOrCreate(
+                    ['name' => $tagData['name']],
+                    [
+                        'icon' => $tagData['icon'],
+                        'color_hex' => $tagData['color_hex'],
+                        'is_protected' => false,
+                    ]
+                );
             }
         }
 
-        if (! empty($tagsToInsert)) {
-            FinancialTag::insert($tagsToInsert);
+        return redirect()
+            ->route('financial.tags.index')
+            ->with('success', 'Tags padrão adicionadas com sucesso.');
+    }
+
+    public function fetchIcon(string $name)
+    {
+        try {
+            $svg = app(Factory::class)->svg($name);
+            if ($svg) {
+                return response($svg->toHtml())->header('Content-Type', 'image/svg+xml');
+            }
+        } catch (\Exception $e) {
+            return response($e->getMessage(), 500);
         }
 
-        return redirect()->route('financial.tags.index')->with('success', 'Tags padrão cadastradas com sucesso.');
+        return response('Icon not found', 404);
     }
 
     /**
@@ -118,13 +137,11 @@ class FinancialTagController extends Controller
     public function destroy(FinancialTag $financialTag): RedirectResponse
     {
         if ($financialTag->is_protected) {
-            abort(403, 'Tags protegidas não podem ser excluídas.');
+            return back()->with('error', 'Esta tag é padrão do sistema e não pode ser excluída.');
         }
 
         if ($financialTag->transactions()->exists() || $financialTag->transactionItems()->exists()) {
-            return redirect()
-                ->route('financial.tags.index')
-                ->with('error', 'Esta tag não pode ser excluída pois está em uso.');
+            return back()->with('error', 'Esta tag não pode ser excluída pois possui transações vinculadas.');
         }
 
         $financialTag->delete();

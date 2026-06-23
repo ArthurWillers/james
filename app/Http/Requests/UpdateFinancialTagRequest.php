@@ -23,17 +23,25 @@ class UpdateFinancialTagRequest extends FormRequest
     }
 
     /**
+     * Handle a failed authorization attempt.
+     */
+    protected function failedAuthorization()
+    {
+        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+            redirect()->route('financial.tags.index')->with('error', 'Tags protegidas não podem ser editadas.')
+        );
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        $tag = $this->route('financialTag');
-
         return [
-            'name' => ['required', 'string', 'max:255', Rule::unique('financial_tags')->ignore($tag)],
-            'icon' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', Rule::unique('financial_tags', 'name')->ignore($this->route('financialTag'))],
+            'icon' => ['required', 'string', 'max:255', new \App\Rules\ValidIcon()],
             'color_hex' => ['nullable', 'string', 'regex:/^#([a-f0-9]{6}|[a-f0-9]{3})$/i'],
         ];
     }

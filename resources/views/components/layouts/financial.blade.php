@@ -20,7 +20,7 @@
         <x-nav.module-nav-link href="#" :current="request()->routeIs('financial.credit-cards.*')">
             Cartões
         </x-nav.module-nav-link>
-        <x-nav.module-nav-link href="#" :current="request()->routeIs('financial.tags.*')">
+        <x-nav.module-nav-link :href="route('financial.tags.index')" :current="request()->routeIs('financial.tags.*')">
             Tags
         </x-nav.module-nav-link>
     </x-nav.module-navbar>
