@@ -15,25 +15,22 @@ class FinancialTagSeeder extends Seeder
     {
         $tags = [
             [
-                'id' => FinancialTag::REEMBOLSO_ID,
                 'name' => 'Reembolso',
                 'icon' => 'heroicon-o-arrow-uturn-left',
-                'color_hex' => '#f59e0b', // amber-500
+                'color_hex' => '#64748b', // slate-500
                 'is_protected' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'id' => FinancialTag::JUROS_ID,
                 'name' => 'Juros',
-                'icon' => 'heroicon-o-percent',
+                'icon' => 'heroicon-o-receipt-percent',
                 'color_hex' => '#ef4444', // red-500
                 'is_protected' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'id' => FinancialTag::SALDO_INICIAL_ID,
                 'name' => 'Saldo Inicial',
                 'icon' => 'heroicon-o-flag',
                 'color_hex' => '#3b82f6', // blue-500
@@ -43,10 +40,23 @@ class FinancialTagSeeder extends Seeder
             ],
         ];
 
+        // Adiciona as tags padrão do sistema como tags desprotegidas (podem ser editadas/apagadas)
+        $defaultTags = config('finance.default_tags', []);
+        foreach ($defaultTags as $tag) {
+            $tags[] = [
+                'name' => $tag['name'],
+                'icon' => $tag['icon'],
+                'color_hex' => $tag['color_hex'],
+                'is_protected' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
         DB::table('financial_tags')->upsert(
             $tags,
-            ['id'],
-            ['name', 'icon', 'color_hex', 'is_protected', 'updated_at']
+            ['name'],
+            ['icon', 'color_hex', 'is_protected', 'updated_at']
         );
     }
 }

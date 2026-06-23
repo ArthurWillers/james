@@ -21,7 +21,7 @@ return [
         ['name' => 'Assinaturas', 'icon' => 'heroicon-o-arrow-path', 'color_hex' => '#6366f1'],
         ['name' => 'Entretenimento', 'icon' => 'heroicon-o-film', 'color_hex' => '#d946ef'],
         ['name' => 'Diversos', 'icon' => 'heroicon-o-squares-2x2', 'color_hex' => '#64748b'],
-        ['name' => 'Investimento', 'icon' => 'heroicon-o-trending-up', 'color_hex' => '#0ea5e9'],
+        ['name' => 'Investimento', 'icon' => 'heroicon-o-arrow-trending-up', 'color_hex' => '#0ea5e9'],
         ['name' => 'Mercado', 'icon' => 'heroicon-o-shopping-cart', 'color_hex' => '#84cc16'],
         ['name' => 'Presente', 'icon' => 'heroicon-o-gift', 'color_hex' => '#f43f5e'],
         ['name' => 'Restaurantes', 'icon' => 'heroicon-o-building-storefront', 'color_hex' => '#f97316'],
@@ -29,7 +29,7 @@ return [
         ['name' => 'Serviço', 'icon' => 'heroicon-o-wrench-screwdriver', 'color_hex' => '#78716c'],
         ['name' => 'Transporte', 'icon' => 'heroicon-o-truck', 'color_hex' => '#eab308'],
         ['name' => 'Vestuário', 'icon' => 'heroicon-o-tag', 'color_hex' => '#ec4899'],
-        ['name' => 'Academia', 'icon' => 'heroicon-o-dumbbell', 'color_hex' => '#10b981'],
+        ['name' => 'Academia', 'icon' => 'heroicon-o-fire', 'color_hex' => '#10b981'],
         ['name' => 'Saúde', 'icon' => 'heroicon-o-heart', 'color_hex' => '#ef4444'],
     ],
 ];
