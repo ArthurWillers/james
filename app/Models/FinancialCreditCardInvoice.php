@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\BusinessDayHelper;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,7 @@ class FinancialCreditCardInvoice extends Model
             'closing_date' => 'date',
             'due_date' => 'date',
             'paid_at' => 'date',
+            'amount_paid' => 'decimal:2',
         ];
     }
 
@@ -67,23 +69,111 @@ class FinancialCreditCardInvoice extends Model
     }
 
     /**
-     * Check if the invoice is paid.
-     */
-    public function isPaid(): bool
-    {
-        return $this->paid_at !== null;
-    }
-
-    /**
      * Calculate the total amount of the invoice.
      * Expenses sum, incomes subtract.
      */
     public function total(): float
     {
         return (float) $this->transactions()
-            ->where('is_posted', true)
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0) as total")
             ->value('total');
+    }
+
+    /**
+     * Get the status of the invoice.
+     */
+    public function status(): string
+    {
+        if ($this->paid_at !== null) {
+            return 'paid';
+        }
+
+        $total = $this->total();
+
+        if ($this->amount_paid > 0 && $this->amount_paid < $total) {
+            return 'partially_paid';
+        }
+
+        $today = Carbon::today();
+
+        if ($today->lt($this->closing_date)) {
+            return 'open';
+        }
+
+        if ($today->gt($this->due_date)) {
+            return 'overdue';
+        }
+
+        return 'closed';
+    }
+
+    /**
+     * Register a payment for this invoice.
+     */
+    public function registerPayment(float $amount, Carbon $paidAt, ?float $interestAmount = null): void
+    {
+        $this->amount_paid += $amount;
+
+        // Create an expense transaction for the payment amount
+        $this->creditCard->financialAccount->transactions()->create([
+            'date' => $paidAt,
+            'type' => 'expense',
+            'amount' => $amount,
+            'description' => "Pagamento da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
+            'is_posted' => true,
+        ]);
+
+        $total = $this->total();
+
+        if ($this->amount_paid >= $total) {
+            $this->transactions()->update([
+                'financial_account_id' => $this->creditCard->financial_account_id,
+                'is_posted' => true,
+            ]);
+            $this->paid_at = $paidAt;
+        }
+
+        if ($interestAmount !== null && $interestAmount > 0) {
+            $interestTransaction = $this->creditCard->financialAccount->transactions()->create([
+                'date' => $paidAt,
+                'type' => 'expense',
+                'amount' => $interestAmount,
+                'description' => "Juros da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
+                'is_posted' => true,
+            ]);
+
+            // Attach JUROS_ID tag as primary
+            if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::JUROS_ID')) {
+                $interestTransaction->tags()->attach(FinancialTag::JUROS_ID, ['is_primary' => true]);
+            }
+
+            $this->interest_transaction_id = $interestTransaction->id;
+        }
+
+        $this->save();
+    }
+
+    /**
+     * Recalculate closing and due dates based on current card settings.
+     */
+    public function recalculateDates(): void
+    {
+        $card = $this->creditCard;
+
+        $closingDate = $this->reference_month->copy()->day(
+            (int) min($card->closing_day, $this->reference_month->daysInMonth)
+        );
+
+        $dueMonth = $card->due_day <= $card->closing_day
+            ? $this->reference_month->copy()->addMonth()
+            : $this->reference_month->copy();
+
+        $dueDate = $dueMonth->day((int) min($card->due_day, $dueMonth->daysInMonth));
+
+        $this->closing_date = BusinessDayHelper::previousBusinessDay($closingDate);
+        $this->due_date = BusinessDayHelper::nextBusinessDay($dueDate);
+
+        $this->save();
     }
 
     /**
@@ -91,19 +181,27 @@ class FinancialCreditCardInvoice extends Model
      */
     public static function resolveForDate(FinancialCreditCard $card, Carbon $date): self
     {
-        $referenceMonth = $date->day <= $card->closing_day
-            ? $date->copy()->startOfMonth()
-            : $date->copy()->addMonth()->startOfMonth();
+        // Try current month as the reference month candidate
+        $candidateMonth = $date->copy()->startOfMonth();
+        $closingDate = $candidateMonth->copy()->day((int) min($card->closing_day, $candidateMonth->daysInMonth));
+        $adjustedClosingDate = BusinessDayHelper::previousBusinessDay($closingDate);
 
-        $closingDate = $referenceMonth->copy()->day(
-            min($card->closing_day, $referenceMonth->daysInMonth)
-        );
+        if ($date->copy()->startOfDay()->lte($adjustedClosingDate)) {
+            // Purchase date is on or before the adjusted closing date, belongs to the current month's invoice
+            $referenceMonth = $candidateMonth;
+        } else {
+            // Purchase date is after the adjusted closing date, belongs to the next month's invoice
+            $referenceMonth = $candidateMonth->addMonth();
+            $closingDate = $referenceMonth->copy()->day((int) min($card->closing_day, $referenceMonth->daysInMonth));
+            $adjustedClosingDate = BusinessDayHelper::previousBusinessDay($closingDate);
+        }
 
-        $dueMonth = $card->due_day < $card->closing_day
+        $dueMonth = $card->due_day <= $card->closing_day
             ? $referenceMonth->copy()->addMonth()
             : $referenceMonth->copy();
 
-        $dueDate = $dueMonth->day(min($card->due_day, $dueMonth->daysInMonth));
+        $dueDate = $dueMonth->day((int) min($card->due_day, $dueMonth->daysInMonth));
+        $adjustedDueDate = BusinessDayHelper::nextBusinessDay($dueDate);
 
         return static::firstOrCreate(
             [
@@ -111,8 +209,8 @@ class FinancialCreditCardInvoice extends Model
                 'reference_month' => $referenceMonth->toDateString(),
             ],
             [
-                'closing_date' => $closingDate,
-                'due_date' => $dueDate,
+                'closing_date' => $adjustedClosingDate,
+                'due_date' => $adjustedDueDate,
             ]
         );
     }

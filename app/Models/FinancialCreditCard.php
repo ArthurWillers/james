@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'name',
@@ -30,6 +31,8 @@ class FinancialCreditCard extends Model
     {
         return [
             'credit_limit' => 'decimal:2',
+            'closing_day' => 'integer',
+            'due_day' => 'integer',
         ];
     }
 
@@ -61,5 +64,78 @@ class FinancialCreditCard extends Model
     public function recurrences(): HasMany
     {
         return $this->hasMany(FinancialRecurrence::class);
+    }
+
+    /**
+     * Calculate used limit across all non-paid invoices.
+     */
+    public function usedLimit(): float
+    {
+        return (float) $this->invoices()
+            ->whereNull('paid_at')
+            ->get()
+            ->sum(fn ($invoice) => $invoice->total());
+    }
+
+    /**
+     * Update closing schedule and recalculate affected open invoices.
+     */
+    public function updateClosingSchedule(int $closingDay, int $dueDay): void
+    {
+        $this->update([
+            'closing_day' => $closingDay,
+            'due_day' => $dueDay,
+        ]);
+
+        $this->invoices()
+            ->whereNull('paid_at')
+            ->get()
+            ->filter(fn ($invoice) => $invoice->status() === 'open')
+            ->each(fn ($invoice) => $invoice->recalculateDates());
+    }
+
+    /**
+     * Create installment purchase spreading over invoices.
+     */
+    public function createInstallmentPurchase(
+        Carbon $purchaseDate,
+        float $totalAmount,
+        int $installments,
+        string $description,
+        ?array $tagIds = null
+    ): void {
+        $firstInvoice = FinancialCreditCardInvoice::resolveForDate($this, $purchaseDate);
+        $installmentAmount = round($totalAmount / $installments, 2);
+
+        for ($i = 1; $i <= $installments; $i++) {
+            if ($i === 1) {
+                $invoice = $firstInvoice;
+            } else {
+                $invoice = FinancialCreditCardInvoice::resolveForDate(
+                    $this,
+                    $purchaseDate->copy()->addMonthsNoOverflow($i - 1)
+                );
+            }
+
+            // Adjust amount for the last installment if there are rounding diffs
+            $amount = $i === $installments
+                ? $totalAmount - ($installmentAmount * ($installments - 1))
+                : $installmentAmount;
+
+            $transaction = $invoice->transactions()->create([
+                'financial_account_id' => null,
+                'date' => $purchaseDate,
+                'type' => 'expense',
+                'amount' => $amount,
+                'description' => $description,
+                'is_posted' => false,
+                'installment_current' => $i,
+                'installment_total' => $installments,
+            ]);
+
+            if (! empty($tagIds)) {
+                $transaction->tags()->attach($tagIds);
+            }
+        }
     }
 }

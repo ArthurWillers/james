@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('reference_month');
             $table->date('closing_date');
             $table->date('due_date');
+            $table->decimal('amount_paid', 10, 2)->default(0);
             $table->date('paid_at')->nullable();
             $table->unsignedBigInteger('interest_transaction_id')->nullable();
             $table->timestamps();
