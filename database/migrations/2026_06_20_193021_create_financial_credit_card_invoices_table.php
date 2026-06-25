@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('amount_paid', 10, 2)->default(0);
             $table->date('paid_at')->nullable();
             $table->unsignedBigInteger('interest_transaction_id')->nullable();
+            $table->unsignedBigInteger('payment_transaction_id')->nullable();
             $table->timestamps();
 
             $table->unique(['financial_credit_card_id', 'reference_month']);

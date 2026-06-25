@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
     'due_date',
     'paid_at',
     'interest_transaction_id',
+    'payment_transaction_id',
 ])]
 class FinancialCreditCardInvoice extends Model
 {
@@ -69,6 +70,16 @@ class FinancialCreditCardInvoice extends Model
     }
 
     /**
+     * Get the payment transaction associated with partial payments.
+     *
+     * @return BelongsTo<FinancialTransaction, $this>
+     */
+    public function paymentTransaction(): BelongsTo
+    {
+        return $this->belongsTo(FinancialTransaction::class, 'payment_transaction_id');
+    }
+
+    /**
      * Calculate the total amount of the invoice.
      * Expenses sum, incomes subtract.
      */
@@ -112,28 +123,42 @@ class FinancialCreditCardInvoice extends Model
      */
     public function registerPayment(float $amount, Carbon $paidAt, ?float $interestAmount = null): void
     {
-        $this->amount_paid += $amount;
-
-        // Create an expense transaction for the payment amount
-        $this->creditCard->financialAccount->transactions()->create([
-            'date' => $paidAt,
-            'type' => 'expense',
-            'amount' => $amount,
-            'description' => "Pagamento da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
-            'is_posted' => true,
-        ]);
-
+        $newAmountPaid = $this->amount_paid + $amount;
         $total = $this->total();
 
-        if ($this->amount_paid >= $total) {
+        if ($newAmountPaid >= $total) {
+            if ($this->payment_transaction_id) {
+                $this->paymentTransaction?->delete();
+            }
+
             $this->transactions()->update([
                 'financial_account_id' => $this->creditCard->financial_account_id,
                 'is_posted' => true,
             ]);
+
             $this->paid_at = $paidAt;
+            $this->amount_paid = $total;
+            $this->payment_transaction_id = null;
+        } else {
+            if ($this->payment_transaction_id) {
+                $this->paymentTransaction()->update([
+                    'amount' => $newAmountPaid,
+                    'date' => $paidAt,
+                ]);
+            } else {
+                $paymentTransaction = $this->creditCard->financialAccount->transactions()->create([
+                    'date' => $paidAt,
+                    'type' => 'expense',
+                    'amount' => $newAmountPaid,
+                    'description' => "Pagamento parcial fatura {$this->reference_month->format('m/Y')}",
+                    'is_posted' => true,
+                ]);
+                $this->payment_transaction_id = $paymentTransaction->id;
+            }
+            $this->amount_paid = $newAmountPaid;
         }
 
-        if ($interestAmount !== null && $interestAmount > 0) {
+        if ($interestAmount !== null && $interestAmount > 0 && $this->interest_transaction_id === null) {
             $interestTransaction = $this->creditCard->financialAccount->transactions()->create([
                 'date' => $paidAt,
                 'type' => 'expense',
