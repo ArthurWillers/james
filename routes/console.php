@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('finance:rollover-invoices')->daily();
+Schedule::command('finance:rollover-transactions')->daily();
