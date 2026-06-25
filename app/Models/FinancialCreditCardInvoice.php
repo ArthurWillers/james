@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Helpers\BusinessDayHelper;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -195,8 +194,8 @@ class FinancialCreditCardInvoice extends Model
 
         $dueDate = $dueMonth->day((int) min($card->due_day, $dueMonth->daysInMonth));
 
-        $this->closing_date = BusinessDayHelper::previousBusinessDay($closingDate);
-        $this->due_date = BusinessDayHelper::nextBusinessDay($dueDate);
+        $this->closing_date = $closingDate;
+        $this->due_date = $dueDate;
 
         $this->save();
     }
@@ -209,16 +208,14 @@ class FinancialCreditCardInvoice extends Model
         // Try current month as the reference month candidate
         $candidateMonth = $date->copy()->startOfMonth();
         $closingDate = $candidateMonth->copy()->day((int) min($card->closing_day, $candidateMonth->daysInMonth));
-        $adjustedClosingDate = BusinessDayHelper::previousBusinessDay($closingDate);
 
-        if ($date->copy()->startOfDay()->lte($adjustedClosingDate)) {
-            // Purchase date is on or before the adjusted closing date, belongs to the current month's invoice
+        if ($date->copy()->startOfDay()->lte($closingDate)) {
+            // Purchase date is on or before the closing date, belongs to the current month's invoice
             $referenceMonth = $candidateMonth;
         } else {
-            // Purchase date is after the adjusted closing date, belongs to the next month's invoice
+            // Purchase date is after the closing date, belongs to the next month's invoice
             $referenceMonth = $candidateMonth->addMonth();
             $closingDate = $referenceMonth->copy()->day((int) min($card->closing_day, $referenceMonth->daysInMonth));
-            $adjustedClosingDate = BusinessDayHelper::previousBusinessDay($closingDate);
         }
 
         $dueMonth = $card->due_day <= $card->closing_day
@@ -226,7 +223,6 @@ class FinancialCreditCardInvoice extends Model
             : $referenceMonth->copy();
 
         $dueDate = $dueMonth->day((int) min($card->due_day, $dueMonth->daysInMonth));
-        $adjustedDueDate = BusinessDayHelper::nextBusinessDay($dueDate);
 
         return static::firstOrCreate(
             [
@@ -234,8 +230,8 @@ class FinancialCreditCardInvoice extends Model
                 'reference_month' => $referenceMonth->toDateString(),
             ],
             [
-                'closing_date' => $adjustedClosingDate,
-                'due_date' => $adjustedDueDate,
+                'closing_date' => $closingDate,
+                'due_date' => $dueDate,
             ]
         );
     }

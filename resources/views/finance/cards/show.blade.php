@@ -77,9 +77,7 @@
                     </div>
                 </div>
                 
-                <div class="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
-                    <div class="{{ $colorClass }} h-3 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
-                </div>
+                <x-ui.progress :value="$usedLimit" :max="$card->credit_limit" :showValue="false" class="h-3" />
                 <div class="mt-2 text-xs font-medium text-neutral-500">
                     Usado: {{ formatCurrency($usedLimit) }} ({{ number_format($percentage, 1, ',', '.') }}%)
                 </div>
