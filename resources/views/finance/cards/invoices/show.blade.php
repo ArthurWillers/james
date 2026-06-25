@@ -92,49 +92,7 @@
         <h2 class="text-lg font-bold text-neutral-900">Transações</h2>
     </div>
 
-    <x-card class="overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-neutral-200">
-                <thead class="bg-neutral-50/50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Data</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Descrição</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wider">Valor</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-neutral-200">
-                    @forelse($transactions as $transaction)
-                        <tr class="hover:bg-neutral-50/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                                {{ formatShort($transaction->date) }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-neutral-900">
-                                    {{ $transaction->description }}
-                                </div>
-                                @if($transaction->installment_total > 1)
-                                    <div class="text-xs text-neutral-500 mt-0.5">
-                                        Parcela {{ $transaction->installment_current }} de {{ $transaction->installment_total }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="font-medium {{ $transaction->type === 'income' ? 'text-green-600' : 'text-neutral-900' }}">
-                                    {{ $transaction->type === 'income' ? '+' : '-' }} {{ formatCurrency($transaction->amount) }}
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="3" class="px-6 py-8 text-center text-neutral-500">
-                                Nenhuma transação nesta fatura.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </x-card>
+    <x-finance.transaction-table :transactions="$transactions" class="lg:mb-8" />
 
     @if($status !== 'paid' && !$isFavorable && $total > 0)
         <!-- Modal Pagamento -->

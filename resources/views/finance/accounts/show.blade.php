@@ -184,41 +184,13 @@
     @endif
 
     @if($recentTransactions->isNotEmpty())
-        <x-card class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Últimas Transações</h3>
-                <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700">
-                    Ver todas &rarr;
-                </a>
-            </div>
+        <div class="flex justify-between items-center mb-4 mt-8">
+            <h3 class="text-lg font-bold text-neutral-900">Últimas Transações</h3>
+            <a href="{{ route('financial.transactions.index', ['financial_account_id' => $account->id]) }}" class="text-sm font-medium text-brand-600 hover:text-brand-700">
+                Ver todas &rarr;
+            </a>
+        </div>
 
-            <div class="divide-y divide-neutral-100">
-                @foreach($recentTransactions as $transaction)
-                    <div class="py-3 first:pt-0 last:pb-0 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-full {{ $transaction->type === 'income' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600' }}">
-                                @if($transaction->type === 'income')
-                                    <x-heroicon-o-arrow-down-left class="size-4" />
-                                @else
-                                    <x-heroicon-o-arrow-up-right class="size-4" />
-                                @endif
-                            </div>
-                            <div>
-                                <div class="font-medium text-neutral-900">{{ $transaction->description }}</div>
-                                <div class="text-xs text-neutral-500">{{ $transaction->date->format('d/m/Y') }}</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-medium {{ $transaction->type === 'income' ? 'text-green-600' : 'text-neutral-900' }}">
-                                {{ $transaction->type === 'income' ? '+' : '-' }}{{ formatCurrency($transaction->amount) }}
-                            </div>
-                            @if(!$transaction->is_posted)
-                                <x-badge color="warning" size="sm" class="mt-1">Pendente</x-badge>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </x-card>
+        <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
     @endif
 </x-layouts.financial>

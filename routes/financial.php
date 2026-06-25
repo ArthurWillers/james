@@ -36,6 +36,6 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('transactions/transfer/create', [FinancialTransactionController::class, 'createTransfer'])->name('transactions.transfer.create');
     Route::post('transactions/transfer', [FinancialTransactionController::class, 'storeTransfer'])->name('transactions.transfer.store');
     Route::resource('transactions', FinancialTransactionController::class)->parameters([
-        'transactions' => 'financialTransaction',
+        'transactions' => 'transaction',
     ]);
 });
