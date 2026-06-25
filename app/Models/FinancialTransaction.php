@@ -133,7 +133,7 @@ class FinancialTransaction extends Model
             'financial_taggables',
             'financial_taggable_id',
             'financial_tag_id'
-        );
+        )->withPivot('is_primary');
     }
 
     /**

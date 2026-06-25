@@ -61,11 +61,15 @@
                         <div x-show="mode === 'installment'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" style="display: none;">
                             <x-form-input label="Número de Parcelas" name="installments" type="number" min="2" value="{{ old('installments', 2) }}" />
                         </div>
+                        
+                        <div>
+                            <x-form.tags-selector name="tags[]" :options="$tags" label="Tags (Opcional)" :value="old('tags', [])" :primaryValue="old('primary_tag_id')" xDisablePrimary="items.length > 0" />
+                        </div>
                     </div>
                 </x-card>
 
                 <!-- Seção de Itens da Transação -->
-                <x-finance.transaction-items />
+                <x-finance.transaction-items :tags="$tags" />
             </div>
 
             <!-- Right Column: Configurações -->
@@ -88,8 +92,8 @@
                     {{-- Conta ou Cartão --}}
                     <div class="space-y-4 pt-2">
                         <x-form.radio-block-group legend="Onde">
-                            <x-form.radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" activeClass="peer-checked:text-neutral-900 peer-checked:ring-2 peer-checked:ring-primary-500" class="ring-1 ring-neutral-200" />
-                            <x-form.radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" activeClass="peer-checked:text-neutral-900 peer-checked:ring-2 peer-checked:ring-primary-500" class="ring-1 ring-neutral-200" />
+                            <x-form.radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
+                            <x-form.radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
                         </x-form.radio-block-group>
                         
                         <div>

@@ -65,7 +65,14 @@ class FinancialTransactionController extends Controller
     {
         $accounts = FinancialAccount::all();
         $cards = FinancialCreditCard::all();
-        $tags = FinancialTag::all();
+        $tags = FinancialTag::all()->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'color_hex' => $tag->color_hex,
+                'svg' => \Illuminate\Support\Facades\Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon])
+            ];
+        });
 
         return view('finance.transactions.create', compact('accounts', 'cards', 'tags'));
     }
@@ -99,8 +106,19 @@ class FinancialTransactionController extends Controller
                 ]);
             }
 
-            if (! empty($validated['tags'])) {
-                $transaction->tags()->sync($validated['tags']);
+            $globalTags = $validated['tags'] ?? [];
+            $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
+            $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
+
+            if (!empty($validated['items'])) {
+                foreach ($validated['items'] as $itemData) {
+                    $item = $transaction->items()->create([
+                        'description' => $itemData['description'],
+                        'quantity' => $itemData['quantity'],
+                        'unit_price' => $itemData['unit_price'],
+                    ]);
+                    $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+                }
             }
         } elseif ($mode === 'installment') {
             if (! empty($validated['financial_credit_card_id'])) {
@@ -123,9 +141,23 @@ class FinancialTransactionController extends Controller
                     $validated['type']
                 );
 
-                if (! empty($validated['tags'])) {
-                    foreach ($transactions as $transaction) {
-                        $transaction->tags()->sync($validated['tags']);
+                $globalTags = $validated['tags'] ?? [];
+                $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
+
+                if (! empty($validated['tags']) || ! empty($validated['items'])) {
+                    foreach ($transactions as $t) {
+                        $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
+                        
+                        if (!empty($validated['items'])) {
+                            foreach ($validated['items'] as $itemData) {
+                                $item = $t->items()->create([
+                                    'description' => $itemData['description'],
+                                    'quantity' => $itemData['quantity'],
+                                    'unit_price' => $itemData['unit_price'],
+                                ]);
+                                $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+                            }
+                        }
                     }
                 }
             }
@@ -172,7 +204,14 @@ class FinancialTransactionController extends Controller
     public function edit(FinancialTransaction $transaction)
     {
         $accounts = FinancialAccount::all();
-        $tags = FinancialTag::all();
+        $tags = FinancialTag::all()->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'color_hex' => $tag->color_hex,
+                'svg' => \Illuminate\Support\Facades\Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon])
+            ];
+        });
 
         return view('finance.transactions.edit', compact('transaction', 'accounts', 'tags'));
     }
@@ -181,19 +220,45 @@ class FinancialTransactionController extends Controller
     {
         $transaction->update($request->validated());
 
-        if ($request->has('tags')) {
-            $transaction->tags()->sync($request->tags);
+        $globalTags = $request->tags ?? [];
+        $globalPrimaryId = !$request->has('items') ? ($request->primary_tag_id ?? null) : null;
+        $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
+        
+        if ($request->has('items')) {
+            $transaction->items()->delete();
+            foreach ($request->items as $itemData) {
+                $item = $transaction->items()->create([
+                    'description' => $itemData['description'],
+                    'quantity' => $itemData['quantity'],
+                    'unit_price' => $itemData['unit_price'],
+                ]);
+                $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+            }
         } else {
-            $transaction->tags()->detach();
+            $transaction->items()->delete();
         }
 
-        return redirect()->route('financial.transactions.show', $transaction)->with('success', 'Transação atualizada.');
+        return redirect()->route('financial.transactions.show', $transaction)->with('success', 'Transação atualizada com sucesso.');
     }
 
     public function destroy(FinancialTransaction $transaction)
     {
         $transaction->delete();
 
-        return redirect()->route('financial.transactions.index')->with('success', 'Transação excluída.');
+        return redirect()->route('financial.transactions.index')->with('success', 'Transação movida para a lixeira com sucesso.');
+    }
+
+    private function syncTagsWithPrimary($model, array $tags, $primaryId)
+    {
+        if (empty($tags)) {
+            $model->tags()->detach();
+            return;
+        }
+
+        $syncData = [];
+        foreach ($tags as $tagId) {
+            $syncData[$tagId] = ['is_primary' => ($tagId == $primaryId)];
+        }
+        $model->tags()->sync($syncData);
     }
 }

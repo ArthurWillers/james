@@ -43,11 +43,15 @@ class UpdateFinancialTransactionRequest extends FormRequest
             'financial_credit_card_invoice_id' => ['nullable', 'required_if:targetType,card', 'exists:financial_credit_card_invoices,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:financial_tags,id'],
+            'primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
             'is_posted' => ['boolean'],
             'items' => ['nullable', 'array'],
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
             'items.*.unit_price' => ['required', 'numeric', 'not_in:0'],
+            'items.*.tags' => ['nullable', 'array'],
+            'items.*.tags.*' => ['exists:financial_tags,id'],
+            'items.*.primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
         ];
     }
 

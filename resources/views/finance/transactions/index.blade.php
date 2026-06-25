@@ -55,17 +55,15 @@
             @forelse($transactions as $transaction)
                 <x-ui.table.row href="{{ route('financial.transactions.show', $transaction) }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
                     <x-ui.table.cell>
-                        <div class="flex flex-col gap-1">
-                            <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
-                            @if(!$transaction->is_posted)
-                                <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 inline-block w-fit">Pendente</span>
-                            @endif
-                        </div>
+                        <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
                     </x-ui.table.cell>
 
                     <x-ui.table.cell>
-                        <div class="flex flex-col justify-center">
+                        <div class="flex items-center gap-2">
                             <span class="font-semibold text-neutral-900 truncate">{{ $transaction->description }}</span>
+                            @if(!$transaction->is_posted)
+                                <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                            @endif
                         </div>
                     </x-ui.table.cell>
 
@@ -86,16 +84,35 @@
                     </x-ui.table.cell>
 
                     <x-ui.table.cell>
-                        <div class="flex flex-wrap gap-1">
-                            @foreach($transaction->tags->take(2) as $tag)
-                                <span class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset" 
-                                      style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
-                                    <x-ui.avatar :icon="$tag->icon" class="!border-transparent !text-white w-3 h-3" style="background-color: {{ $tag->color_hex }};" />
-                                    {{ Str::limit($tag->name, 10) }}
+                        @php
+                            $tags = $transaction->tags;
+                            $primary = $tags->firstWhere('pivot.is_primary', true);
+                            $others = $tags->reject(fn($t) => $t->id === optional($primary)->id);
+                            
+                            $visibleTags = collect(array_filter([$primary, $others->first()]))->take(2);
+                            $remainingCount = $tags->count() - $visibleTags->count();
+                        @endphp
+                        
+                        <div class="flex items-center gap-1.5">
+                            @foreach($visibleTags as $tag)
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                                      style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;"
+                                      title="{{ $tag->name }}">
+                                    @if(isset($primary) && $tag->id === $primary->id)
+                                        <span class="text-yellow-500 shrink-0 relative -ml-0.5">
+                                            <x-heroicon-s-star class="size-2.5" />
+                                        </span>
+                                    @endif
+                                    <x-dynamic-component :component="$tag->icon" class="size-3" />
+                                    <span class="truncate max-w-[80px]">{{ $tag->name }}</span>
                                 </span>
                             @endforeach
-                            @if($transaction->tags->count() > 2)
-                                <span class="text-[10px] font-medium text-neutral-500 bg-neutral-100 px-1 rounded-md">+{{ $transaction->tags->count() - 2 }}</span>
+
+                            @if($remainingCount > 0)
+                                <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help"
+                                      title="{{ $others->skip($visibleTags->count() - ($primary ? 1 : 0))->pluck('name')->join(', ') }}">
+                                    +{{ $remainingCount }}
+                                </span>
                             @endif
                         </div>
                     </x-ui.table.cell>

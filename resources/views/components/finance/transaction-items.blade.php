@@ -1,3 +1,5 @@
+@props(['tags'])
+
 <x-card class="p-6 flex flex-col">
     <div class="flex justify-between items-center mb-6 shrink-0">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Itens da Transação (Opcional)</h3>
@@ -16,18 +18,32 @@
         </div>
         
         <template x-for="(item, index) in items" :key="index">
-            <div class="flex gap-2 items-start">
+            <div class="flex gap-2 items-start py-1">
                 <div class="flex-1">
                     <x-form-input x-model="item.description" ::name="'items['+index+'][description]'" placeholder="Descrição" />
                 </div>
-                <div class="w-24">
+                <div class="w-24 shrink-0">
                     <x-form-input x-data @input="$event.target.value = $event.target.value.replace(/[^0-9.,]/g, '')" inputmode="decimal" x-model="item.quantity" ::name="'items['+index+'][quantity]'" placeholder="0" />
                 </div>
-                <div class="w-32">
+                <div class="w-28 shrink-0">
                     <x-form-input x-data @input="$event.target.value = $event.target.value.replace(/[^-0-9.,]/g, '')" inputmode="decimal" x-model="item.unit_price" ::name="'items['+index+'][unit_price]'" placeholder="0,00" />
                 </div>
-                <div class="w-8 shrink-0 flex justify-center pt-1.5">
-                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5!" aria-label="Remover">
+                <div class="flex items-center gap-1 shrink-0 pt-1.5 px-1">
+                    <x-form.tags-selector 
+                        x-name="`items[${index}][tags][]`" 
+                        :options="$tags" 
+                        x-value="item.tags ? Object.values(item.tags).map(Number) : []"
+                        x-primary-value="item.primary_tag_id ? Number(item.primary_tag_id) : null"
+                    >
+                        <x-slot:trigger>
+                            <button type="button" class="cursor-pointer p-1.5 text-neutral-400 hover:text-accent hover:bg-neutral-100 rounded-lg transition-colors relative" title="Gerenciar Tags">
+                                <x-heroicon-o-tag class="size-4" />
+                                <span x-show="selectedIds.length > 0" class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm ring-2 ring-white" x-text="selectedIds.length"></span>
+                            </button>
+                        </x-slot:trigger>
+                    </x-form.tags-selector>
+
+                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5! hover:bg-red-50" aria-label="Remover">
                         <x-heroicon-o-trash class="size-4" />
                     </x-button>
                 </div>

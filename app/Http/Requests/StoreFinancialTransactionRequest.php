@@ -44,11 +44,15 @@ class StoreFinancialTransactionRequest extends FormRequest
             'financial_credit_card_id' => ['nullable', 'required_if:targetType,card', 'exists:financial_credit_cards,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:financial_tags,id'],
+            'primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
             'installments' => ['required_if:mode,installment', 'integer', 'min:2'],
             'items' => ['nullable', 'array'],
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
             'items.*.unit_price' => ['required', 'numeric', 'not_in:0'],
+            'items.*.tags' => ['nullable', 'array'],
+            'items.*.tags.*' => ['exists:financial_tags,id'],
+            'items.*.primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
         ];
     }
 
