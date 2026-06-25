@@ -17,7 +17,7 @@
         <x-nav.module-nav-link :href="route('financial.accounts.index')" :current="request()->routeIs('financial.accounts.*')">
             Contas
         </x-nav.module-nav-link>
-        <x-nav.module-nav-link href="#" :current="request()->routeIs('financial.credit-cards.*')">
+        <x-nav.module-nav-link :href="route('financial.cards.index')" :current="request()->routeIs('financial.cards.*')">
             Cartões
         </x-nav.module-nav-link>
         <x-nav.module-nav-link :href="route('financial.tags.index')" :current="request()->routeIs('financial.tags.*')">
