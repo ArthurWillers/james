@@ -17,7 +17,7 @@ class FinancialTransactionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = FinancialTransaction::query()->with(['account', 'invoice', 'tags']);
+        $query = FinancialTransaction::query()->with(['account', 'invoice.creditCard', 'tags']);
 
         if ($request->filled('search')) {
             $query->search($request->search);
