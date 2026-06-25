@@ -33,6 +33,9 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::post('cards/{card}/invoices/{invoice}/pay', [FinancialCreditCardInvoiceController::class, 'pay'])->name('cards.invoices.pay');
 
     // Transactions
+    Route::get('/transactions/trashed', [FinancialTransactionController::class, 'trashed'])->name('transactions.trashed');
+    Route::patch('/transactions/{transaction}/restore', [FinancialTransactionController::class, 'restore'])->name('transactions.restore')->withTrashed();
+    Route::delete('/transactions/{transaction}/force', [FinancialTransactionController::class, 'forceDestroy'])->name('transactions.forceDestroy')->withTrashed();
     Route::get('transactions/transfer/create', [FinancialTransactionController::class, 'createTransfer'])->name('transactions.transfer.create');
     Route::post('transactions/transfer', [FinancialTransactionController::class, 'storeTransfer'])->name('transactions.transfer.store');
     Route::resource('transactions', FinancialTransactionController::class)->parameters([

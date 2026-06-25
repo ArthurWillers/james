@@ -2,7 +2,7 @@
     <div class="flex justify-between items-center mb-6">
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('financial.transactions.index') }}">Transações</x-breadcrumbs.item>
-            <x-breadcrumbs.item>{{ $transaction->description }}</x-breadcrumbs.item>
+            <x-breadcrumbs.item>#{{ $transaction->id }}</x-breadcrumbs.item>
         </x-breadcrumbs>
     </div>
 

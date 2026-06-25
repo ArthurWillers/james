@@ -1,9 +1,15 @@
 <x-layouts.financial>
     <x-page-header title="Transações" :action="route('financial.transactions.create')" actionText="Nova Transação" icon="heroicon-o-plus">
         <x-button color="outline" href="{{ route('financial.transactions.transfer.create') }}" class="bg-white">
-            <x-heroicon-o-arrows-right-left class="size-5!" />
+            <x-heroicon-o-arrows-right-left class="size-4!" />
             Transferência
         </x-button>
+        @if($hasTrashed)
+            <x-button color="outline" href="{{ route('financial.transactions.trashed') }}" class="bg-white">
+                <x-heroicon-o-trash class="size-4" />
+                Lixeira
+            </x-button>
+        @endif
     </x-page-header>
 
     <x-filter-bar 

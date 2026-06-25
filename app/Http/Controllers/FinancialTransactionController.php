@@ -57,8 +57,9 @@ class FinancialTransactionController extends Controller
 
         $accounts = FinancialAccount::all();
         $tags = FinancialTag::all();
+        $hasTrashed = FinancialTransaction::onlyTrashed()->exists();
 
-        return view('finance.transactions.index', compact('transactions', 'accounts', 'tags'));
+        return view('finance.transactions.index', compact('transactions', 'accounts', 'tags', 'hasTrashed'));
     }
 
     public function create()
@@ -245,7 +246,32 @@ class FinancialTransactionController extends Controller
     {
         $transaction->delete();
 
-        return redirect()->route('financial.transactions.index')->with('success', 'Transação movida para a lixeira com sucesso.');
+        return redirect()->route('financial.transactions.index')->with('success', 'Transação movida para a lixeira.');
+    }
+
+    public function trashed(Request $request)
+    {
+        $transactions = FinancialTransaction::onlyTrashed()
+            ->with(['account', 'invoice.creditCard'])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(15);
+
+        return view('finance.transactions.trashed', compact('transactions'));
+    }
+
+    public function restore(FinancialTransaction $transaction)
+    {
+        $transaction->restore();
+
+        return redirect()->back()->with('success', 'Transação restaurada com sucesso.');
+    }
+
+    public function forceDestroy(FinancialTransaction $transaction)
+    {
+        $transaction->forceDelete();
+
+        return redirect()->back()->with('success', 'Transação excluída permanentemente.');
     }
 
     private function syncTagsWithPrimary($model, array $tags, $primaryId)
