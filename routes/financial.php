@@ -4,6 +4,7 @@ use App\Http\Controllers\FinancialAccountController;
 use App\Http\Controllers\FinancialCreditCardController;
 use App\Http\Controllers\FinancialCreditCardInvoiceController;
 use App\Http\Controllers\FinancialTagController;
+use App\Http\Controllers\FinancialTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('financial')->name('financial.')->group(function () {
@@ -30,4 +31,11 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('cards/{card}/invoices/{invoice}', [FinancialCreditCardInvoiceController::class, 'show'])->name('cards.invoices.show');
     Route::put('cards/{card}/invoices/{invoice}', [FinancialCreditCardInvoiceController::class, 'update'])->name('cards.invoices.update');
     Route::post('cards/{card}/invoices/{invoice}/pay', [FinancialCreditCardInvoiceController::class, 'pay'])->name('cards.invoices.pay');
+
+    // Transactions
+    Route::get('transactions/transfer/create', [FinancialTransactionController::class, 'createTransfer'])->name('transactions.transfer.create');
+    Route::post('transactions/transfer', [FinancialTransactionController::class, 'storeTransfer'])->name('transactions.transfer.store');
+    Route::resource('transactions', FinancialTransactionController::class)->parameters([
+        'transactions' => 'financialTransaction',
+    ]);
 });

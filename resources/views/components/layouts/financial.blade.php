@@ -3,7 +3,7 @@
         <x-nav.module-nav-link :href="route('financial.dashboard')" :current="request()->routeIs('financial.dashboard')">
             Dashboard
         </x-nav.module-nav-link>
-        <x-nav.module-nav-link href="#" :current="request()->routeIs('financial.transactions.*')">
+        <x-nav.module-nav-link :href="route('financial.transactions.index')" :current="request()->routeIs('financial.transactions.*')">
             Transações
         </x-nav.module-nav-link>
         <x-nav.module-nav-link href="#" :current="request()->routeIs('financial.recurrences.*')">
