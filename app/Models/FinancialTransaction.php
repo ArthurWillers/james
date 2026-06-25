@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 #[Fillable([
     'financial_account_id',
@@ -41,6 +43,31 @@ class FinancialTransaction extends Model
             'date' => 'date',
             'is_posted' => 'boolean',
         ];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $transaction) {
+            if ($transaction->transfer_pair_id) {
+                static::withoutEvents(function () use ($transaction) {
+                    if ($transaction->isForceDeleting()) {
+                        static::withTrashed()
+                            ->where('transfer_pair_id', $transaction->transfer_pair_id)
+                            ->where('id', '!=', $transaction->id)
+                            ->get()
+                            ->each(fn ($pair) => $pair->forceDelete());
+                    } else {
+                        static::where('transfer_pair_id', $transaction->transfer_pair_id)
+                            ->where('id', '!=', $transaction->id)
+                            ->get()
+                            ->each(fn ($pair) => $pair->delete());
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -129,5 +156,110 @@ class FinancialTransaction extends Model
     public function scopePending(Builder $query): Builder
     {
         return $query->where('is_posted', false);
+    }
+
+    /**
+     * Create installments on a standard account.
+     *
+     * @return Collection<int, self>
+     */
+    public static function createInstallmentsOnAccount(
+        FinancialAccount $account,
+        Carbon $purchaseDate,
+        float $totalAmount,
+        int $installments,
+        string $description,
+        string $type = 'expense'
+    ): Collection {
+        $totalCents = (int) round($totalAmount * 100);
+        $installmentCents = (int) floor($totalCents / $installments);
+        $remainderCents = $totalCents - ($installmentCents * $installments);
+
+        $createdTransactions = collect();
+
+        for ($i = 1; $i <= $installments; $i++) {
+            $amountCents = $installmentCents;
+            if ($i === $installments) {
+                $amountCents += $remainderCents;
+            }
+
+            $amount = round($amountCents / 100, 2);
+            $date = $purchaseDate->copy()->addMonths($i - 1);
+            $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
+
+            $transaction = static::create([
+                'financial_account_id' => $account->id,
+                'type' => $type,
+                'amount' => $amount,
+                'description' => $description,
+                'date' => $date,
+                'is_posted' => $isPosted,
+                'installment_current' => $i,
+                'installment_total' => $installments,
+            ]);
+
+            $createdTransactions->push($transaction);
+        }
+
+        return $createdTransactions;
+    }
+
+    /**
+     * Create a transfer between two accounts.
+     *
+     * @return array<int, self>
+     */
+    public static function createTransfer(
+        FinancialAccount $from,
+        FinancialAccount $to,
+        float $amount,
+        Carbon $date,
+        string $description,
+        ?float $feeAmount = null,
+        ?int $feeTagId = null
+    ): array {
+        $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
+
+        $expense = static::create([
+            'financial_account_id' => $from->id,
+            'type' => 'expense',
+            'amount' => $amount,
+            'description' => $description,
+            'date' => $date,
+            'is_posted' => $isPosted,
+        ]);
+
+        $expense->update(['transfer_pair_id' => $expense->id]);
+
+        $income = static::create([
+            'financial_account_id' => $to->id,
+            'type' => 'income',
+            'amount' => $amount,
+            'description' => $description,
+            'date' => $date,
+            'is_posted' => $isPosted,
+            'transfer_pair_id' => $expense->id,
+        ]);
+
+        $transactions = [$expense, $income];
+
+        if ($feeAmount !== null && $feeAmount > 0) {
+            $fee = static::create([
+                'financial_account_id' => $from->id,
+                'type' => 'expense',
+                'amount' => $feeAmount,
+                'description' => "Taxa/imposto — {$description}",
+                'date' => $date,
+                'is_posted' => $isPosted,
+            ]);
+
+            if ($feeTagId !== null) {
+                $fee->tags()->attach($feeTagId, ['is_primary' => true]);
+            }
+
+            $transactions[] = $fee;
+        }
+
+        return $transactions;
     }
 }
