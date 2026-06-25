@@ -11,6 +11,18 @@ class StoreFinancialTransactionRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('amount') && is_string($this->amount)) {
+            $amount = str_replace(['R$', ' '], '', $this->amount);
+            if (strpos($amount, ',') !== false) {
+                $amount = str_replace('.', '', $amount);
+                $amount = str_replace(',', '.', $amount);
+            }
+            $this->merge(['amount' => $amount]);
+        }
+    }
+
     public function rules(): array
     {
         return [
