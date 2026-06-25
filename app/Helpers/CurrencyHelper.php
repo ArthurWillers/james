@@ -16,13 +16,15 @@ namespace App\Helpers {
 }
 
 namespace {
+    use App\Helpers\CurrencyHelper;
+
     if (! function_exists('formatCurrency')) {
         /**
          * Helper global para formatar moedas.
          */
         function formatCurrency(int|float $value, string $currency = '', ?string $locale = null): string
         {
-            return \App\Helpers\CurrencyHelper::format($value, $currency, $locale);
+            return CurrencyHelper::format($value, $currency, $locale);
         }
     }
 }

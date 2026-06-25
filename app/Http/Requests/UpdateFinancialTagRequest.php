@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidIcon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class UpdateFinancialTagRequest extends FormRequest
@@ -27,7 +29,7 @@ class UpdateFinancialTagRequest extends FormRequest
      */
     protected function failedAuthorization()
     {
-        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+        throw new HttpResponseException(
             redirect()->route('financial.tags.index')->with('error', 'Tags protegidas não podem ser editadas.')
         );
     }
@@ -41,7 +43,7 @@ class UpdateFinancialTagRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('financial_tags', 'name')->ignore($this->route('financialTag'))],
-            'icon' => ['required', 'string', 'max:255', new \App\Rules\ValidIcon()],
+            'icon' => ['required', 'string', 'max:255', new ValidIcon],
             'color_hex' => ['nullable', 'string', 'regex:/^#([a-f0-9]{6}|[a-f0-9]{3})$/i'],
         ];
     }
