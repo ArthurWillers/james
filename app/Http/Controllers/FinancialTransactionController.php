@@ -12,6 +12,7 @@ use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Blade;
 
 class FinancialTransactionController extends Controller
 {
@@ -71,7 +72,7 @@ class FinancialTransactionController extends Controller
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'color_hex' => $tag->color_hex,
-                'svg' => \Illuminate\Support\Facades\Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon])
+                'svg' => Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
             ];
         });
 
@@ -111,12 +112,13 @@ class FinancialTransactionController extends Controller
             $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
             $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
-            if (!empty($validated['items'])) {
+            if (! empty($validated['items'])) {
                 foreach ($validated['items'] as $itemData) {
                     $item = $transaction->items()->create([
                         'description' => $itemData['description'],
                         'quantity' => $itemData['quantity'],
                         'unit_price' => $itemData['unit_price'],
+                        'total' => $itemData['quantity'] * $itemData['unit_price'],
                     ]);
                     $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
                 }
@@ -148,13 +150,14 @@ class FinancialTransactionController extends Controller
                 if (! empty($validated['tags']) || ! empty($validated['items'])) {
                     foreach ($transactions as $t) {
                         $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
-                        
-                        if (!empty($validated['items'])) {
+
+                        if (! empty($validated['items'])) {
                             foreach ($validated['items'] as $itemData) {
                                 $item = $t->items()->create([
                                     'description' => $itemData['description'],
                                     'quantity' => $itemData['quantity'],
                                     'unit_price' => $itemData['unit_price'],
+                                    'total' => $itemData['quantity'] * $itemData['unit_price'],
                                 ]);
                                 $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
                             }
@@ -204,34 +207,63 @@ class FinancialTransactionController extends Controller
 
     public function edit(FinancialTransaction $transaction)
     {
+        $transaction->load(['tags', 'items.tags', 'invoice.creditCard']);
         $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
         $tags = FinancialTag::all()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'color_hex' => $tag->color_hex,
-                'svg' => \Illuminate\Support\Facades\Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon])
+                'svg' => Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
             ];
         });
 
-        return view('finance.transactions.edit', compact('transaction', 'accounts', 'tags'));
+        return view('finance.transactions.edit', compact('transaction', 'accounts', 'cards', 'tags'));
     }
 
     public function update(UpdateFinancialTransactionRequest $request, FinancialTransaction $transaction)
     {
-        $transaction->update($request->validated());
+        $validated = $request->validated();
 
-        $globalTags = $request->tags ?? [];
-        $globalPrimaryId = !$request->has('items') ? ($request->primary_tag_id ?? null) : null;
+        if (! empty($validated['financial_credit_card_id'])) {
+            $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+            $date = Carbon::parse($validated['date']);
+            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+
+            $transaction->update([
+                'financial_account_id' => null,
+                'financial_credit_card_invoice_id' => $invoice->id,
+                'type' => $validated['type'],
+                'amount' => $validated['amount'],
+                'description' => $validated['description'],
+                'date' => $date,
+            ]);
+        } else {
+            $date = Carbon::parse($validated['date']);
+            $transaction->update([
+                'financial_account_id' => $validated['financial_account_id'],
+                'financial_credit_card_invoice_id' => null,
+                'type' => $validated['type'],
+                'amount' => $validated['amount'],
+                'description' => $validated['description'],
+                'date' => $date,
+                'is_posted' => $date->startOfDay()->lte(Carbon::today()),
+            ]);
+        }
+
+        $globalTags = $validated['tags'] ?? [];
+        $globalPrimaryId = ! $request->has('items') ? ($validated['primary_tag_id'] ?? null) : null;
         $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
-        
+
         if ($request->has('items')) {
             $transaction->items()->delete();
-            foreach ($request->items as $itemData) {
+            foreach ($validated['items'] as $itemData) {
                 $item = $transaction->items()->create([
                     'description' => $itemData['description'],
                     'quantity' => $itemData['quantity'],
                     'unit_price' => $itemData['unit_price'],
+                    'total' => $itemData['quantity'] * $itemData['unit_price'],
                 ]);
                 $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
             }
@@ -278,6 +310,7 @@ class FinancialTransactionController extends Controller
     {
         if (empty($tags)) {
             $model->tags()->detach();
+
             return;
         }
 

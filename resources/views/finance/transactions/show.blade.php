@@ -258,12 +258,6 @@
                     @endforeach
                 </x-ui.table.body>
             </x-ui.table>
-            <div class="bg-neutral-50 px-6 py-4 border-t border-neutral-200 flex justify-end">
-                <div class="text-right flex items-center gap-4">
-                    <span class="text-xs font-bold text-neutral-500 uppercase tracking-widest">Soma dos Itens</span>
-                    <span class="text-xl font-bold tracking-tight text-neutral-900">{{ formatCurrency($transaction->items->sum(fn($i) => $i->quantity * $i->unit_price)) }}</span>
-                </div>
-            </div>
         </x-card>
     @endif
 </x-layouts.financial>
