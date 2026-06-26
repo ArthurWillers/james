@@ -11,6 +11,15 @@ class StoreFinancialTransferRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        foreach (['amount', 'fee_amount'] as $field) {
+            if ($this->has($field) && is_string($this->$field)) {
+                $this->merge([$field => str_replace(',', '.', $this->$field)]);
+            }
+        }
+    }
+
     public function rules(): array
     {
         return [

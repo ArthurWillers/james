@@ -173,9 +173,8 @@ class FinancialTransactionController extends Controller
     public function createTransfer()
     {
         $accounts = FinancialAccount::all();
-        $tags = FinancialTag::all();
 
-        return view('finance.transactions.transfer', compact('accounts', 'tags'));
+        return view('finance.transactions.transfer', compact('accounts'));
     }
 
     public function storeTransfer(StoreFinancialTransferRequest $request)
@@ -192,7 +191,7 @@ class FinancialTransactionController extends Controller
             Carbon::parse($validated['date']),
             $validated['description'],
             $validated['fee_amount'] ?? null,
-            $validated['fee_tag_id'] ?? null
+            ! empty($validated['fee_amount']) ? FinancialTag::JUROS_ID : null
         );
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transferência criada com sucesso.');
