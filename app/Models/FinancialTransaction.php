@@ -241,6 +241,9 @@ class FinancialTransaction extends Model
             'transfer_pair_id' => $expense->id,
         ]);
 
+        $expense->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
+        $income->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
+
         $transactions = [$expense, $income];
 
         if ($feeAmount !== null && $feeAmount > 0) {

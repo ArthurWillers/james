@@ -37,6 +37,14 @@ class FinancialTagSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Transferência',
+                'icon' => 'heroicon-o-arrows-right-left',
+                'color_hex' => '#8b5cf6', // violet-500
+                'is_protected' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // Adiciona as tags padrão do sistema como tags desprotegidas (podem ser editadas/apagadas)

@@ -23,6 +23,8 @@ class FinancialTag extends Model
 
     public const SALDO_INICIAL_ID = 3;
 
+    public const TRANSFERENCIA_ID = 4;
+
     /**
      * Get the transactions associated with the tag.
      *
