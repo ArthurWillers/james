@@ -118,6 +118,14 @@ class FinancialCreditCardInvoice extends Model
     }
 
     /**
+     * Check if the invoice is fully paid.
+     */
+    public function isPaid(): bool
+    {
+        return $this->status() === 'paid';
+    }
+
+    /**
      * Register a payment for this invoice.
      */
     public function registerPayment(float $amount, Carbon $paidAt, ?float $interestAmount = null): void

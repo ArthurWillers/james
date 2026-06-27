@@ -40,17 +40,37 @@
     </x-page-header>
 
     <x-card class="mb-6 p-6">
-        <div class="flex items-center gap-6">
-            <x-ui.avatar :icon="$account->type->icon()" size="xl" />
-            
-            <div class="flex flex-col gap-2">
-                <h2 class="text-2xl font-bold text-neutral-900">{{ $account->name }}</h2>
-                <div>
-                    <x-badge color="accent" size="sm">
-                        {{ $account->type->label() }}
-                    </x-badge>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <x-ui.avatar :icon="$account->type->icon()" size="xl" />
+                
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-2xl font-bold text-neutral-900">{{ $account->name }}</h2>
+                    <div>
+                        <x-badge color="accent" size="sm">
+                            {{ $account->type->label() }}
+                        </x-badge>
+                    </div>
                 </div>
             </div>
+
+            @if(!empty($account->pix_keys))
+                <div class="md:text-right flex flex-col md:items-end gap-2 border-t md:border-t-0 md:border-l border-neutral-100 pt-4 md:pt-0 md:pl-6 overflow-x-auto">
+                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Chaves Pix</h3>
+                    <div class="flex gap-6 md:justify-end">
+                        @foreach(array_chunk($account->pix_keys, 3) as $chunk)
+                            <div class="flex flex-col gap-1.5 min-w-max">
+                                @foreach($chunk as $pixKey)
+                                    <div class="flex items-center md:justify-end gap-2 text-sm">
+                                        <span class="font-medium text-neutral-500">{{ $pixKey['label'] }}:</span>
+                                        <span class="font-semibold text-neutral-900">{{ $pixKey['value'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </x-card>
 
@@ -104,82 +124,62 @@
         </x-card>
     </div>
 
-    @if(!empty($account->pix_keys) || $creditCards->isNotEmpty())
-        <div class="grid grid-cols-1 {{ (!empty($account->pix_keys) && $creditCards->isNotEmpty()) ? 'md:grid-cols-2' : '' }} gap-6 mb-6">
-            @if(!empty($account->pix_keys))
-                <x-card class="h-full p-6 flex flex-col">
-                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">Chaves Pix</h3>
-                    <div class="overflow-y-auto max-h-[300px] pr-2 -mr-2">
-                        <div class="divide-y divide-neutral-100">
-                            @foreach($account->pix_keys as $pixKey)
-                                <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
-                                    <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $pixKey['label'] }}</span>
-                                    <span class="text-[15px] text-neutral-800 break-all">{{ $pixKey['value'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </x-card>
-            @endif
-
-            @if($creditCards->isNotEmpty())
-                <div class="flex flex-col gap-4">
-                    @foreach($creditCards as $card)
-                        <x-card class="p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-neutral-100 rounded-lg text-neutral-600">
-                                        <x-heroicon-o-credit-card class="size-5" />
+    @if($creditCards->isNotEmpty())
+        <div class="mb-6">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Cartões de Crédito</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                @foreach($creditCards as $card)
+                    <x-card class="p-4 flex flex-col justify-between hover:border-neutral-300 transition-colors">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <div class="p-1.5 bg-neutral-100 rounded text-neutral-600 shrink-0">
+                                        <x-heroicon-o-credit-card class="size-4" />
                                     </div>
-                                    <div>
-                                        <h3 class="font-bold text-neutral-900">{{ $card->name }}</h3>
-                                        <p class="text-xs text-neutral-500">
-                                            Vencimento dia {{ $card->due_day }} • Fechamento dia {{ $card->closing_day }}
-                                        </p>
+                                    <div class="min-w-0">
+                                        <h3 class="font-bold text-sm text-neutral-900 truncate" title="{{ $card->name }}">{{ $card->name }}</h3>
+                                        <p class="text-[10px] text-neutral-500 truncate">Vence dia {{ $card->due_day }} • Fecha dia {{ $card->closing_day }}</p>
                                     </div>
                                 </div>
-                                @if($card->credit_limit)
-                                    <div class="text-right">
-                                        <div class="text-xs text-neutral-500">Limite</div>
-                                        <div class="font-medium text-neutral-900">{{ formatCurrency($card->credit_limit) }}</div>
-                                    </div>
-                                @endif
+                                <a href="{{ route('financial.cards.show', $card) }}" class="p-1 -mr-1 -mt-1 text-neutral-400 hover:text-brand-600 transition-colors" title="Ver Cartão">
+                                    <x-heroicon-o-arrow-top-right-on-square class="size-4" />
+                                </a>
                             </div>
+
+                            @if($card->credit_limit)
+                                <div class="flex justify-between items-center text-xs text-neutral-500 mb-3">
+                                    <span>Limite Total</span>
+                                    <span class="font-semibold text-neutral-900">{{ formatCurrency($card->credit_limit) }}</span>
+                                </div>
+                            @endif
 
                             @php
                                 $currentInvoice = $card->invoices->first();
                             @endphp
 
                             @if($currentInvoice)
-                                <div class="bg-neutral-50 rounded-lg p-4 flex justify-between items-center">
+                                <div class="flex justify-between items-end border-t border-neutral-100 pt-3">
                                     <div>
-                                        <div class="text-xs text-neutral-500 mb-1">Fatura atual</div>
-                                        <div class="font-bold text-lg {{ $currentInvoice->isPaid() ? 'text-green-600' : 'text-neutral-900' }}">
+                                        <div class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-1">Fatura Atual</div>
+                                        <div class="font-bold text-base leading-none {{ $currentInvoice->status() === 'paid' ? 'text-green-600' : 'text-neutral-900' }}">
                                             {{ formatCurrency($currentInvoice->total()) }}
                                         </div>
                                     </div>
-                                    <div class="text-right flex flex-col items-end">
-                                        <x-badge :color="$currentInvoice->isPaid() ? 'success' : 'warning'" size="sm" class="mb-1">
-                                            {{ $currentInvoice->isPaid() ? 'Paga' : 'Pendente' }}
+                                    <div class="text-right flex flex-col items-end gap-1">
+                                        <x-badge :color="$currentInvoice->status() === 'paid' ? 'success' : 'warning'" class="text-[9px] px-1.5 py-0.5 leading-none">
+                                            {{ $currentInvoice->status() === 'paid' ? 'Paga' : 'Pendente' }}
                                         </x-badge>
-                                        <span class="text-xs text-neutral-500">Vence em {{ $currentInvoice->due_date->format('d/m/Y') }}</span>
                                     </div>
                                 </div>
                             @else
-                                <div class="bg-neutral-50 rounded-lg p-4 text-center">
-                                    <span class="text-sm text-neutral-500 italic">Nenhuma fatura em aberto.</span>
+                                <div class="text-center text-xs text-neutral-400 italic border-t border-neutral-100 pt-3">
+                                    Nenhuma fatura em aberto.
                                 </div>
                             @endif
-
-                            <div class="mt-4 pt-4 border-t border-neutral-100 text-center">
-                                <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700">
-                                    Ver todas as faturas &rarr;
-                                </a>
-                            </div>
-                        </x-card>
-                    @endforeach
-                </div>
-            @endif
+                        </div>
+                    </x-card>
+                @endforeach
+            </div>
         </div>
     @endif
 
