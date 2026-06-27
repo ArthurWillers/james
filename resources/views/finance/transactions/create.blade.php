@@ -4,6 +4,7 @@
         type: "{{ old('type', 'expense') }}",
         targetType: "{{ old('targetType', 'account') }}",
         amount: "{{ old('amount') }}",
+        date: "{{ old('date', \Carbon\Carbon::today()->format('Y-m-d')) }}",
         items: {!! json_encode(array_values(old("items", []))) !!},
         addItem() {
             this.items.push({ description: "", quantity: 1, unit_price: "" });
@@ -24,7 +25,7 @@
             let options = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
             return value.toLocaleString("pt-BR", options);
         }
-    }' x-effect="if (items.length > 0) amount = formatMoney(itemsTotal)">
+    }' x-effect="if (items.length > 0) amount = formatMoney(itemsTotal); if (date) { let d = new Date(date + 'T00:00:00'); let t = new Date(); t.setHours(0,0,0,0); if (d > t) $dispatch('uncheck-posted') }">
         @csrf
         <input type="hidden" name="targetType" x-model="targetType">
 
@@ -54,7 +55,7 @@
                                 </div>
                             </div>
                             <div>
-                                <x-form-input label="Data da Transação" name="date" type="date" value="{{ old('date', \Carbon\Carbon::today()->format('Y-m-d')) }}" />
+                                <x-form-input label="Data da Transação" name="date" type="date" value="{{ old('date', \Carbon\Carbon::today()->format('Y-m-d')) }}" x-model="date" />
                             </div>
                         </div>
 
@@ -113,6 +114,11 @@
                                     @endforeach
                                 </x-form-select>
                             </div>
+                        </div>
+                        
+                        <div x-show="targetType === 'account'" class="pt-4 border-t border-neutral-100">
+                            <x-form.switch name="is_posted" :checked="old('is_posted', true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" />
+                            <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
                         </div>
                     </div>
                 </x-card>

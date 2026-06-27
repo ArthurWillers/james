@@ -104,7 +104,7 @@ class FinancialTransactionController extends Controller
                     'amount' => $validated['amount'],
                     'description' => $validated['description'],
                     'date' => Carbon::parse($validated['date']),
-                    'is_posted' => Carbon::parse($validated['date'])->startOfDay()->lte(Carbon::today()),
+                    'is_posted' => $validated['is_posted'] ?? false,
                 ]);
             }
 
@@ -247,7 +247,7 @@ class FinancialTransactionController extends Controller
                 'amount' => $validated['amount'],
                 'description' => $validated['description'],
                 'date' => $date,
-                'is_posted' => $date->startOfDay()->lte(Carbon::today()),
+                'is_posted' => $validated['is_posted'] ?? false,
             ]);
         }
 
