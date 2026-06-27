@@ -20,7 +20,11 @@ class FinancialCreditCardInvoiceController extends Controller
         // Ensure invoice belongs to card
         abort_unless($invoice->financial_credit_card_id === $card->id, 404);
 
-        $transactions = $invoice->transactions()->latest('date')->latest('id')->get();
+        $transactions = $invoice->transactions()
+            ->with(['invoice.creditCard', 'account', 'tags'])
+            ->latest('date')
+            ->latest('id')
+            ->get();
 
         return view('finance.cards.invoices.show', compact('card', 'invoice', 'transactions'));
     }

@@ -91,6 +91,7 @@ class FinancialAccountController extends Controller
             ->get();
 
         $recentTransactions = $account->transactions()
+            ->with(['invoice.creditCard', 'account', 'tags'])
             ->latest('date')
             ->latest('id')
             ->limit(10)
