@@ -21,7 +21,12 @@ class FinancialTransactionController extends Controller
         $query = FinancialTransaction::query()->with(['account', 'invoice.creditCard', 'tags']);
 
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $query->where(function ($q) use ($request) {
+                $q->search($request->search, ['description'])
+                  ->orWhereHas('items', function ($q2) use ($request) {
+                      $q2->whereRaw("unaccent(description) ILIKE unaccent(?)", ["%{$request->search}%"]);
+                  });
+            });
         }
 
         if ($request->filled('account_id')) {
@@ -40,12 +45,8 @@ class FinancialTransactionController extends Controller
             $query->where('is_posted', $request->boolean('is_posted'));
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
         }
 
         if ($request->filled('tag_id')) {
@@ -54,7 +55,7 @@ class FinancialTransactionController extends Controller
             });
         }
 
-        $transactions = $query->orderBy('date', 'desc')->paginate(25)->withQueryString();
+        $transactions = $query->orderBy('date', 'desc')->orderBy('updated_at', 'desc')->paginate(25)->withQueryString();
 
         $accounts = FinancialAccount::all();
         $tags = FinancialTag::all();
@@ -285,7 +286,7 @@ class FinancialTransactionController extends Controller
         $transactions = FinancialTransaction::onlyTrashed()
             ->with(['account', 'invoice.creditCard', 'tags'])
             ->orderByDesc('date')
-            ->orderByDesc('id')
+            ->orderByDesc('updated_at')
             ->paginate(15);
 
         return view('finance.transactions.trashed', compact('transactions'));

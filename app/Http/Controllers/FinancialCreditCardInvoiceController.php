@@ -23,7 +23,7 @@ class FinancialCreditCardInvoiceController extends Controller
         $transactions = $invoice->transactions()
             ->with(['invoice.creditCard', 'account', 'tags'])
             ->latest('date')
-            ->latest('id')
+            ->latest('updated_at')
             ->get();
 
         return view('finance.cards.invoices.show', compact('card', 'invoice', 'transactions'));

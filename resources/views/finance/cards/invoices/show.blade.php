@@ -1,4 +1,4 @@
-<x-layouts.financial>
+w<x-layouts.financial>
     <div class="flex justify-between items-center mb-6">
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('financial.cards.index') }}">Cartões</x-breadcrumbs.item>

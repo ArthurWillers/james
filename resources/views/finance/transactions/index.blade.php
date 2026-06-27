@@ -15,35 +15,28 @@
     <x-filter-bar 
         action="{{ route('financial.transactions.index') }}" 
         searchPlaceholder="Buscar por descrição..." 
-        :filters="['search', 'account_id', 'type', 'is_posted', 'date_from', 'date_to']">
+        :filters="['search', 'account_id', 'type', 'date']">
         
-        <x-slot:extraFilters>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 w-full sm:w-auto">
-                <x-form-select name="account_id" id="account_id" class="!py-1.5 !text-sm">
-                    <option value="">Todas as Contas</option>
-                    @foreach($accounts as $account)
-                        <option value="{{ $account->id }}" {{ request('account_id') == $account->id ? 'selected' : '' }}>
-                            {{ $account->name }}
-                        </option>
-                    @endforeach
-                </x-form-select>
-                
-                <x-form-select name="type" id="type" class="!py-1.5 !text-sm">
-                    <option value="">Todos os Tipos</option>
-                    <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>Receita</option>
-                    <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>Despesa</option>
-                </x-form-select>
+        <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
+            <select name="account_id" 
+                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                <option value="">Todas as Contas</option>
+                @foreach($accounts as $account)
+                    <option value="{{ $account->id }}" @selected(request('account_id') == $account->id)>{{ $account->name }}</option>
+                @endforeach
+            </select>
+            
+            <select name="type" 
+                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                <option value="">Todos os Tipos</option>
+                <option value="income" @selected(request('type') == 'income')>Receita</option>
+                <option value="expense" @selected(request('type') == 'expense')>Despesa</option>
+            </select>
 
-                <x-form-select name="is_posted" id="is_posted" class="!py-1.5 !text-sm">
-                    <option value="">Qualquer Status</option>
-                    <option value="1" {{ request('is_posted') === '1' ? 'selected' : '' }}>Efetivada</option>
-                    <option value="0" {{ request('is_posted') === '0' ? 'selected' : '' }}>Pendente</option>
-                </x-form-select>
-
-                <x-form-input type="date" name="date_from" :value="request('date_from')" placeholder="A partir de" class="!py-1.5 !text-sm" />
-                <x-form-input type="date" name="date_to" :value="request('date_to')" placeholder="Até" class="!py-1.5 !text-sm" />
-            </div>
-        </x-slot:extraFilters>
+            <input type="date" name="date" value="{{ request('date') }}" 
+                   class="w-full sm:w-auto bg-transparent border-0 py-1.5 px-3 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors"
+                   title="Filtrar por data específica">
+        </div>
     </x-filter-bar>
 
     <x-finance.transaction-table :transactions="$transactions" class="lg:mb-8" />

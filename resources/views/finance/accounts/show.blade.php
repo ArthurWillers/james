@@ -75,7 +75,7 @@
     </x-card>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <x-card href="#" class="p-6 hover:shadow-xl transition-shadow duration-200 group">
+        <x-card :href="route('financial.transactions.index', ['account_id' => $account->id, 'type' => 'income'])" class="p-6 group">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
@@ -91,7 +91,7 @@
             </div>
         </x-card>
 
-        <x-card href="#" class="p-6 hover:shadow-xl transition-shadow duration-200 group">
+        <x-card :href="route('financial.transactions.index', ['account_id' => $account->id, 'type' => 'expense'])" class="p-6 group">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
@@ -107,7 +107,7 @@
             </div>
         </x-card>
 
-        <x-card class="p-6">
+        <x-card :href="route('financial.transactions.index', ['account_id' => $account->id])" class="p-6 group">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
@@ -129,7 +129,7 @@
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Cartões de Crédito</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach($creditCards as $card)
-                    <x-card class="p-4 flex flex-col justify-between hover:border-neutral-300 transition-colors">
+                    <x-card :href="route('financial.cards.show', $card)" class="p-4 flex flex-col justify-between group">
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <div class="flex items-center gap-2.5 min-w-0">
@@ -141,9 +141,9 @@
                                         <p class="text-[10px] text-neutral-500 truncate">Vence dia {{ $card->due_day }} • Fecha dia {{ $card->closing_day }}</p>
                                     </div>
                                 </div>
-                                <a href="{{ route('financial.cards.show', $card) }}" class="p-1 -mr-1 -mt-1 text-neutral-400 hover:text-brand-600 transition-colors" title="Ver Cartão">
+                                <div class="p-1 -mr-1 -mt-1 text-neutral-400 group-hover:text-brand-600 transition-colors" title="Ver Cartão">
                                     <x-heroicon-o-arrow-top-right-on-square class="size-4" />
-                                </a>
+                                </div>
                             </div>
 
                             @if($card->credit_limit)
@@ -186,8 +186,8 @@
     @if($recentTransactions->isNotEmpty())
         <div class="flex justify-between items-center mb-4 mt-8">
             <h3 class="text-lg font-bold text-neutral-900">Últimas Transações</h3>
-            <a href="{{ route('financial.transactions.index', ['financial_account_id' => $account->id]) }}" class="text-sm font-medium text-brand-600 hover:text-brand-700">
-                Ver todas &rarr;
+            <a href="{{ route('financial.transactions.index', ['account_id' => $account->id]) }}" class="text-sm font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                Ver todas <x-heroicon-m-arrow-right class="size-4" />
             </a>
         </div>
 
