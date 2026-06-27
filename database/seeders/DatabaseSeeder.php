@@ -22,9 +22,5 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@james.test',
         ]);
 
-        if (app()->environment('local', 'testing')) {
-            $this->call(ContactSeeder::class);
-            $this->call(FinancialAccountSeeder::class);
-        }
     }
 }
