@@ -20,7 +20,12 @@
 
                 <x-ui.table.cell>
                     <div class="flex items-center gap-2">
-                        <span class="font-semibold text-neutral-900 truncate">{{ $transaction->description }}</span>
+                        <span class="font-semibold text-neutral-900 truncate">
+                            {{ $transaction->description }}
+                            @if($transaction->installment_total > 1)
+                                <span class="text-neutral-500 font-normal ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
+                            @endif
+                        </span>
                         @if(!$transaction->is_posted)
                             <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
                         @endif
@@ -89,7 +94,12 @@
                     <div class="flex items-start justify-between gap-3 w-full">
                         <div class="flex-1 min-w-0 flex flex-col gap-1.5">
                             <h3 class="text-base font-semibold text-neutral-900 leading-tight flex items-center gap-2 truncate">
-                                {{ $transaction->description }}
+                                <span>
+                                    {{ $transaction->description }}
+                                    @if($transaction->installment_total > 1)
+                                        <span class="text-neutral-500 font-normal text-sm ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
+                                    @endif
+                                </span>
                                 @if(!$transaction->is_posted)
                                     <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
                                 @endif
