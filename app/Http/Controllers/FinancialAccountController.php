@@ -6,6 +6,7 @@ use App\Enums\FinancialAccountType;
 use App\Http\Requests\StoreFinancialAccountRequest;
 use App\Http\Requests\UpdateFinancialAccountRequest;
 use App\Models\FinancialAccount;
+use App\Models\FinancialTag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -45,7 +46,21 @@ class FinancialAccountController extends Controller
      */
     public function store(StoreFinancialAccountRequest $request): RedirectResponse
     {
-        $financialAccount = FinancialAccount::create($request->validated());
+        $validated = $request->validated();
+        $financialAccount = FinancialAccount::create($validated);
+
+        if (! empty($validated['initial_balance']) && $validated['initial_balance'] != 0) {
+            $isPositive = $validated['initial_balance'] > 0;
+            $transaction = $financialAccount->transactions()->create([
+                'type' => $isPositive ? 'income' : 'expense',
+                'amount' => abs($validated['initial_balance']),
+                'date' => now(),
+                'description' => 'Saldo Inicial',
+                'is_posted' => true,
+            ]);
+
+            $transaction->tags()->attach(FinancialTag::SALDO_INICIAL_ID, ['is_primary' => true]);
+        }
 
         return redirect()
             ->route('financial.accounts.show', $financialAccount)

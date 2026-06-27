@@ -17,6 +17,13 @@ class StoreFinancialAccountRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('initial_balance') && is_string($this->initial_balance)) {
+            $this->merge(['initial_balance' => str_replace(',', '.', $this->initial_balance)]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -27,6 +34,7 @@ class StoreFinancialAccountRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(FinancialAccountType::class)],
+            'initial_balance' => ['nullable', 'numeric'],
             'pix_keys' => ['nullable', 'array', 'prohibited_unless:type,checking'],
             'pix_keys.*.label' => ['required', 'string', 'max:255'],
             'pix_keys.*.value' => ['required', 'string', 'max:255'],
