@@ -1,4 +1,4 @@
-w<x-layouts.financial>
+<x-layouts.financial>
     <div class="flex justify-between items-center mb-6">
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('financial.cards.index') }}">Cartões</x-breadcrumbs.item>
@@ -48,10 +48,12 @@ w<x-layouts.financial>
         </x-modal.trigger>
 
         @if($status !== 'paid' && !$isFavorable && $total > 0)
-            <x-button x-data x-on:click="$dispatch('open-modal', 'pay-invoice-modal')">
-                <x-heroicon-o-currency-dollar class="size-4" />
-                Registrar Pagamento
-            </x-button>
+            <x-modal.trigger name="pay-invoice-modal">
+                <x-button type="button">
+                    <x-heroicon-o-currency-dollar class="size-4" />
+                    Registrar Pagamento
+                </x-button>
+            </x-modal.trigger>
         @endif
     </x-page-header>
 
@@ -96,51 +98,46 @@ w<x-layouts.financial>
 
     @if($status !== 'paid' && !$isFavorable && $total > 0)
         <!-- Modal Pagamento -->
-        <x-ui.modal name="pay-invoice-modal" title="Pagar Fatura" maxWidth="sm">
-            <form action="{{ route('financial.cards.invoices.pay', [$card, $invoice]) }}" method="POST" id="pay-form">
-                @csrf
-                <div class="space-y-4">
-                    <p class="text-sm text-neutral-600 mb-4">
-                        O pagamento será debitado da conta <strong>{{ $card->financialAccount->name }}</strong>.
-                    </p>
-                    
-                    <x-form-input 
-                        name="amount" 
-                        type="number" 
-                        step="0.01" 
-                        label="Valor do Pagamento" 
-                        value="{{ number_format($remaining, 2, '.', '') }}" 
-                        required 
-                    />
-                    
-                    <x-form-input 
-                        name="paid_at" 
-                        type="date" 
-                        label="Data do Pagamento" 
-                        value="{{ date('Y-m-d') }}" 
-                        required 
-                    />
-                    
-                    <x-form-input 
-                        name="interest_amount" 
-                        type="number" 
-                        step="0.01" 
-                        label="Juros e Multas (Opcional)" 
-                        placeholder="0.00" 
-                    />
-                </div>
-            </form>
+        <x-ui.modal name="pay-invoice-modal" title="Pagar Fatura">
+            <x-slot name="content">
+                <form action="{{ route('financial.cards.invoices.pay', [$card, $invoice]) }}" method="POST" id="pay-form" class="mt-4">
+                    @csrf
+                    <div class="space-y-4">
+                        <p class="text-sm text-neutral-600 mb-4">
+                            O pagamento será debitado da conta <strong>{{ $card->financialAccount->name }}</strong>.
+                        </p>
+                        
+                        <x-form-input 
+                            name="amount" 
+                            type="number" 
+                            step="0.01" 
+                            label="Valor do Pagamento" 
+                            value="{{ number_format($remaining, 2, '.', '') }}" 
+                            required 
+                        />
+                        
+                        <x-form-input 
+                            name="paid_at" 
+                            type="date" 
+                            label="Data do Pagamento" 
+                            value="{{ date('Y-m-d') }}" 
+                            required 
+                        />
+                        
+                        <x-form-input 
+                            name="interest_amount" 
+                            type="number" 
+                            step="0.01" 
+                            label="Juros e Multas (Opcional)" 
+                            placeholder="0.00" 
+                        />
+                    </div>
+                </form>
+            </x-slot>
             
-            <x-slot:footer>
-                <div class="flex justify-end gap-2 w-full">
-                    <x-button color="outline" x-on:click="$dispatch('close-modal', 'pay-invoice-modal')" type="button">
-                        Cancelar
-                    </x-button>
-                    <x-button form="pay-form" type="submit">
-                        Confirmar Pagamento
-                    </x-button>
-                </div>
-            </x-slot:footer>
+            <x-button form="pay-form" type="submit" class="w-full sm:w-auto">
+                Confirmar Pagamento
+            </x-button>
         </x-ui.modal>
     @endif
 
