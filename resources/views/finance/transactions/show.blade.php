@@ -169,7 +169,7 @@
         </x-card>
     </div>
 
-    @if($transaction->type === 'transfer' && $transaction->transferPair)
+    @if($transaction->transfer_pair_id && $transaction->transferPair)
         <x-card class="mb-6 p-6 border-blue-200 bg-blue-50/50">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -179,7 +179,7 @@
                     <div>
                         <h3 class="font-bold text-blue-900">Transferência Vinculada</h3>
                         <p class="text-sm text-blue-700 mt-0.5">
-                            @if($transaction->amount < 0)
+                            @if($transaction->type === 'expense')
                                 Esta transação é a saída. O destino é a conta <strong>{{ $transaction->transferPair->account->name }}</strong>.
                             @else
                                 Esta transação é a entrada. A origem é a conta <strong>{{ $transaction->transferPair->account->name }}</strong>.

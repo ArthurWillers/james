@@ -84,8 +84,8 @@
 
                 <x-ui.table.cell align="right">
                     <div class="flex justify-end gap-2 w-full">
-                        <span class="font-bold tracking-tight text-base {{ $transaction->amount < 0 ? 'text-red-600' : 'text-green-600' }}">
-                            {{ $transaction->amount < 0 ? '-' : '+' }} {{ formatCurrency(abs($transaction->amount)) }}
+                        <span class="font-bold tracking-tight text-base {{ $transaction->type === 'expense' ? 'text-red-600' : 'text-green-600' }}">
+                            {{ $transaction->type === 'expense' ? '-' : '+' }} {{ formatCurrency($transaction->amount) }}
                         </span>
                     </div>
                 </x-ui.table.cell>
@@ -115,8 +115,8 @@
                             </div>
                         </div>
                         <div class="shrink-0 text-right">
-                            <div class="font-bold tracking-tight text-base {{ $transaction->amount < 0 ? 'text-red-600' : 'text-green-600' }}">
-                                {{ $transaction->amount < 0 ? '-' : '+' }} {{ formatCurrency(abs($transaction->amount)) }}
+                            <div class="font-bold tracking-tight text-base {{ $transaction->type === 'expense' ? 'text-red-600' : 'text-green-600' }}">
+                                {{ $transaction->type === 'expense' ? '-' : '+' }} {{ formatCurrency($transaction->amount) }}
                             </div>
                         </div>
                     </div>
