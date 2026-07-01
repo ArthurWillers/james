@@ -193,7 +193,7 @@ class FinancialTransactionController extends Controller
 
     public function show(FinancialTransaction $transaction)
     {
-        $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags', 'transferPair.account']);
+        $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags']);
 
         return view('finance.transactions.show', compact('transaction'));
     }

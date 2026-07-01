@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -110,14 +111,15 @@ class FinancialTransaction extends Model
         return $this->belongsTo(FinancialRecurrence::class, 'financial_recurrence_id');
     }
 
-    /**
-     * Get the other half of the transfer transaction.
-     *
-     * @return BelongsTo<FinancialTransaction, $this>
-     */
-    public function transferPair(): BelongsTo
+    public function getTransferPairAttribute(): ?self
     {
-        return $this->belongsTo(FinancialTransaction::class, 'transfer_pair_id');
+        if (! $this->transfer_pair_id) {
+            return null;
+        }
+
+        return self::where('transfer_pair_id', $this->transfer_pair_id)
+            ->where('id', '!=', $this->id)
+            ->first();
     }
 
     /**
