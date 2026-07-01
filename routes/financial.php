@@ -42,4 +42,10 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::resource('transactions', FinancialTransactionController::class)->parameters([
         'transactions' => 'transaction',
     ]);
+
+    // Recurrences
+    Route::get('/recurrences/trashed', [App\Http\Controllers\FinancialRecurrenceController::class, 'trashed'])->name('recurrences.trashed');
+    Route::patch('/recurrences/{recurrence}/restore', [App\Http\Controllers\FinancialRecurrenceController::class, 'restore'])->name('recurrences.restore')->withTrashed();
+    Route::delete('/recurrences/{recurrence}/force', [App\Http\Controllers\FinancialRecurrenceController::class, 'forceDestroy'])->name('recurrences.forceDestroy')->withTrashed();
+    Route::resource('recurrences', App\Http\Controllers\FinancialRecurrenceController::class);
 });

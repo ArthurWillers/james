@@ -44,97 +44,23 @@
         @method('PUT')
         <input type="hidden" name="targetType" x-model="targetType">
 
+        <div class="flex justify-between items-center mb-6">
+            <x-breadcrumbs>
+                <x-breadcrumbs.item href="{{ route('financial.transactions.index') }}">Transações</x-breadcrumbs.item>
+                <x-breadcrumbs.item href="{{ route('financial.transactions.show', $transaction->id) }}">#{{ $transaction->id }}</x-breadcrumbs.item>
+                <x-breadcrumbs.item>Editar</x-breadcrumbs.item>
+            </x-breadcrumbs>
+        </div>
+
         <!-- Header with Actions -->
         <div class="flex justify-between items-center mb-6">
-            <div>
-                <x-breadcrumbs class="mb-2">
-                    <x-breadcrumbs.item href="{{ route('financial.transactions.index') }}">Transações</x-breadcrumbs.item>
-                    <x-breadcrumbs.item href="{{ route('financial.transactions.show', $transaction->id) }}">#{{ $transaction->id }}</x-breadcrumbs.item>
-                    <x-breadcrumbs.item>Editar</x-breadcrumbs.item>
-                </x-breadcrumbs>
-                <h1 class="text-2xl font-bold text-neutral-900">Editar Transação</h1>
-            </div>
+            <h1 class="text-2xl font-bold text-neutral-900">Editar Transação</h1>
             <div class="flex items-center gap-3">
                 <x-button color="outline" href="{{ route('financial.transactions.show', $transaction->id) }}" class="bg-white">Cancelar</x-button>
                 <x-button type="submit" form="transaction-form" class="bg-neutral-900 hover:bg-black text-white">Salvar Alterações</x-button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            <!-- Left Column: Main Data & Items -->
-            <div class="lg:col-span-8 flex flex-col gap-6">
-                <!-- Main Data Card -->
-                <x-card class="p-6">
-                    <div class="flex flex-col gap-6">
-                        <x-form-input label="Descrição" name="description" value="{{ old('description', $transaction->description) }}" placeholder="Descrição" autofocus />
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                            <div>
-                                <x-form-input label="Valor (R$)" name="amount" x-model="amount" :numeric="true" placeholder="0,00" ::readonly="items.length > 0" ::class="items.length > 0 ? 'bg-neutral-100 !text-neutral-500 font-medium' : ''" />
-                                <div class="h-5 mt-1">
-                                    <p x-show="items.length > 0" class="text-xs text-primary-600 flex items-center gap-1 font-medium m-0"><x-heroicon-o-calculator class="size-3.5"/> Calculado via itens</p>
-                                </div>
-                            </div>
-                            <div>
-                                <x-form-input label="Data da Transação" name="date" type="date" value="{{ old('date', $transaction->date->format('Y-m-d')) }}" x-model="date" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <x-form.tags-selector name="tags[]" :options="$tags" label="Tags Globais (Opcional)" :value="old('tags', $defaultTags)" :primaryValue="old('primary_tag_id', $defaultPrimaryTag)" xDisablePrimary="items.length > 0" />
-                        </div>
-                    </div>
-                </x-card>
-
-                <!-- Seção de Itens da Transação -->
-                <x-finance.transaction-items :tags="$tags" />
-            </div>
-
-            <!-- Right Column: Configurações -->
-            <div class="lg:col-span-4 flex flex-col">
-                <x-card class="p-6 space-y-6">
-                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Configurações</h3>
-
-                    {{-- Receita ou Despesa --}}
-                    <x-form.radio-block-group legend="Classificação">
-                        <x-form.radio-block name="type" x-model="type" value="expense" icon="heroicon-o-arrow-trending-down" label="Despesa" activeClass="peer-checked:text-red-600" inactiveClass="text-red-600 hover:text-red-700" />
-                        <x-form.radio-block name="type" x-model="type" value="income" icon="heroicon-o-arrow-trending-up" label="Receita" activeClass="peer-checked:text-green-600" inactiveClass="text-green-600 hover:text-green-700" />
-                    </x-form.radio-block-group>
-
-                    {{-- Conta ou Cartão --}}
-                    <div class="space-y-4 pt-2">
-                        <x-form.radio-block-group legend="Onde">
-                            <x-form.radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
-                            <x-form.radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
-                        </x-form.radio-block-group>
-                        
-                        <div>
-                            <div x-show="targetType === 'account'">
-                                <x-form-select name="financial_account_id">
-                                    <option value="">Selecione uma conta...</option>
-                                    @foreach($accounts as $account)
-                                        <option value="{{ $account->id }}" {{ old('financial_account_id', $transaction->financial_account_id) == $account->id ? 'selected' : '' }}>{{ $account->name }}</option>
-                                    @endforeach
-                                </x-form-select>
-                            </div>
-                            <div x-show="targetType === 'card'" style="display: none;">
-                                <x-form-select name="financial_credit_card_id">
-                                    <option value="">Selecione um cartão...</option>
-                                    @foreach($cards as $card)
-                                        <option value="{{ $card->id }}" {{ old('financial_credit_card_id', optional($transaction->invoice)->financial_credit_card_id) == $card->id ? 'selected' : '' }}>{{ $card->name }}</option>
-                                    @endforeach
-                                </x-form-select>
-                            </div>
-                        </div>
-                        
-                        <div x-show="targetType === 'account'" class="pt-4 border-t border-neutral-100">
-                            <x-form.switch name="is_posted" :checked="old('is_posted', $transaction->is_posted)" label="Transação Efetivada?" @uncheck-posted-edit.window="checked = false" />
-                            <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
-                        </div>
-                    </div>
-                </x-card>
-            </div>
-        </div>
+        @include('finance.transactions.partials.form', ['transaction' => $transaction])
     </form>
 </x-layouts.financial>

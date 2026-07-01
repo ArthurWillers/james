@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignIdFor(FinancialCreditCard::class)->nullable()->constrained()->nullOnDelete();
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->date('last_processed_date')->nullable();
+            $table->date('next_processing_date');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();

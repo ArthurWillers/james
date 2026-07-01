@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'financial_credit_card_id',
     'start_date',
     'end_date',
-    'last_processed_date',
+    'next_processing_date',
     'is_active',
 ])]
 class FinancialRecurrence extends Model
@@ -43,7 +43,7 @@ class FinancialRecurrence extends Model
             'amount' => 'decimal:2',
             'start_date' => 'date',
             'end_date' => 'date',
-            'last_processed_date' => 'date',
+            'next_processing_date' => 'date',
             'is_active' => 'boolean',
         ];
     }
@@ -84,5 +84,19 @@ class FinancialRecurrence extends Model
     public function dayOfMonth(): int
     {
         return $this->start_date->day;
+    }
+
+    /**
+     * Get all of the tags for the recurrence.
+     */
+    public function tags()
+    {
+        return $this->morphToMany(
+            FinancialTag::class, 
+            'financial_taggable', 
+            'financial_taggables',
+            'financial_taggable_id',
+            'financial_tag_id'
+        )->withPivot('is_primary');
     }
 }

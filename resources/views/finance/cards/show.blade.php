@@ -167,4 +167,9 @@
             </table>
         </div>
     </x-card>
+
+    <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2 mt-4">
+        <p>Criado em: {{ $card->created_at->format('d/m/Y H:i') }}</p>
+        <p>Última atualização: {{ $card->updated_at->format('d/m/Y H:i') }}</p>
+    </div>
 </x-layouts.financial>

@@ -228,4 +228,9 @@
 
         <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
     @endif
+
+    <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2">
+        <p>Criado em: {{ $account->created_at->format('d/m/Y H:i') }}</p>
+        <p>Última atualização: {{ $account->updated_at->format('d/m/Y H:i') }}</p>
+    </div>
 </x-layouts.financial>
