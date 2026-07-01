@@ -40,12 +40,34 @@
             </div>
         </x-slot:subtitle>
 
-        <x-modal.trigger name="edit-dates-modal">
+        <x-modal.trigger name="edit-invoice-modal">
             <x-button type="button" color="outline" class="bg-white">
-                <x-heroicon-o-calendar-days class="size-4" />
-                Editar Datas
+                <x-heroicon-o-pencil-square class="size-4" />
+                Editar Fatura
             </x-button>
         </x-modal.trigger>
+
+        @if($invoice->amount_paid > 0)
+            <x-modal.trigger name="unpay-invoice-modal">
+                <x-button type="button" color="outline" class="bg-white text-orange-600 hover:bg-orange-50 border-orange-200">
+                    <x-heroicon-o-arrow-uturn-left class="size-4" />
+                    Reabrir Fatura
+                </x-button>
+            </x-modal.trigger>
+
+            <x-modal
+                name="unpay-invoice-modal"
+                title="Reabrir Fatura"
+                message="Tem certeza que deseja desfazer o pagamento e reabrir a fatura? As transações de pagamento serão excluídas."
+                confirmVariant="danger">
+                <form action="{{ route('financial.cards.invoices.unpay', [$card, $invoice]) }}" method="POST" class="m-0">
+                    @csrf
+                    <x-button type="submit" color="red" class="w-full sm:w-auto">
+                        Sim, Reabrir Fatura
+                    </x-button>
+                </form>
+            </x-modal>
+        @endif
 
         @if($status !== 'paid' && !$isFavorable && $total > 0)
             <x-modal.trigger name="pay-invoice-modal">
@@ -89,6 +111,13 @@
             @endif
         </x-card>
     </div>
+
+    @if($invoice->notes)
+        <div class="mb-8">
+            <h3 class="text-sm font-medium text-neutral-500 mb-2">Anotações / Observações</h3>
+            <div class="bg-white border border-neutral-200 rounded-lg p-4 text-sm text-neutral-700 whitespace-pre-wrap">{{ $invoice->notes }}</div>
+        </div>
+    @endif
 
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold text-neutral-900">Transações</h2>
@@ -141,13 +170,13 @@
         </x-ui.modal>
     @endif
 
-    <!-- Modal Editar Datas -->
-    <x-ui.modal name="edit-dates-modal" title="Editar Datas da Fatura" confirmVariant="info">
-        <x-slot name="content">
-            <form action="{{ route('financial.cards.invoices.update', [$card, $invoice]) }}" method="POST" id="edit-dates-form" class="mt-4">
-                @csrf
-                @method('PUT')
-                <div class="space-y-4">
+    <!-- Modal Editar Fatura -->
+    <x-modal name="edit-invoice-modal" title="Editar Fatura" confirmVariant="none">
+        <form action="{{ route('financial.cards.invoices.update', [$card, $invoice]) }}" method="POST" class="m-0">
+            @csrf
+            @method('PUT')
+            <div class="space-y-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <x-form-input 
                         name="closing_date" 
                         type="date" 
@@ -164,11 +193,23 @@
                         required 
                     />
                 </div>
-            </form>
-        </x-slot>
-        
-        <x-button form="edit-dates-form" type="submit" class="w-full sm:w-auto">
-            Salvar Alterações
-        </x-button>
-    </x-ui.modal>
+
+                <div>
+                    <label class="block text-sm font-medium leading-6 text-neutral-900">Anotações / Observações</label>
+                    <div class="mt-2">
+                        <textarea name="notes" rows="3" class="block w-full rounded-md border-0 py-1.5 text-neutral-900 shadow-sm ring-1 ring-inset ring-neutral-300 placeholder:text-neutral-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6">{{ old('notes', $invoice->notes) }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end items-center gap-3 pt-4 border-t border-neutral-100">
+                <x-button type="button" color="outline" @click="$dispatch('modal-close', 'edit-invoice-modal')">
+                    Cancelar
+                </x-button>
+                <x-button type="submit">
+                    Salvar Alterações
+                </x-button>
+            </div>
+        </form>
+    </x-modal>
 </x-layouts.financial>

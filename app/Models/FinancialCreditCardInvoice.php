@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
     'closing_date',
     'due_date',
     'paid_at',
+    'notes',
     'interest_transaction_id',
     'payment_transaction_id',
 ])]
@@ -160,6 +161,11 @@ class FinancialCreditCardInvoice extends Model
                     'description' => "Pagamento parcial fatura {$this->reference_month->format('m/Y')}",
                     'is_posted' => true,
                 ]);
+
+                if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::PAGAMENTO_PARCIAL_ID')) {
+                    $paymentTransaction->tags()->attach(FinancialTag::PAGAMENTO_PARCIAL_ID, ['is_primary' => true]);
+                }
+
                 $this->payment_transaction_id = $paymentTransaction->id;
             }
             $this->amount_paid = $newAmountPaid;
@@ -182,6 +188,32 @@ class FinancialCreditCardInvoice extends Model
             $this->interest_transaction_id = $interestTransaction->id;
         }
 
+        $this->save();
+    }
+
+    /**
+     * Undo the payment (re-open invoice).
+     */
+    public function undoPayment(): void
+    {
+        if ($this->payment_transaction_id) {
+            $this->paymentTransaction?->delete();
+            $this->payment_transaction_id = null;
+        }
+
+        if ($this->interest_transaction_id) {
+            $this->interestTransaction?->delete();
+            $this->interest_transaction_id = null;
+        }
+
+        // Revert transactions to unposted
+        $this->transactions()->update([
+            'financial_account_id' => null,
+            'is_posted' => false,
+        ]);
+
+        $this->paid_at = null;
+        $this->amount_paid = 0;
         $this->save();
     }
 

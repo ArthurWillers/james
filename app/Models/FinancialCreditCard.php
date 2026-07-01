@@ -74,7 +74,7 @@ class FinancialCreditCard extends Model
         return (float) $this->invoices()
             ->whereNull('paid_at')
             ->get()
-            ->sum(fn ($invoice) => $invoice->total());
+            ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
     }
 
     /**

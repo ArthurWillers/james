@@ -39,11 +39,13 @@ class FinancialCreditCardInvoiceController extends Controller
         $validated = $request->validate([
             'closing_date' => ['required', 'date'],
             'due_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         $invoice->update([
             'closing_date' => $validated['closing_date'],
             'due_date' => $validated['due_date'],
+            'notes' => $validated['notes'],
         ]);
 
         return redirect()
@@ -69,5 +71,19 @@ class FinancialCreditCardInvoiceController extends Controller
         return redirect()
             ->route('financial.cards.invoices.show', [$card, $invoice])
             ->with('success', 'Pagamento registrado com sucesso.');
+    }
+
+    /**
+     * Unpay (re-open) the invoice.
+     */
+    public function unpay(FinancialCreditCard $card, FinancialCreditCardInvoice $invoice): RedirectResponse
+    {
+        abort_unless($invoice->financial_credit_card_id === $card->id, 404);
+
+        $invoice->undoPayment();
+
+        return redirect()
+            ->route('financial.cards.invoices.show', [$card, $invoice])
+            ->with('success', 'Fatura reaberta com sucesso.');
     }
 }

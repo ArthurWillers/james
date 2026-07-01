@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('due_date');
             $table->decimal('amount_paid', 10, 2)->default(0);
             $table->date('paid_at')->nullable();
+            $table->text('notes')->nullable();
             $table->unsignedBigInteger('interest_transaction_id')->nullable();
             $table->unsignedBigInteger('payment_transaction_id')->nullable();
             $table->timestamps();

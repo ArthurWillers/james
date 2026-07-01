@@ -53,6 +53,14 @@ class FinancialTagSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Pagamento Parcial',
+                'icon' => 'heroicon-o-banknotes',
+                'color_hex' => '#10b981', // emerald-500
+                'is_protected' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // Adiciona as tags padrão do sistema como tags desprotegidas (podem ser editadas/apagadas)

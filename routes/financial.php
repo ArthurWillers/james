@@ -32,6 +32,7 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('cards/{card}/invoices/{invoice}', [FinancialCreditCardInvoiceController::class, 'show'])->name('cards.invoices.show');
     Route::put('cards/{card}/invoices/{invoice}', [FinancialCreditCardInvoiceController::class, 'update'])->name('cards.invoices.update');
     Route::post('cards/{card}/invoices/{invoice}/pay', [FinancialCreditCardInvoiceController::class, 'pay'])->name('cards.invoices.pay');
+    Route::post('cards/{card}/invoices/{invoice}/unpay', [FinancialCreditCardInvoiceController::class, 'unpay'])->name('cards.invoices.unpay');
 
     // Transactions
     Route::get('/transactions/trashed', [FinancialTransactionController::class, 'trashed'])->name('transactions.trashed');
