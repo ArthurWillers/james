@@ -26,7 +26,7 @@
                 @endif
                 
                 <div>
-                    <x-form.tags-selector name="tags[]" :options="$tags" label="Tags Globais (Opcional)" :value="old('tags', $defaultTags ?? [])" :primaryValue="old('primary_tag_id', $defaultPrimaryTag ?? null)" xDisablePrimary="items.length > 0" />
+                    <x-form.tags-selector name="tags[]" :options="$tags" label="Tags (Opcional)" :value="old('tags', $defaultTags ?? [])" :primaryValue="old('primary_tag_id', $defaultPrimaryTag ?? null)" xDisablePrimary="items.length > 0" />
                 </div>
             </div>
         </x-card>

@@ -117,7 +117,7 @@
 
         <!-- Tags -->
         <x-card class="p-6">
-            <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Tags Globais</h3>
+            <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Tags</h3>
             @if($transaction->tags->isNotEmpty())
                 <div class="flex flex-wrap gap-2">
                     @php
