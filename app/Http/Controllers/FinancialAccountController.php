@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateFinancialAccountRequest;
 use App\Models\FinancialAccount;
 use App\Models\FinancialTag;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class FinancialAccountController extends Controller
@@ -139,6 +140,41 @@ class FinancialAccountController extends Controller
         return redirect()
             ->route('financial.accounts.index')
             ->with('success', 'Conta financeira movida para a lixeira.');
+    }
+
+    /**
+     * Adjust the balance of the account by creating a compensating transaction.
+     */
+    public function adjustBalance(Request $request, FinancialAccount $financialAccount): RedirectResponse
+    {
+        $request->validate([
+            'real_balance' => ['required', 'numeric'],
+        ]);
+
+        $account = FinancialAccount::withBalance()->findOrFail($financialAccount->id);
+        $difference = round((float) $request->real_balance - (float) $account->balance, 2);
+
+        if ($difference === 0.0) {
+            return redirect()
+                ->route('financial.accounts.show', $financialAccount)
+                ->with('info', 'Nenhuma diferença encontrada. O saldo já está correto.');
+        }
+
+        $isIncome = $difference > 0;
+
+        $transaction = $financialAccount->transactions()->create([
+            'type' => $isIncome ? 'income' : 'expense',
+            'amount' => abs($difference),
+            'description' => 'Ajuste de Saldo',
+            'date' => now(),
+            'is_posted' => true,
+        ]);
+
+        $transaction->tags()->attach(FinancialTag::AJUSTE_SALDO_ID, ['is_primary' => true]);
+
+        return redirect()
+            ->route('financial.accounts.show', $financialAccount)
+            ->with('success', 'Saldo ajustado com sucesso.');
     }
 
     /**

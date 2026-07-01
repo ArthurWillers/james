@@ -23,9 +23,9 @@ class FinancialTransactionController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->search($request->search, ['description'])
-                  ->orWhereHas('items', function ($q2) use ($request) {
-                      $q2->whereRaw("unaccent(description) ILIKE unaccent(?)", ["%{$request->search}%"]);
-                  });
+                    ->orWhereHas('items', function ($q2) use ($request) {
+                        $q2->whereRaw('unaccent(description) ILIKE unaccent(?)', ["%{$request->search}%"]);
+                    });
             });
         }
 
@@ -169,13 +169,6 @@ class FinancialTransactionController extends Controller
         }
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transação criada com sucesso.');
-    }
-
-    public function createTransfer()
-    {
-        $accounts = FinancialAccount::all();
-
-        return view('finance.transactions.transfer', compact('accounts'));
     }
 
     public function storeTransfer(StoreFinancialTransferRequest $request)

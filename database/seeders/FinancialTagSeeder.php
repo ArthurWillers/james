@@ -45,6 +45,14 @@ class FinancialTagSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Ajuste de Saldo',
+                'icon' => 'heroicon-o-adjustments-horizontal',
+                'color_hex' => '#f59e0b', // amber-500
+                'is_protected' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // Adiciona as tags padrão do sistema como tags desprotegidas (podem ser editadas/apagadas)

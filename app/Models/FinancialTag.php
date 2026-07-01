@@ -25,6 +25,8 @@ class FinancialTag extends Model
 
     public const TRANSFERENCIA_ID = 4;
 
+    public const AJUSTE_SALDO_ID = 5;
+
     /**
      * Get the transactions associated with the tag.
      *

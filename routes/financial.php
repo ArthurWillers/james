@@ -14,6 +14,7 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('/accounts/trashed', [FinancialAccountController::class, 'trashed'])->name('accounts.trashed');
     Route::patch('/accounts/{financialAccount}/restore', [FinancialAccountController::class, 'restore'])->name('accounts.restore')->withTrashed();
     Route::delete('/accounts/{financialAccount}/force', [FinancialAccountController::class, 'forceDestroy'])->name('accounts.forceDestroy')->withTrashed();
+    Route::post('/accounts/{financialAccount}/adjust-balance', [FinancialAccountController::class, 'adjustBalance'])->name('accounts.adjust-balance');
     Route::resource('accounts', FinancialAccountController::class)->parameters([
         'accounts' => 'financialAccount',
     ]);
@@ -36,7 +37,6 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('/transactions/trashed', [FinancialTransactionController::class, 'trashed'])->name('transactions.trashed');
     Route::patch('/transactions/{transaction}/restore', [FinancialTransactionController::class, 'restore'])->name('transactions.restore')->withTrashed();
     Route::delete('/transactions/{transaction}/force', [FinancialTransactionController::class, 'forceDestroy'])->name('transactions.forceDestroy')->withTrashed();
-    Route::get('transactions/transfer/create', [FinancialTransactionController::class, 'createTransfer'])->name('transactions.transfer.create');
     Route::post('transactions/transfer', [FinancialTransactionController::class, 'storeTransfer'])->name('transactions.transfer.store');
     Route::resource('transactions', FinancialTransactionController::class)->parameters([
         'transactions' => 'transaction',

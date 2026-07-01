@@ -12,6 +12,41 @@
             Voltar
         </x-button>
 
+        <x-modal.trigger name="adjust-balance-{{ $account->id }}">
+            <x-button type="button" color="outline" class="bg-white">
+                <x-heroicon-o-adjustments-horizontal class="size-4" />
+                Ajustar Saldo
+            </x-button>
+        </x-modal.trigger>
+
+        <x-modal
+            name="adjust-balance-{{ $account->id }}"
+            title="Ajustar Saldo"
+            message="Informe o saldo atual real da conta. O sistema calculará a diferença e criará uma transação de ajuste automaticamente."
+            confirmVariant="none">
+            <form action="{{ route('financial.accounts.adjust-balance', $account) }}" method="POST" class="m-0">
+                @csrf
+                <div class="mb-6">
+                    <x-form-input
+                        label="Saldo Real (R$)"
+                        name="real_balance"
+                        :numeric="true"
+                        placeholder="0,00"
+                        autofocus
+                    />
+                </div>
+                <div class="flex justify-end items-center gap-3 pt-4 border-t border-neutral-100">
+                    <x-button type="button" color="outline" @click="$dispatch('modal-close', 'adjust-balance-{{ $account->id }}')">
+                        Cancelar
+                    </x-button>
+                    <x-button type="submit" class="w-full sm:w-auto">
+                        <x-heroicon-o-adjustments-horizontal class="size-4" />
+                        Aplicar Ajuste
+                    </x-button>
+                </div>
+            </form>
+        </x-modal>
+
         <x-button color="outline" href="{{ route('financial.accounts.edit', $account) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
             Editar
