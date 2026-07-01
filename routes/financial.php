@@ -8,7 +8,7 @@ use App\Http\Controllers\FinancialTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('financial')->name('financial.')->group(function () {
-    Route::view('/dashboard', 'finance.dashboard')->name('dashboard');
+    Route::get('/dashboard', \App\Http\Controllers\FinanceDashboardController::class)->name('dashboard');
 
     // Accounts
     Route::get('/accounts/trashed', [FinancialAccountController::class, 'trashed'])->name('accounts.trashed');
