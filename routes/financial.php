@@ -5,11 +5,15 @@ use App\Http\Controllers\FinancialCreditCardController;
 use App\Http\Controllers\FinancialCreditCardInvoiceController;
 use App\Http\Controllers\FinancialTagController;
 use App\Http\Controllers\FinancialTransactionController;
+use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('/dashboard', \App\Http\Controllers\FinanceDashboardController::class)->name('dashboard');
     Route::get('/dashboard/chart-data', \App\Http\Controllers\FinanceDashboardChartController::class)->name('dashboard.chart-data');
+
+    // Reports
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
 
     // Accounts
     Route::get('/accounts/trashed', [FinancialAccountController::class, 'trashed'])->name('accounts.trashed');
