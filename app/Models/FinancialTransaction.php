@@ -161,6 +161,52 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Scope a query to only include expenses.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeExpenses(Builder $query): Builder
+    {
+        return $query->where('type', 'expense');
+    }
+
+    /**
+     * Scope a query to only include incomes.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeIncomes(Builder $query): Builder
+    {
+        return $query->where('type', 'income');
+    }
+
+    /**
+     * Scope a query to exclude transfers.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeWithoutTransfers(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('tags', function ($q) {
+            $q->where('financial_tag_id', FinancialTag::TRANSFERENCIA_ID);
+        });
+    }
+
+    /**
+     * Scope a query for a specific period.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeForPeriod(Builder $query, Carbon $startDate, Carbon $endDate): Builder
+    {
+        return $query->whereBetween('date', [$startDate, $endDate]);
+    }
+
+    /**
      * Create installments on a standard account.
      *
      * @return Collection<int, self>

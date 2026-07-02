@@ -110,53 +110,29 @@
     </x-card>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <x-card :href="route('financial.transactions.index', ['account_id' => $account->id, 'type' => 'income'])" class="p-6 group">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                        <p class="text-sm font-medium text-neutral-600 group-hover:text-primary-600 transition-colors">Total de Receitas</p>
-                    </div>
-                    <p class="text-xl sm:text-2xl font-semibold text-green-600 break-words group-hover:text-green-700 transition-colors">
-                        {{ formatCurrency($globalIncome) }}
-                    </p>
-                </div>
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
-                    <x-heroicon-o-arrow-trending-up class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 group-hover:scale-110 transition-transform" />
-                </div>
-            </div>
-        </x-card>
+        <x-finance.kpi-card 
+            title="Total de Receitas" 
+            :value="formatCurrency($globalIncome)" 
+            icon="heroicon-o-arrow-trending-up" 
+            color="green" 
+            :href="route('financial.transactions.index', ['account_id' => $account->id, 'type' => 'income'])" 
+        />
 
-        <x-card :href="route('financial.transactions.index', ['account_id' => $account->id, 'type' => 'expense'])" class="p-6 group">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                        <p class="text-sm font-medium text-neutral-600 group-hover:text-primary-600 transition-colors">Total de Despesas</p>
-                    </div>
-                    <p class="text-xl sm:text-2xl font-semibold text-red-600 break-words group-hover:text-red-700 transition-colors">
-                        {{ formatCurrency($globalExpense) }}
-                    </p>
-                </div>
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-red-200 transition-colors">
-                    <x-heroicon-o-arrow-trending-down class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 group-hover:scale-110 transition-transform" />
-                </div>
-            </div>
-        </x-card>
+        <x-finance.kpi-card 
+            title="Total de Despesas" 
+            :value="formatCurrency($globalExpense)" 
+            icon="heroicon-o-arrow-trending-down" 
+            color="red" 
+            :href="route('financial.transactions.index', ['account_id' => $account->id, 'type' => 'expense'])" 
+        />
 
-        <x-card :href="route('financial.transactions.index', ['account_id' => $account->id])" class="p-6 group">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                        <p class="text-sm font-medium text-neutral-600">Saldo Atual</p>
-                    </div>
-                    <p class="text-xl sm:text-2xl font-semibold {{ $account->balance > 0 ? 'text-green-600' : ($account->balance < 0 ? 'text-red-600' : 'text-neutral-900') }} break-words">
-                        @if($account->balance > 0)+@elseif($account->balance < 0)-@endif{{ formatCurrency(abs($account->balance)) }}
-                    </p>
-                </div>
-                <div class="w-10 h-10 sm:w-12 sm:h-12 {{ $account->balance > 0 ? 'bg-green-100' : ($account->balance < 0 ? 'bg-red-100' : 'bg-neutral-100') }} rounded-lg flex items-center justify-center flex-shrink-0">
-                    <x-heroicon-o-scale class="w-5 h-5 sm:w-6 sm:h-6 {{ $account->balance > 0 ? 'text-green-600' : ($account->balance < 0 ? 'text-red-600' : 'text-neutral-500') }}" />
-                </div>
-            </div>
-        </x-card>
+        <x-finance.kpi-card 
+            title="Saldo Atual" 
+            :value="($account->balance > 0 ? '+' : ($account->balance < 0 ? '-' : '')) . formatCurrency(abs($account->balance))" 
+            icon="heroicon-o-scale" 
+            :color="$account->balance > 0 ? 'green' : ($account->balance < 0 ? 'red' : 'neutral')" 
+            :href="route('financial.transactions.index', ['account_id' => $account->id])" 
+        />
     </div>
 
     @if($creditCards->isNotEmpty())
@@ -164,55 +140,7 @@
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Cartões de Crédito</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach($creditCards as $card)
-                    <x-card :href="route('financial.cards.show', $card)" class="p-4 flex flex-col justify-between group">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="flex items-center gap-2.5 min-w-0">
-                                    <div class="p-1.5 bg-neutral-100 rounded text-neutral-600 shrink-0">
-                                        <x-heroicon-o-credit-card class="size-4" />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <h3 class="font-bold text-sm text-neutral-900 truncate" title="{{ $card->name }}">{{ $card->name }}</h3>
-                                        <p class="text-[10px] text-neutral-500 truncate">Vence dia {{ $card->due_day }} • Fecha dia {{ $card->closing_day }}</p>
-                                    </div>
-                                </div>
-                                <div class="p-1 -mr-1 -mt-1 text-neutral-400 group-hover:text-brand-600 transition-colors" title="Ver Cartão">
-                                    <x-heroicon-o-arrow-top-right-on-square class="size-4" />
-                                </div>
-                            </div>
-
-                            @if($card->credit_limit)
-                                <div class="flex justify-between items-center text-xs text-neutral-500 mb-3">
-                                    <span>Limite Total</span>
-                                    <span class="font-semibold text-neutral-900">{{ formatCurrency($card->credit_limit) }}</span>
-                                </div>
-                            @endif
-
-                            @php
-                                $currentInvoice = $card->invoices->first();
-                            @endphp
-
-                            @if($currentInvoice)
-                                <div class="flex justify-between items-end border-t border-neutral-100 pt-3">
-                                    <div>
-                                        <div class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-1">Fatura Atual</div>
-                                        <div class="font-bold text-base leading-none {{ $currentInvoice->status() === 'paid' ? 'text-green-600' : 'text-neutral-900' }}">
-                                            {{ formatCurrency($currentInvoice->total()) }}
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex flex-col items-end gap-1">
-                                        <x-badge :color="$currentInvoice->status() === 'paid' ? 'success' : 'warning'" class="text-[9px] px-1.5 py-0.5 leading-none">
-                                            {{ $currentInvoice->status() === 'paid' ? 'Paga' : 'Pendente' }}
-                                        </x-badge>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="text-center text-xs text-neutral-400 italic border-t border-neutral-100 pt-3">
-                                    Nenhuma fatura em aberto.
-                                </div>
-                            @endif
-                        </div>
-                    </x-card>
+                    <x-finance.credit-card :card="$card" />
                 @endforeach
             </div>
         </div>

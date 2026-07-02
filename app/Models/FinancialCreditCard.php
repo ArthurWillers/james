@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -67,10 +68,35 @@ class FinancialCreditCard extends Model
     }
 
     /**
+     * Scope a query to include the used_limit attribute.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeWithUsedLimit(Builder $query): Builder
+    {
+        return $query->addSelect([
+            'used_limit' => FinancialCreditCardInvoice::selectRaw("COALESCE(SUM(
+                GREATEST(0, (
+                    SELECT COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)
+                    FROM financial_transactions 
+                    WHERE financial_credit_card_invoice_id = financial_credit_card_invoices.id
+                ) - amount_paid)
+            ), 0)")
+            ->whereColumn('financial_credit_card_id', 'financial_credit_cards.id')
+            ->whereNull('paid_at')
+        ]);
+    }
+
+    /**
      * Calculate used limit across all non-paid invoices.
      */
     public function usedLimit(): float
     {
+        if (isset($this->used_limit)) {
+            return (float) $this->used_limit;
+        }
+
         return (float) $this->invoices()
             ->whereNull('paid_at')
             ->get()

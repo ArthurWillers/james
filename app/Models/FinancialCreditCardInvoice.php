@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 #[Fillable([
@@ -80,11 +81,29 @@ class FinancialCreditCardInvoice extends Model
     }
 
     /**
+     * Scope a query to include the total_amount attribute (computed via subquery).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeWithTotalAmount(Builder $query): Builder
+    {
+        return $query->addSelect([
+            'total_amount' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)")
+                ->whereColumn('financial_credit_card_invoice_id', 'financial_credit_card_invoices.id')
+        ]);
+    }
+
+    /**
      * Calculate the total amount of the invoice.
      * Expenses sum, incomes subtract.
      */
     public function total(): float
     {
+        if (isset($this->total_amount)) {
+            return (float) $this->total_amount;
+        }
+
         return (float) $this->transactions()
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0) as total")
             ->value('total');

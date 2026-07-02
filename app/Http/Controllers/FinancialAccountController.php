@@ -86,8 +86,9 @@ class FinancialAccountController extends Controller
             ->sum('amount');
 
         $creditCards = $account->creditCards()
+            ->withUsedLimit()
             ->with(['invoices' => function ($query) {
-                $query->whereNull('paid_at')->orderBy('due_date', 'asc');
+                $query->withTotalAmount()->whereNull('paid_at')->orderBy('due_date', 'asc');
             }])
             ->get();
 
