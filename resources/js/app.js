@@ -7,6 +7,9 @@ import 'cropperjs/dist/cropper.css';
 window.EasyMDE = EasyMDE;
 window.Cropper = Cropper;
 
+import * as echarts from 'echarts';
+window.echarts = echarts;
+
 window.Alpine = Alpine;
 
 Alpine.start();

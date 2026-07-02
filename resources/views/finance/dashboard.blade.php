@@ -35,6 +35,9 @@
         />
     </div>
 
+    <!-- Gráfico de Evolução do Saldo (Net Worth) -->
+    <x-financial.net-worth-chart />
+
     <!-- 2. O Motor de Previsibilidade -->
     <h3 class="text-lg font-bold text-neutral-900 mb-4 mt-8">Previsibilidade de Caixa</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

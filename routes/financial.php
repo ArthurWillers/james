@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('financial')->name('financial.')->group(function () {
     Route::get('/dashboard', \App\Http\Controllers\FinanceDashboardController::class)->name('dashboard');
+    Route::get('/dashboard/chart-data', \App\Http\Controllers\FinanceDashboardChartController::class)->name('dashboard.chart-data');
 
     // Accounts
     Route::get('/accounts/trashed', [FinancialAccountController::class, 'trashed'])->name('accounts.trashed');
