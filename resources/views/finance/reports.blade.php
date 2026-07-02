@@ -186,7 +186,7 @@
                 const raw = @json($evolution);
                 const values = raw.map(i => i.value);
                 const dates = raw.map(i => {
-                    const p = i.date.split('-');
+                    const p = String(i.date).split('-');
                     if (p.length === 1) return p[0];
                     if (p.length === 2) return p[1] + '/' + p[0];
                     return p[2] + '/' + p[1] + '/' + p[0];
