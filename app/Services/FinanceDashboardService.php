@@ -13,14 +13,19 @@ use Illuminate\Support\Collection;
 
 class FinanceDashboardService
 {
-    public function getKpiNumbers(Carbon $referenceDate): array
+    public function getKpiNumbers(): array
     {
-        $startOfMonth = $referenceDate->copy()->startOfMonth();
-        $endOfMonth = $referenceDate->copy()->endOfMonth();
-
         // Saldo Geral Líquido: Saldo Real das contas - Faturas em Aberto
         $accountBalance = FinancialAccount::withBalance()->get()->sum('balance');
-        $creditCardDebt = FinancialCreditCard::with('invoices')->get()->sum(fn ($card) => $card->usedLimit());
+        $openInvoices = FinancialCreditCardInvoice::whereNull('paid_at')
+            ->with('transactions')
+            ->get();
+
+        $creditCardDebt = $openInvoices->sum(function ($invoice) {
+            $total = $invoice->transactions->reduce(fn ($c, $t) => $c + ($t->type === 'expense' ? $t->amount : -$t->amount), 0);
+
+            return max(0, $total - $invoice->amount_paid);
+        });
         $netBalance = $accountBalance - $creditCardDebt;
 
         // Total de Receitas: is_posted = true, type = income, s/ transferência
@@ -49,7 +54,7 @@ class FinanceDashboardService
     {
         $startOfMonth = $referenceDate->copy()->startOfMonth();
         $endOfMonth = $referenceDate->copy()->endOfMonth();
-        
+
         $nextMonthStart = $referenceDate->copy()->addMonth()->startOfMonth();
         $nextMonthEnd = $referenceDate->copy()->addMonth()->endOfMonth();
 
@@ -75,20 +80,25 @@ class FinanceDashboardService
         // Despesas Pendentes: Faturas em aberto a vencer no mês atual
         $openInvoicesCurrent = FinancialCreditCardInvoice::whereBetween('due_date', [$startOfMonth, $endOfMonth])
             ->whereNull('paid_at')
+            ->with('transactions')
             ->get()
-            ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
+            ->sum(function ($invoice) {
+                $total = $invoice->transactions->reduce(fn ($c, $t) => $c + ($t->type === 'expense' ? $t->amount : -$t->amount), 0);
+
+                return max(0, $total - $invoice->amount_paid);
+            });
 
         // Despesas Pendentes: Recorrências do mês atual (ainda não materializadas)
         // Assume-se que 'next_processing_date' indica o que falta processar
         $recurrencesCurrent = FinancialRecurrence::where('is_active', true)
             ->whereBetween('next_processing_date', [$referenceDate, $endOfMonth])
             ->get();
-            
+
         $recurrencesIncomeCurrent = $recurrencesCurrent->where('type', 'income')->sum('amount');
         $recurrencesExpenseCurrent = $recurrencesCurrent->where('type', 'expense')->sum('amount');
 
-        $projectionCurrentMonth = $accountBalance 
-            + $pendingIncomeCurrent + $recurrencesIncomeCurrent 
+        $projectionCurrentMonth = $accountBalance
+            + $pendingIncomeCurrent + $recurrencesIncomeCurrent
             - $pendingExpenseCurrent - $openInvoicesCurrent - $recurrencesExpenseCurrent;
 
         // --- Próximo Mês (Projeção) ---
@@ -108,29 +118,34 @@ class FinanceDashboardService
 
         $openInvoicesNext = FinancialCreditCardInvoice::whereBetween('due_date', [$nextMonthStart, $nextMonthEnd])
             ->whereNull('paid_at')
+            ->with('transactions')
             ->get()
-            ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
+            ->sum(function ($invoice) {
+                $total = $invoice->transactions->reduce(fn ($c, $t) => $c + ($t->type === 'expense' ? $t->amount : -$t->amount), 0);
+
+                return max(0, $total - $invoice->amount_paid);
+            });
 
         $recurrencesNext = FinancialRecurrence::where('is_active', true)
             ->where(function ($query) use ($nextMonthStart, $nextMonthEnd) {
                 $query->whereBetween('next_processing_date', [$nextMonthStart, $nextMonthEnd])
-                      ->orWhere(function ($q) use ($nextMonthStart, $nextMonthEnd) {
-                          $q->where('next_processing_date', '<', $nextMonthStart)
+                    ->orWhere(function ($q) use ($nextMonthStart, $nextMonthEnd) {
+                        $q->where('next_processing_date', '<', $nextMonthStart)
                             ->where(function ($sq) use ($nextMonthEnd) {
                                 $sq->whereNull('end_date')
-                                   ->orWhere('end_date', '>=', $nextMonthEnd);
+                                    ->orWhere('end_date', '>=', $nextMonthEnd);
                             });
-                      });
+                    });
             })
             ->get();
-            
+
         // Simplified recurrence calculation for next month (1 occurrence per active recurrence)
         // For a more robust calculation we'd need to simulate frequencies.
         // Given KISS principle, assuming 1x per month for monthly recurrences.
         $recurrencesIncomeNext = $recurrencesNext->where('type', 'income')->sum('amount');
         $recurrencesExpenseNext = $recurrencesNext->where('type', 'expense')->sum('amount');
 
-        $projectionNextMonth = $projectionCurrentMonth 
+        $projectionNextMonth = $projectionCurrentMonth
             + $pendingIncomeNext + $recurrencesIncomeNext
             - $pendingExpenseNext - $openInvoicesNext - $recurrencesExpenseNext;
 
@@ -142,12 +157,42 @@ class FinanceDashboardService
 
     public function getCreditCardsWidget(Carbon $referenceDate): Collection
     {
-        return FinancialCreditCard::all()->map(function ($card) use ($referenceDate) {
-            $currentInvoice = FinancialCreditCardInvoice::resolveForDate($card, $referenceDate);
-            $usedLimit = $card->usedLimit();
+        return FinancialCreditCard::with(['invoices' => function ($q) {
+            $q->with('transactions');
+        }])->get()->map(function ($card) use ($referenceDate) {
+            $usedLimit = $card->invoices->whereNull('paid_at')->sum(function ($invoice) {
+                $total = $invoice->transactions->reduce(fn ($c, $t) => $c + ($t->type === 'expense' ? $t->amount : -$t->amount), 0);
+
+                return max(0, $total - $invoice->amount_paid);
+            });
+
             $availableLimit = max(0, $card->credit_limit - $usedLimit);
-            $total = $currentInvoice->total();
-            $status = $currentInvoice->status();
+
+            $currentInvoice = FinancialCreditCardInvoice::resolveForDate($card, $referenceDate);
+
+            $loadedInvoice = $card->invoices->firstWhere('id', $currentInvoice->id);
+            if ($loadedInvoice) {
+                $total = $loadedInvoice->transactions->reduce(fn ($c, $t) => $c + ($t->type === 'expense' ? $t->amount : -$t->amount), 0);
+
+                $status = 'closed';
+                if ($loadedInvoice->paid_at !== null) {
+                    $status = 'paid';
+                } else {
+                    if ($loadedInvoice->amount_paid > 0 && $loadedInvoice->amount_paid < $total) {
+                        $status = 'partially_paid';
+                    } else {
+                        $today = Carbon::today();
+                        if ($today->lt($loadedInvoice->closing_date)) {
+                            $status = 'open';
+                        } elseif ($today->gt($loadedInvoice->due_date)) {
+                            $status = 'overdue';
+                        }
+                    }
+                }
+            } else {
+                $total = 0;
+                $status = 'open';
+            }
 
             return (object) [
                 'id' => $card->id,
@@ -186,7 +231,7 @@ class FinanceDashboardService
             ->whereBetween('next_processing_date', [$referenceDate, $endDate])
             ->get()
             ->map(fn ($r) => (object) [
-                'type_label' => 'Recorrência (' . ucfirst($r->frequency) . ')',
+                'type_label' => 'Recorrência ('.ucfirst($r->frequency).')',
                 'title' => $r->title,
                 'amount' => $r->amount,
                 'type' => $r->type,
@@ -194,18 +239,22 @@ class FinanceDashboardService
                 'icon' => 'heroicon-o-arrow-path',
             ]);
 
-        $openInvoices = FinancialCreditCardInvoice::with('card')
+        $openInvoices = FinancialCreditCardInvoice::with(['card', 'transactions'])
             ->whereBetween('due_date', [$referenceDate, $endDate])
             ->whereNull('paid_at')
             ->get()
-            ->map(fn ($inv) => (object) [
-                'type_label' => 'Fatura de Cartão',
-                'title' => 'Fatura ' . $inv->card->name,
-                'amount' => max(0, $inv->total() - $inv->amount_paid),
-                'type' => 'expense',
-                'date' => $inv->due_date,
-                'icon' => 'heroicon-o-credit-card',
-            ]);
+            ->map(function ($inv) {
+                $total = $inv->transactions->reduce(fn ($c, $t) => $c + ($t->type === 'expense' ? $t->amount : -$t->amount), 0);
+
+                return (object) [
+                    'type_label' => 'Fatura de Cartão',
+                    'title' => 'Fatura '.$inv->card->name,
+                    'amount' => max(0, $total - $inv->amount_paid),
+                    'type' => 'expense',
+                    'date' => $inv->due_date,
+                    'icon' => 'heroicon-o-credit-card',
+                ];
+            });
 
         return $pendingTransactions->concat($recurrences)->concat($openInvoices)->sortBy('date')->values();
     }
@@ -224,11 +273,13 @@ class FinanceDashboardService
 
         $grouped = $expenses->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
+
             return $primaryTag ? $primaryTag->id : 0;
         });
 
         $topTags = $grouped->map(function ($transactions, $tagId) {
             $tag = $transactions->first()->tags->first();
+
             return (object) [
                 'tag_name' => $tag ? $tag->name : 'Sem Categoria',
                 'color_hex' => $tag ? $tag->color_hex : '#9ca3af',
