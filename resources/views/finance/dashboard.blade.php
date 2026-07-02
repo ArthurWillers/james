@@ -7,7 +7,7 @@
             title="Saldo Líquido" 
             :value="formatCurrency($kpi['netBalance'])" 
             icon="heroicon-o-building-library" 
-            color="neutral" 
+            :color="$kpi['netBalance'] >= 0 ? 'green' : 'red'" 
         />
 
         <x-finance.kpi-card 
@@ -15,6 +15,7 @@
             :value="formatCurrency($kpi['income'])" 
             icon="heroicon-o-arrow-trending-up" 
             color="green" 
+            :href="route('financial.transactions.index', ['type' => 'income'])"
         />
 
         <x-finance.kpi-card 
@@ -22,6 +23,7 @@
             :value="formatCurrency($kpi['expense'])" 
             icon="heroicon-o-arrow-trending-down" 
             color="red" 
+            :href="route('financial.transactions.index', ['type' => 'expense'])"
         />
 
         <x-finance.kpi-card 
@@ -29,6 +31,7 @@
             :value="formatCurrency($kpi['currentBalance'])" 
             icon="heroicon-o-scale" 
             :color="$kpi['currentBalance'] >= 0 ? 'green' : 'red'" 
+            :href="route('financial.transactions.index', ['is_posted' => 1])"
         />
     </div>
 

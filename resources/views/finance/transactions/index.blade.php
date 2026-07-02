@@ -95,7 +95,7 @@
     <x-filter-bar 
         action="{{ route('financial.transactions.index') }}" 
         searchPlaceholder="Buscar por descrição..." 
-        :filters="['search', 'account_id', 'type', 'date']">
+        :filters="['search', 'account_id', 'type', 'is_posted', 'date']">
         
         <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
             <select name="account_id" 
@@ -111,6 +111,13 @@
                 <option value="">Todos os Tipos</option>
                 <option value="income" @selected(request('type') == 'income')>Receita</option>
                 <option value="expense" @selected(request('type') == 'expense')>Despesa</option>
+            </select>
+
+            <select name="is_posted" 
+                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                <option value="">Todos os Status</option>
+                <option value="1" @selected(request('is_posted') === '1')>Efetivadas</option>
+                <option value="0" @selected(request('is_posted') === '0')>Pendentes</option>
             </select>
 
             <input type="date" name="date" value="{{ request('date') }}" 
