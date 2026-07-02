@@ -166,7 +166,7 @@ class FinanceDashboardService
 
     public function getJamesRadar(Carbon $referenceDate): Collection
     {
-        $endDate = $referenceDate->copy()->addDays(15);
+        $endDate = $referenceDate->copy()->addMonthNoOverflow();
 
         $pendingTransactions = FinancialTransaction::pending()
             ->whereBetween('date', [$referenceDate, $endDate])
@@ -194,7 +194,7 @@ class FinanceDashboardService
                 'icon' => 'heroicon-o-arrow-path',
             ]);
 
-        $openInvoices = FinancialCreditCardInvoice::with(['card'])
+        $openInvoices = FinancialCreditCardInvoice::with(['creditCard'])
             ->withTotalAmount()
             ->whereBetween('due_date', [$referenceDate, $endDate])
             ->whereNull('paid_at')
@@ -202,7 +202,7 @@ class FinanceDashboardService
             ->map(function ($inv) {
                 return (object) [
                     'type_label' => 'Fatura de Cartão',
-                    'title' => 'Fatura '.$inv->card->name,
+                    'title' => 'Fatura '.$inv->creditCard->name,
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
                     'type' => 'expense',
                     'date' => $inv->due_date,
@@ -215,10 +215,10 @@ class FinanceDashboardService
 
     public function getTop5Expenses(Carbon $referenceDate): Collection
     {
-        $startOfMonth = $referenceDate->copy()->startOfMonth();
-        $endOfMonth = $referenceDate->copy()->endOfMonth();
+        $startDate = $referenceDate->copy()->subDays(30);
+        $endDate = $referenceDate->copy();
 
-        $expenses = FinancialTransaction::forPeriod($startOfMonth, $endOfMonth)
+        $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
             ->posted()
             ->expenses()
             ->withoutTransfers()

@@ -78,7 +78,10 @@
         
         <!-- Radar -->
         <div class="lg:col-span-2">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Próximos Dias</h3>
+            <div class="flex items-center gap-2 mb-4">
+                <h3 class="text-lg font-bold text-neutral-900">Próximo Mês</h3>
+                <span class="text-sm font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">até {{ now()->addMonthNoOverflow()->format('d/m') }}</span>
+            </div>
             <x-card class="p-0 overflow-hidden">
                 <ul class="divide-y divide-neutral-100">
                     @forelse($radar as $item)
@@ -105,7 +108,7 @@
                             </div>
                         </li>
                     @empty
-                        <li class="p-8 text-center text-sm text-neutral-500">Nada no radar para os próximos dias.</li>
+                        <li class="p-8 text-center text-sm text-neutral-500">Nada no radar para o próximo mês.</li>
                     @endforelse
                 </ul>
             </x-card>
@@ -113,7 +116,7 @@
 
         <!-- Top 5 -->
         <div class="lg:col-span-1">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Top 5 Gastos do Mês</h3>
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Top 5 Gastos (Últimos 30 Dias)</h3>
             <x-card class="p-4 space-y-4">
                 @forelse($topExpenses as $expense)
                     <div class="flex justify-between items-center">
@@ -128,7 +131,7 @@
                         </span>
                     </div>
                 @empty
-                    <div class="text-sm text-neutral-500 text-center py-4">Nenhuma despesa registrada neste mês.</div>
+                    <div class="text-sm text-neutral-500 text-center py-4">Nenhuma despesa registrada nestes 30 dias.</div>
                 @endforelse
             </x-card>
         </div>
