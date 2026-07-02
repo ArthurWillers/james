@@ -13,9 +13,19 @@ use Illuminate\Support\Collection;
 
 class FinanceDashboardService
 {
+    private ?float $accountBalanceCache = null;
+
+    private function getAccountBalance(): float
+    {
+        if ($this->accountBalanceCache === null) {
+            $this->accountBalanceCache = FinancialAccount::withBalance()->get()->sum('balance');
+        }
+        
+        return $this->accountBalanceCache;
+    }
     public function getKpiNumbers(): array
     {
-        $accountBalance = FinancialAccount::withBalance()->get()->sum('balance');
+        $accountBalance = $this->getAccountBalance();
 
         $creditCardDebt = FinancialCreditCardInvoice::whereNull('paid_at')
             ->withTotalAmount()
@@ -52,7 +62,7 @@ class FinanceDashboardService
         $nextMonthStart = $referenceDate->copy()->addMonth()->startOfMonth();
         $nextMonthEnd = $referenceDate->copy()->addMonth()->endOfMonth();
 
-        $accountBalance = FinancialAccount::withBalance()->get()->sum('balance');
+        $accountBalance = $this->getAccountBalance();
 
         // --- Mês Atual (Projeção) ---
         $pendingIncomeCurrent = FinancialTransaction::forPeriod($startOfMonth, $endOfMonth)
