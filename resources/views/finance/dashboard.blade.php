@@ -231,36 +231,7 @@
                 <h3 class="text-lg font-bold text-neutral-900">Próximo Mês</h3>
                 <span class="text-sm font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">até {{ now()->addMonthNoOverflow()->format('d/m') }}</span>
             </div>
-            <x-card class="p-0 overflow-hidden">
-                <ul class="divide-y divide-neutral-100">
-                    @forelse($radar as $item)
-                        <li class="p-4 hover:bg-neutral-50 transition-colors flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="flex-shrink-0">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $item->type === 'expense' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                                        <x-dynamic-component :component="$item->icon" class="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-neutral-900 truncate max-w-[200px] sm:max-w-xs">{{ $item->title }}</p>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-xs text-neutral-500">{{ \Carbon\Carbon::parse($item->date)->formatShort() }}</span>
-                                        <span class="text-xs text-neutral-400">&bull;</span>
-                                        <span class="text-xs text-neutral-500">{{ $item->type_label }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-semibold {{ $item->type === 'expense' ? 'text-red-600' : 'text-green-600' }}">
-                                    {{ $item->type === 'expense' ? '-' : '+' }}{{ formatCurrency($item->amount) }}
-                                </p>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="p-8 text-center text-sm text-neutral-500">Nada no radar para o próximo mês.</li>
-                    @endforelse
-                </ul>
-            </x-card>
+            <x-finance.transaction-table :transactions="$radar" />
         </div>
 
 

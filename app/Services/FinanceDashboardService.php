@@ -30,7 +30,9 @@ class FinanceDashboardService
     private function getActiveRecurrences(): Collection
     {
         if ($this->activeRecurrencesCache === null) {
-            $this->activeRecurrencesCache = FinancialRecurrence::active()->get();
+            $this->activeRecurrencesCache = FinancialRecurrence::active()
+                ->with(['financialAccount', 'financialCreditCard', 'tags'])
+                ->get();
         }
 
         return $this->activeRecurrencesCache;
@@ -220,48 +222,55 @@ class FinanceDashboardService
             ->forPeriod($referenceDate, $endDate)
             ->withoutInvoice()
             ->withoutTransfers()
-            ->get()
-            ->map(fn ($t) => (object) [
-                'type_label' => 'Transação Agendada',
-                'title' => $t->description,
-                'amount' => $t->amount,
-                'type' => $t->type,
-                'date' => $t->date,
-                'icon' => 'heroicon-o-clock',
-            ]);
+            ->with(['account', 'tags', 'invoice.creditCard'])
+            ->get();
 
         $recurrences = $this->getActiveRecurrences()
             ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endDate))
-            ->map(fn ($r) => (object) [
-                'type_label' => 'Recorrência ('.($r->frequency === 'monthly' ? 'Mensal' : 'Anual').')',
-                'title' => $r->title,
-                'amount' => $r->amount,
-                'type' => $r->type,
-                'date' => $r->next_processing_date,
-                'icon' => 'heroicon-o-arrow-path',
-            ]);
-
-        $creditCardsById = $this->getCreditCards()->keyBy('id');
+            ->map(function ($r) {
+                $t = new FinancialTransaction([
+                    'description' => $r->title,
+                    'amount' => $r->amount,
+                    'type' => $r->type,
+                    'date' => $r->next_processing_date,
+                    'is_posted' => false,
+                ]);
+                $t->is_recurrence = true;
+                $t->setRelation('tags', $r->tags);
+                
+                if ($r->financialCreditCard) {
+                    $fakeInvoice = new FinancialCreditCardInvoice();
+                    $fakeInvoice->setRelation('creditCard', $r->financialCreditCard);
+                    $t->setRelation('invoice', $fakeInvoice);
+                } else {
+                    $t->setRelation('account', $r->financialAccount);
+                }
+                
+                return $t;
+            });
 
         $openInvoices = FinancialCreditCardInvoice::withTotalAmount()
+            ->with('creditCard')
             ->dueBetween($referenceDate, $endDate)
             ->unpaid()
             ->get()
-            ->map(function ($inv) use ($creditCardsById) {
-                $cardName = $creditCardsById->get($inv->financial_credit_card_id)?->name ?? 'Cartão';
-
-                return (object) [
-                    'type_label' => 'Fatura de Cartão',
-                    'title' => 'Fatura '.$cardName,
+            ->map(function ($inv) {
+                $t = new FinancialTransaction([
+                    'description' => 'Fatura ' . ($inv->creditCard?->name ?? 'Cartão'),
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
                     'type' => 'expense',
                     'date' => $inv->due_date,
-                    'icon' => 'heroicon-o-credit-card',
-                ];
+                    'is_posted' => false,
+                ]);
+                $t->is_invoice = true;
+                $t->setRelation('tags', collect());
+                $t->setRelation('invoice', $inv);
+                return $t;
             });
 
         return $pendingTransactions->concat($recurrences)->concat($openInvoices)->sortBy('date')->values();
     }
+
     public function getTopExpenseTags(Carbon $referenceDate): array
     {
         $startDate = $referenceDate->copy()->subDays(30);

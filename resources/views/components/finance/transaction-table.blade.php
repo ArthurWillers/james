@@ -1,4 +1,4 @@
-@props(['transactions'])
+@props(['transactions', 'hidePendingBadge' => false])
 
 <x-ui.table {{ $attributes }}>
     @if($transactions->isNotEmpty())
@@ -13,7 +13,7 @@
 
     <x-ui.table.body>
         @forelse($transactions as $transaction)
-            <x-ui.table.row href="{{ route('financial.transactions.show', $transaction->id) }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
+            <x-ui.table.row href="{{ $transaction->id ? route('financial.transactions.show', $transaction->id) : '#' }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
                 <x-ui.table.cell>
                     <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
                 </x-ui.table.cell>
@@ -26,8 +26,14 @@
                                 <span class="text-neutral-500 font-normal ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                             @endif
                         </span>
-                        @if(!$transaction->is_posted)
+                        @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                             <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                        @endif
+                        @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
+                            <span class="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
+                        @endif
+                        @if(isset($transaction->is_invoice) && $transaction->is_invoice)
+                            <span class="text-[10px] uppercase font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-purple-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-document-text class="size-3" /> Fatura</span>
                         @endif
                     </div>
                 </x-ui.table.cell>
@@ -93,15 +99,21 @@
                 <x-slot name="mobile">
                     <div class="flex items-start justify-between gap-3 w-full">
                         <div class="flex-1 min-w-0 flex flex-col gap-1.5">
-                            <h3 class="text-base font-semibold text-neutral-900 leading-tight flex items-center gap-2 truncate">
-                                <span>
+                            <h3 class="text-base font-semibold text-neutral-900 leading-tight flex flex-wrap items-center gap-2">
+                                <span class="truncate max-w-full">
                                     {{ $transaction->description }}
                                     @if($transaction->installment_total > 1)
                                         <span class="text-neutral-500 font-normal text-sm ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                                     @endif
                                 </span>
-                                @if(!$transaction->is_posted)
+                                @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                                     <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                                @endif
+                                @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
+                                    <span class="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
+                                @endif
+                                @if(isset($transaction->is_invoice) && $transaction->is_invoice)
+                                    <span class="text-[10px] uppercase font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-purple-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-document-text class="size-3" /> Fatura</span>
                                 @endif
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-neutral-500">
