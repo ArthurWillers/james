@@ -66,10 +66,7 @@ class FinanceDashboardService
     {
         $accountBalance = $this->getAccountBalance();
 
-        $creditCardDebt = FinancialCreditCardInvoice::unpaid()
-            ->withTotalAmount()
-            ->get()
-            ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
+        $creditCardDebt = $this->getOpenInvoicesTotalForPeriod();
 
         $otherDebts = FinancialTransaction::pending()
             ->expenses()
@@ -111,22 +108,8 @@ class FinanceDashboardService
         $accountBalance = $this->getAccountBalance();
 
         // --- Mês Atual (Projeção) ---
-        $pendingCurrent = FinancialTransaction::forPeriod($startOfMonth, $endOfMonth)
-            ->pending()
-            ->withoutInvoice()
-            ->withoutTransfers()
-            ->toBase()
-            ->selectRaw("
-                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
-                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
-            ")
-            ->first();
-
-        $openInvoicesCurrent = FinancialCreditCardInvoice::dueBetween($startOfMonth, $endOfMonth)
-            ->unpaid()
-            ->withTotalAmount()
-            ->get()
-            ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
+        $pendingCurrent = $this->getPendingTotalsForPeriod($startOfMonth, $endOfMonth);
+        $openInvoicesCurrent = $this->getOpenInvoicesTotalForPeriod($startOfMonth, $endOfMonth);
 
         // Recorrências do mês atual (ainda não materializadas)
         $recurrencesCurrent = $this->getActiveRecurrences()
@@ -140,22 +123,8 @@ class FinanceDashboardService
             - (float) $pendingCurrent->expense - $openInvoicesCurrent - $recurrencesExpenseCurrent;
 
         // --- Próximo Mês (Projeção) ---
-        $pendingNext = FinancialTransaction::forPeriod($nextMonthStart, $nextMonthEnd)
-            ->pending()
-            ->withoutInvoice()
-            ->withoutTransfers()
-            ->toBase()
-            ->selectRaw("
-                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
-                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
-            ")
-            ->first();
-
-        $openInvoicesNext = FinancialCreditCardInvoice::dueBetween($nextMonthStart, $nextMonthEnd)
-            ->unpaid()
-            ->withTotalAmount()
-            ->get()
-            ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
+        $pendingNext = $this->getPendingTotalsForPeriod($nextMonthStart, $nextMonthEnd);
+        $openInvoicesNext = $this->getOpenInvoicesTotalForPeriod($nextMonthStart, $nextMonthEnd);
 
         // Recorrências do próximo mês (filtradas do cache)
         $recurrencesNext = $this->getActiveRecurrences()
@@ -176,6 +145,31 @@ class FinanceDashboardService
             'currentMonth' => $projectionCurrentMonth,
             'nextMonth' => $projectionNextMonth,
         ];
+    }
+
+    private function getPendingTotalsForPeriod(Carbon $start, Carbon $end): object
+    {
+        return FinancialTransaction::forPeriod($start, $end)
+            ->pending()
+            ->withoutInvoice()
+            ->withoutTransfers()
+            ->toBase()
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
+                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
+            ")
+            ->first();
+    }
+
+    private function getOpenInvoicesTotalForPeriod(?Carbon $start = null, ?Carbon $end = null): float
+    {
+        $query = FinancialCreditCardInvoice::unpaid()->withTotalAmount();
+
+        if ($start && $end) {
+            $query->dueBetween($start, $end);
+        }
+
+        return (float) $query->get()->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
     }
 
     public function getAccountBalancesChart(): array
@@ -248,15 +242,15 @@ class FinanceDashboardService
                 ]);
                 $t->is_recurrence = true;
                 $t->setRelation('tags', $r->tags);
-                
+
                 if ($r->financial_credit_card_id) {
-                    $fakeInvoice = new FinancialCreditCardInvoice();
+                    $fakeInvoice = new FinancialCreditCardInvoice;
                     $fakeInvoice->setRelation('creditCard', $r->relationLoaded('financialCreditCard') ? $r->financialCreditCard : null);
                     $t->setRelation('invoice', $fakeInvoice);
                 } else {
                     $t->setRelation('account', $r->relationLoaded('financialAccount') ? $r->financialAccount : null);
                 }
-                
+
                 return $t;
             });
 
@@ -267,7 +261,7 @@ class FinanceDashboardService
             ->map(function ($inv) {
                 $inv->setRelation('creditCard', $this->getCreditCards()->firstWhere('id', $inv->financial_credit_card_id));
                 $t = new FinancialTransaction([
-                    'description' => 'Fatura ' . ($inv->creditCard?->name ?? 'Cartão'),
+                    'description' => 'Fatura '.($inv->creditCard?->name ?? 'Cartão'),
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
                     'type' => 'expense',
                     'date' => $inv->due_date,
@@ -276,6 +270,7 @@ class FinanceDashboardService
                 $t->is_invoice = true;
                 $t->setRelation('tags', collect());
                 $t->setRelation('invoice', $inv);
+
                 return $t;
             });
 
@@ -296,6 +291,7 @@ class FinanceDashboardService
 
         $grouped = $expenses->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
+
             return $primaryTag ? $primaryTag->id : 0;
         });
 
@@ -311,8 +307,6 @@ class FinanceDashboardService
         })->sortByDesc('value')->take(5)->values()->toArray();
     }
 
-
-
     public function getRecentTransactions(): Collection
     {
         $transactions = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
@@ -323,7 +317,7 @@ class FinanceDashboardService
 
         $transactions->each(function ($t) {
             $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
-            
+
             if ($t->relationLoaded('invoice') && $t->invoice) {
                 $t->invoice->setRelation('creditCard', $t->invoice->financial_credit_card_id ? $this->getCreditCards()->firstWhere('id', $t->invoice->financial_credit_card_id) : null);
             }
