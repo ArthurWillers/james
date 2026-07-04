@@ -268,30 +268,40 @@ class FinanceDashboardService
         $startDate = $referenceDate->copy()->subDays(30);
         $endDate = $referenceDate->copy();
 
-        $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
+        $transactions = FinancialTransaction::forPeriod($startDate, $endDate)
             ->posted()
-            ->expenses()
             ->withoutTransfers()
             ->with(['tags' => fn ($q) => $q->wherePivot('is_primary', true)])
             ->get();
 
-        $grouped = $expenses->groupBy(function ($transaction) {
+        $grouped = $transactions->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
 
             return $primaryTag ? $primaryTag->id : 0;
         });
 
-        $tagsData = $grouped->map(function ($transactions) {
-            $tag = $transactions->first()->tags->first();
+        $tagsData = $grouped->map(function ($groupTransactions) {
+            $tag = $groupTransactions->first()->tags->first();
+
+            $netBalance = $groupTransactions->reduce(function ($carry, $transaction) {
+                return $transaction->type === 'income' 
+                    ? $carry + $transaction->amount 
+                    : $carry - $transaction->amount;
+            }, 0.0);
+
+            // Ignora a tag se o saldo final for positivo ou zerado (receitas maiores ou iguais às despesas)
+            if ($netBalance >= 0) {
+                return null;
+            }
 
             return [
                 'name' => $tag ? $tag->name : 'Sem Categoria',
-                'value' => (float) $transactions->sum('amount'),
+                'value' => (float) round(abs($netBalance), 2),
                 'itemStyle' => [
                     'color' => $tag ? $tag->color_hex : '#9ca3af',
                 ],
             ];
-        })->sortByDesc('value')->values();
+        })->filter()->sortByDesc('value')->values();
 
         $top10 = $tagsData->take(10);
         $others = $tagsData->slice(10);
@@ -299,7 +309,7 @@ class FinanceDashboardService
         if ($others->isNotEmpty()) {
             $top10->push([
                 'name' => 'Outros',
-                'value' => (float) $others->sum('value'),
+                'value' => (float) round($others->sum('value'), 2),
                 'itemStyle' => [
                     'color' => '#d1d5db',
                 ],
@@ -308,7 +318,7 @@ class FinanceDashboardService
 
         return [
             'data' => $top10->toArray(),
-            'total' => (float) $tagsData->sum('value'),
+            'total' => (float) round($tagsData->sum('value'), 2),
         ];
     }
 
