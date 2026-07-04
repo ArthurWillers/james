@@ -20,22 +20,22 @@
          }">
         
         @if($recurrences->isNotEmpty())
-            <x-table>
-                <x-table.header class="hidden sm:grid sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto]">
-                <x-table.column>Título</x-table.column>
-                <x-table.column>Valor</x-table.column>
-                <x-table.column>Frequência</x-table.column>
-                <x-table.column>Conta/Cartão</x-table.column>
-                <x-table.column>Próximo Proc.</x-table.column>
-                <x-table.column align="right">Ações</x-table.column>
-            </x-table.header>
+            <x-ui.table>
+                <x-ui.table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr_1fr_1.5fr]">
+                    <x-ui.table.column>Título</x-ui.table.column>
+                    <x-ui.table.column>Valor</x-ui.table.column>
+                    <x-ui.table.column>Frequência</x-ui.table.column>
+                    <x-ui.table.column>Conta/Cartão</x-ui.table.column>
+                    <x-ui.table.column>Próximo Proc.</x-ui.table.column>
+                    <x-ui.table.column align="right">Ações</x-ui.table.column>
+                </x-ui.table.header>
 
-            <x-table.body>
-                @foreach($recurrences as $recurrence)
-                    <x-table.row class="hidden sm:grid sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto]">
-                        <x-table.cell>
-                            <div class="flex items-center gap-3 w-full">
-                                <div class="shrink-0 flex items-center justify-center size-10 rounded-full {{ $recurrence->type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                <x-table.body>
+                    @foreach($recurrences as $recurrence)
+                        <x-ui.table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr_1fr_1.5fr] group transition-all">
+                            <x-ui.table.cell>
+                                <div class="flex items-center gap-3 w-full">
+                                    <div class="shrink-0 flex items-center justify-center size-10 rounded-full {{ $recurrence->type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                     @if($recurrence->type === 'expense')
                                         <x-heroicon-o-arrow-trending-down class="size-5" />
                                     @else
@@ -51,22 +51,22 @@
                                     </div>
                                 </div>
                             </div>
-                        </x-table.cell>
+                        </x-ui.table.cell>
 
-                        <x-table.cell>
+                        <x-ui.table.cell>
                             <span class="font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                             </span>
-                        </x-table.cell>
+                        </x-ui.table.cell>
 
-                        <x-table.cell>
+                        <x-ui.table.cell>
                             <div class="flex flex-col">
                                 <span class="text-sm text-neutral-900">{{ $recurrence->frequency === 'monthly' ? 'Mensal' : 'Anual' }}</span>
                                 <span class="text-xs text-neutral-400">Dia {{ $recurrence->start_date->format('d') }}</span>
                             </div>
-                        </x-table.cell>
+                        </x-ui.table.cell>
 
-                        <x-table.cell>
+                        <x-ui.table.cell>
                             <div class="text-sm text-neutral-600 flex items-center gap-1">
                                 @if($recurrence->financial_credit_card_id)
                                     <x-heroicon-o-credit-card class="size-4 text-neutral-400" />
@@ -76,15 +76,15 @@
                                     {{ $recurrence->financialAccount->name }}
                                 @endif
                             </div>
-                        </x-table.cell>
+                        </x-ui.table.cell>
 
-                        <x-table.cell>
+                        <x-ui.table.cell>
                             <span class="text-sm text-neutral-600">
                                 {{ $recurrence->next_processing_date ? $recurrence->next_processing_date->format('d/m/Y') : 'N/A' }}
                             </span>
-                        </x-table.cell>
+                        </x-ui.table.cell>
 
-                        <x-table.cell align="right">
+                        <x-ui.table.cell align="right">
                             <div class="flex justify-end gap-2 w-full">
                                 <x-button type="button" color="outline" size="sm" href="{{ route('financial.recurrences.edit', $recurrence) }}" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300">
                                     <x-heroicon-o-pencil-square class="size-4" />
@@ -96,7 +96,7 @@
                                     Excluir
                                 </x-button>
                             </div>
-                        </x-table.cell>
+                        </x-ui.table.cell>
 
                         <x-slot name="mobile">
                             <div class="flex items-start justify-between gap-3">
@@ -146,10 +146,10 @@
                                 </div>
                             </div>
                         </x-slot>
-                    </x-table.row>
+                    </x-ui.table.row>
                 @endforeach
-            </x-table.body>
-        </x-table>
+            </x-ui.table.body>
+        </x-ui.table>
         @else
             <div class="p-6">
                 <x-empty-state 

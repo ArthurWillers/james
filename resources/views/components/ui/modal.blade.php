@@ -15,6 +15,7 @@
         '2xl' => 'sm:max-w-4xl',
         default => 'sm:max-w-lg', // md
     };
+    $hasIcon = in_array($confirmVariant, ['danger', 'info', 'success', 'warning']);
 @endphp
 
 <div x-data="{ open: false }" 
@@ -56,7 +57,7 @@
                      class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full {{ $maxWidth }}">
                     
                     <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                        <div class="{{ ($confirmVariant === 'danger' || $confirmVariant === 'info') ? 'sm:flex sm:items-start' : '' }}">
+                        <div class="{{ $hasIcon ? 'sm:flex sm:items-start' : '' }}">
                             @if($confirmVariant === 'danger')
                                 <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                                     <x-heroicon-o-exclamation-triangle class="h-6 w-6 text-red-600" />
@@ -65,12 +66,20 @@
                                 <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                                     <x-heroicon-o-information-circle class="h-6 w-6 text-blue-600" />
                                 </div>
+                            @elseif($confirmVariant === 'success')
+                                <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <x-heroicon-o-check-circle class="h-6 w-6 text-green-600" />
+                                </div>
+                            @elseif($confirmVariant === 'warning')
+                                <div class="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <x-heroicon-o-exclamation-circle class="h-6 w-6 text-amber-600" />
+                                </div>
                             @endif
-                            <div class="{{ ($confirmVariant === 'danger' || $confirmVariant === 'info') ? 'mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left' : '' }} w-full">
-                                <h3 class="text-base font-semibold leading-6 text-neutral-900 {{ ($confirmVariant === 'danger' || $confirmVariant === 'info') ? '' : 'mb-4' }}" id="modal-title">
+                            <div class="{{ $hasIcon ? 'mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left' : '' }} w-full">
+                                <h3 class="text-base font-semibold leading-6 text-neutral-900 {{ $hasIcon ? '' : 'mb-4' }}" id="modal-title">
                                     {{ $title }}
                                 </h3>
-                                <div class="{{ ($confirmVariant === 'danger' || $confirmVariant === 'info') ? 'mt-2' : '' }}">
+                                <div class="{{ $hasIcon ? 'mt-2' : '' }}">
                                     @if($message)
                                         <p class="text-sm text-neutral-500 mb-4">
                                             {{ $message }}
@@ -81,14 +90,14 @@
                                         </div>
                                     @endif
                                 </div>
-                                @if(!$hideFooter && $confirmVariant !== 'danger' && $confirmVariant !== 'info')
+                                @if(!$hideFooter && !$hasIcon)
                                     {{ $slot }}
                                 @endif
                             </div>
                         </div>
                     </div>
                     
-                    @if(!$hideFooter && ($confirmVariant === 'danger' || $confirmVariant === 'info'))
+                    @if(!$hideFooter && $hasIcon)
                         <div class="bg-neutral-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                             <div class="sm:ml-3 sm:w-auto" @click="open = false; $dispatch('modal-confirm')">
                                 {{ $slot }}

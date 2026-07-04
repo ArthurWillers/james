@@ -32,7 +32,13 @@ class FinanceDashboardService
             ->get()
             ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
 
-        $netBalance = $accountBalance - $creditCardDebt;
+        $otherDebts = FinancialTransaction::pending()
+            ->expenses()
+            ->withoutTransfers()
+            ->whereNull('financial_credit_card_invoice_id')
+            ->sum('amount');
+
+        $netBalance = $accountBalance - $creditCardDebt - $otherDebts;
 
         $income = FinancialTransaction::posted()
             ->incomes()
