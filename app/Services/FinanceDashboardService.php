@@ -31,8 +31,16 @@ class FinanceDashboardService
     {
         if ($this->activeRecurrencesCache === null) {
             $this->activeRecurrencesCache = FinancialRecurrence::active()
-                ->with(['financialAccount', 'financialCreditCard', 'tags'])
-                ->get();
+                ->with(['tags'])
+                ->get()
+                ->each(function ($r) {
+                    if ($r->financial_account_id) {
+                        $r->setRelation('financialAccount', $this->getAccounts()->firstWhere('id', $r->financial_account_id));
+                    }
+                    if ($r->financial_credit_card_id) {
+                        $r->setRelation('financialCreditCard', $this->getCreditCards()->firstWhere('id', $r->financial_credit_card_id));
+                    }
+                });
         }
 
         return $this->activeRecurrencesCache;
@@ -222,8 +230,11 @@ class FinanceDashboardService
             ->forPeriod($referenceDate, $endDate)
             ->withoutInvoice()
             ->withoutTransfers()
-            ->with(['account', 'tags', 'invoice.creditCard'])
-            ->get();
+            ->with(['tags'])
+            ->get()
+            ->each(function ($t) {
+                $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
+            });
 
         $recurrences = $this->getActiveRecurrences()
             ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endDate))
@@ -238,23 +249,23 @@ class FinanceDashboardService
                 $t->is_recurrence = true;
                 $t->setRelation('tags', $r->tags);
                 
-                if ($r->financialCreditCard) {
+                if ($r->financial_credit_card_id) {
                     $fakeInvoice = new FinancialCreditCardInvoice();
-                    $fakeInvoice->setRelation('creditCard', $r->financialCreditCard);
+                    $fakeInvoice->setRelation('creditCard', $r->relationLoaded('financialCreditCard') ? $r->financialCreditCard : null);
                     $t->setRelation('invoice', $fakeInvoice);
                 } else {
-                    $t->setRelation('account', $r->financialAccount);
+                    $t->setRelation('account', $r->relationLoaded('financialAccount') ? $r->financialAccount : null);
                 }
                 
                 return $t;
             });
 
         $openInvoices = FinancialCreditCardInvoice::withTotalAmount()
-            ->with('creditCard')
             ->dueBetween($referenceDate, $endDate)
             ->unpaid()
             ->get()
             ->map(function ($inv) {
+                $inv->setRelation('creditCard', $this->getCreditCards()->firstWhere('id', $inv->financial_credit_card_id));
                 $t = new FinancialTransaction([
                     'description' => 'Fatura ' . ($inv->creditCard?->name ?? 'Cartão'),
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
@@ -304,11 +315,21 @@ class FinanceDashboardService
 
     public function getRecentTransactions(): Collection
     {
-        return FinancialTransaction::with(['account', 'invoice.creditCard', 'tags', 'recurrence'])
+        $transactions = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
+
+        $transactions->each(function ($t) {
+            $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
+            
+            if ($t->relationLoaded('invoice') && $t->invoice) {
+                $t->invoice->setRelation('creditCard', $t->invoice->financial_credit_card_id ? $this->getCreditCards()->firstWhere('id', $t->invoice->financial_credit_card_id) : null);
+            }
+        });
+
+        return $transactions;
     }
 
     public function getNetWorthChartData(string $period): array
