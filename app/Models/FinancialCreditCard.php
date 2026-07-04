@@ -127,11 +127,12 @@ class FinancialCreditCard extends Model
         Carbon $purchaseDate,
         float $totalAmount,
         int $installments,
-        string $description,
-        ?array $tagIds = null
-    ): void {
+        string $description
+    ): \Illuminate\Support\Collection {
         $firstInvoice = FinancialCreditCardInvoice::resolveForDate($this, $purchaseDate);
         $installmentAmount = round($totalAmount / $installments, 2);
+        
+        $transactions = collect();
 
         for ($i = 1; $i <= $installments; $i++) {
             if ($i === 1) {
@@ -148,7 +149,7 @@ class FinancialCreditCard extends Model
                 ? $totalAmount - ($installmentAmount * ($installments - 1))
                 : $installmentAmount;
 
-            $transaction = $invoice->transactions()->create([
+            $transactions->push($invoice->transactions()->create([
                 'financial_account_id' => null,
                 'date' => $purchaseDate,
                 'type' => 'expense',
@@ -157,11 +158,9 @@ class FinancialCreditCard extends Model
                 'is_posted' => false,
                 'installment_current' => $i,
                 'installment_total' => $installments,
-            ]);
-
-            if (! empty($tagIds)) {
-                $transaction->tags()->attach($tagIds);
-            }
+            ]));
         }
+        
+        return $transactions;
     }
 }

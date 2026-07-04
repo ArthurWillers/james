@@ -127,12 +127,11 @@ class FinancialTransactionController extends Controller
         } elseif ($mode === 'installment') {
             if (! empty($validated['financial_credit_card_id'])) {
                 $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-                $card->createInstallmentPurchase(
+                $transactions = $card->createInstallmentPurchase(
                     Carbon::parse($validated['date']),
                     $validated['amount'],
                     $validated['installments'],
-                    $validated['description'],
-                    $validated['tags'] ?? null
+                    $validated['description']
                 );
             } else {
                 $account = FinancialAccount::findOrFail($validated['financial_account_id']);
@@ -144,24 +143,24 @@ class FinancialTransactionController extends Controller
                     $validated['description'],
                     $validated['type']
                 );
+            }
 
-                $globalTags = $validated['tags'] ?? [];
-                $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
+            $globalTags = $validated['tags'] ?? [];
+            $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
 
-                if (! empty($validated['tags']) || ! empty($validated['items'])) {
-                    foreach ($transactions as $t) {
-                        $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
+            if (! empty($validated['tags']) || ! empty($validated['items'])) {
+                foreach ($transactions as $t) {
+                    $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
 
-                        if (! empty($validated['items'])) {
-                            foreach ($validated['items'] as $itemData) {
-                                $item = $t->items()->create([
-                                    'description' => $itemData['description'],
-                                    'quantity' => $itemData['quantity'],
-                                    'unit_price' => $itemData['unit_price'],
-                                    'total' => $itemData['quantity'] * $itemData['unit_price'],
-                                ]);
-                                $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
-                            }
+                    if (! empty($validated['items'])) {
+                        foreach ($validated['items'] as $itemData) {
+                            $item = $t->items()->create([
+                                'description' => $itemData['description'],
+                                'quantity' => $itemData['quantity'],
+                                'unit_price' => $itemData['unit_price'],
+                                'total' => $itemData['quantity'] * $itemData['unit_price'],
+                            ]);
+                            $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
                         }
                     }
                 }
