@@ -247,7 +247,7 @@ class FinanceDashboardService
 
     public function getRecentTransactions(Carbon $referenceDate): Collection
     {
-        return FinancialTransaction::with(['account', 'invoice', 'tags', 'recurrence'])
+        return FinancialTransaction::with(['account', 'invoice.creditCard', 'tags', 'recurrence'])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->limit(10)
