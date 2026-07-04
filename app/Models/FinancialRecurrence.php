@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * Nota de Implementação (Validação):
@@ -92,11 +94,27 @@ class FinancialRecurrence extends Model
     public function tags()
     {
         return $this->morphToMany(
-            FinancialTag::class, 
-            'financial_taggable', 
+            FinancialTag::class,
+            'financial_taggable',
             'financial_taggables',
             'financial_taggable_id',
             'financial_tag_id'
         )->withPivot('is_primary');
+    }
+
+    /**
+     * Scope a query to only include active recurrences.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to only include recurrences with next processing date between two dates.
+     */
+    public function scopeNextProcessingBetween(Builder $query, Carbon $startDate, Carbon $endDate): Builder
+    {
+        return $query->whereBetween('next_processing_date', [$startDate, $endDate]);
     }
 }

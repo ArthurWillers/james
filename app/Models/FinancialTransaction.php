@@ -181,6 +181,14 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Scope a query to only include transactions without an invoice.
+     */
+    public function scopeWithoutInvoice(Builder $query): Builder
+    {
+        return $query->whereNull('financial_credit_card_invoice_id');
+    }
+
+    /**
      * Create installments on a standard account.
      */
     public static function createInstallmentsOnAccount(

@@ -8,20 +8,18 @@ use Illuminate\Support\Carbon;
 
 class FinanceDashboardController extends Controller
 {
-    public function __construct(private FinanceDashboardService $dashboardService)
-    {
-    }
+    public function __construct(private FinanceDashboardService $dashboardService) {}
 
     public function __invoke(Request $request)
     {
         $referenceDate = Carbon::today();
 
-        $kpi = $this->dashboardService->getKpiNumbers($referenceDate);
+        $kpi = $this->dashboardService->getKpiNumbers();
         $projections = $this->dashboardService->getCashFlowProjections($referenceDate);
         $cardsWidget = $this->dashboardService->getCreditCardsWidget($referenceDate);
         $radar = $this->dashboardService->getJamesRadar($referenceDate);
         $topExpensesChart = $this->dashboardService->getExpensesByTagChart($referenceDate);
-        $recentTransactions = $this->dashboardService->getRecentTransactions($referenceDate);
+        $recentTransactions = $this->dashboardService->getRecentTransactions();
 
         $accountBalancesChart = $this->dashboardService->getAccountBalancesChart();
 

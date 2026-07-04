@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 #[Fillable([
@@ -90,8 +90,24 @@ class FinancialCreditCardInvoice extends Model
     {
         return $query->addSelect([
             'total_amount' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)")
-                ->whereColumn('financial_credit_card_invoice_id', 'financial_credit_card_invoices.id')
+                ->whereColumn('financial_credit_card_invoice_id', 'financial_credit_card_invoices.id'),
         ]);
+    }
+
+    /**
+     * Scope a query to only include unpaid invoices.
+     */
+    public function scopeUnpaid(Builder $query): Builder
+    {
+        return $query->whereNull('paid_at');
+    }
+
+    /**
+     * Scope a query to only include invoices due between two dates.
+     */
+    public function scopeDueBetween(Builder $query, Carbon $startDate, Carbon $endDate): Builder
+    {
+        return $query->whereBetween('due_date', [$startDate, $endDate]);
     }
 
     /**

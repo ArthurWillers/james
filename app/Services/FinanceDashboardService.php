@@ -6,28 +6,57 @@ use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialRecurrence;
-use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class FinanceDashboardService
 {
-    private ?float $accountBalanceCache = null;
+    private ?Collection $accountsCache = null;
+
+    private ?Collection $activeRecurrencesCache = null;
+
+    private ?Collection $creditCardsCache = null;
+
+    private function getAccounts(): Collection
+    {
+        if ($this->accountsCache === null) {
+            $this->accountsCache = FinancialAccount::withBalance()->get();
+        }
+
+        return $this->accountsCache;
+    }
+
+    private function getActiveRecurrences(): Collection
+    {
+        if ($this->activeRecurrencesCache === null) {
+            $this->activeRecurrencesCache = FinancialRecurrence::active()->get();
+        }
+
+        return $this->activeRecurrencesCache;
+    }
+
+    private function getCreditCards(): Collection
+    {
+        if ($this->creditCardsCache === null) {
+            $this->creditCardsCache = FinancialCreditCard::withUsedLimit()
+                ->with(['invoices' => fn ($q) => $q->withTotalAmount()])
+                ->get();
+        }
+
+        return $this->creditCardsCache;
+    }
 
     private function getAccountBalance(): float
     {
-        if ($this->accountBalanceCache === null) {
-            $this->accountBalanceCache = FinancialAccount::withBalance()->get()->sum('balance');
-        }
-        
-        return $this->accountBalanceCache;
+        return (float) $this->getAccounts()->sum('balance');
     }
+
     public function getKpiNumbers(): array
     {
         $accountBalance = $this->getAccountBalance();
 
-        $creditCardDebt = FinancialCreditCardInvoice::whereNull('paid_at')
+        $creditCardDebt = FinancialCreditCardInvoice::unpaid()
             ->withTotalAmount()
             ->get()
             ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
@@ -35,21 +64,22 @@ class FinanceDashboardService
         $otherDebts = FinancialTransaction::pending()
             ->expenses()
             ->withoutTransfers()
-            ->whereNull('financial_credit_card_invoice_id')
+            ->withoutInvoice()
             ->sum('amount');
 
         $netBalance = $accountBalance - $creditCardDebt - $otherDebts;
 
-        $income = FinancialTransaction::posted()
-            ->incomes()
+        $totals = FinancialTransaction::posted()
             ->withoutTransfers()
-            ->sum('amount');
+            ->toBase()
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
+                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
+            ")
+            ->first();
 
-        $expense = FinancialTransaction::posted()
-            ->expenses()
-            ->withoutTransfers()
-            ->sum('amount');
-
+        $income = (float) $totals->income;
+        $expense = (float) $totals->expense;
         $currentBalance = $income - $expense;
 
         return [
@@ -71,81 +101,66 @@ class FinanceDashboardService
         $accountBalance = $this->getAccountBalance();
 
         // --- Mês Atual (Projeção) ---
-        $pendingIncomeCurrent = FinancialTransaction::forPeriod($startOfMonth, $endOfMonth)
+        $pendingCurrent = FinancialTransaction::forPeriod($startOfMonth, $endOfMonth)
             ->pending()
-            ->incomes()
-            ->whereNull('financial_credit_card_invoice_id')
+            ->withoutInvoice()
             ->withoutTransfers()
-            ->sum('amount');
+            ->toBase()
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
+                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
+            ")
+            ->first();
 
-        $pendingExpenseCurrent = FinancialTransaction::forPeriod($startOfMonth, $endOfMonth)
-            ->pending()
-            ->expenses()
-            ->whereNull('financial_credit_card_invoice_id')
-            ->withoutTransfers()
-            ->sum('amount');
-
-        $openInvoicesCurrent = FinancialCreditCardInvoice::whereBetween('due_date', [$startOfMonth, $endOfMonth])
-            ->whereNull('paid_at')
+        $openInvoicesCurrent = FinancialCreditCardInvoice::dueBetween($startOfMonth, $endOfMonth)
+            ->unpaid()
             ->withTotalAmount()
             ->get()
             ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
 
-        // Despesas Pendentes: Recorrências do mês atual (ainda não materializadas)
-        // Assume-se que 'next_processing_date' indica o que falta processar
-        $recurrencesCurrent = FinancialRecurrence::where('is_active', true)
-            ->whereBetween('next_processing_date', [$referenceDate, $endOfMonth])
-            ->get();
+        // Recorrências do mês atual (ainda não materializadas)
+        $recurrencesCurrent = $this->getActiveRecurrences()
+            ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endOfMonth));
 
         $recurrencesIncomeCurrent = $recurrencesCurrent->where('type', 'income')->sum('amount');
         $recurrencesExpenseCurrent = $recurrencesCurrent->where('type', 'expense')->sum('amount');
 
         $projectionCurrentMonth = $accountBalance
-            + $pendingIncomeCurrent + $recurrencesIncomeCurrent
-            - $pendingExpenseCurrent - $openInvoicesCurrent - $recurrencesExpenseCurrent;
+            + (float) $pendingCurrent->income + $recurrencesIncomeCurrent
+            - (float) $pendingCurrent->expense - $openInvoicesCurrent - $recurrencesExpenseCurrent;
 
-        $pendingIncomeNext = FinancialTransaction::forPeriod($nextMonthStart, $nextMonthEnd)
+        // --- Próximo Mês (Projeção) ---
+        $pendingNext = FinancialTransaction::forPeriod($nextMonthStart, $nextMonthEnd)
             ->pending()
-            ->incomes()
-            ->whereNull('financial_credit_card_invoice_id')
+            ->withoutInvoice()
             ->withoutTransfers()
-            ->sum('amount');
+            ->toBase()
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
+                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
+            ")
+            ->first();
 
-        $pendingExpenseNext = FinancialTransaction::forPeriod($nextMonthStart, $nextMonthEnd)
-            ->pending()
-            ->expenses()
-            ->whereNull('financial_credit_card_invoice_id')
-            ->withoutTransfers()
-            ->sum('amount');
-
-        $openInvoicesNext = FinancialCreditCardInvoice::whereBetween('due_date', [$nextMonthStart, $nextMonthEnd])
-            ->whereNull('paid_at')
+        $openInvoicesNext = FinancialCreditCardInvoice::dueBetween($nextMonthStart, $nextMonthEnd)
+            ->unpaid()
             ->withTotalAmount()
             ->get()
             ->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
 
-        $recurrencesNext = FinancialRecurrence::where('is_active', true)
-            ->where(function ($query) use ($nextMonthStart, $nextMonthEnd) {
-                $query->whereBetween('next_processing_date', [$nextMonthStart, $nextMonthEnd])
-                    ->orWhere(function ($q) use ($nextMonthStart, $nextMonthEnd) {
-                        $q->where('next_processing_date', '<', $nextMonthStart)
-                            ->where(function ($sq) use ($nextMonthEnd) {
-                                $sq->whereNull('end_date')
-                                    ->orWhere('end_date', '>=', $nextMonthEnd);
-                            });
-                    });
-            })
-            ->get();
+        // Recorrências do próximo mês (filtradas do cache)
+        $recurrencesNext = $this->getActiveRecurrences()
+            ->filter(function ($r) use ($nextMonthStart, $nextMonthEnd) {
+                return $r->next_processing_date->between($nextMonthStart, $nextMonthEnd)
+                    || ($r->next_processing_date->lt($nextMonthStart)
+                        && ($r->end_date === null || $r->end_date->gte($nextMonthEnd)));
+            });
 
-        // Simplified recurrence calculation for next month (1 occurrence per active recurrence)
-        // For a more robust calculation we'd need to simulate frequencies.
-        // Given KISS principle, assuming 1x per month for monthly recurrences.
         $recurrencesIncomeNext = $recurrencesNext->where('type', 'income')->sum('amount');
         $recurrencesExpenseNext = $recurrencesNext->where('type', 'expense')->sum('amount');
 
         $projectionNextMonth = $projectionCurrentMonth
-            + $pendingIncomeNext + $recurrencesIncomeNext
-            - $pendingExpenseNext - $openInvoicesNext - $recurrencesExpenseNext;
+            + (float) $pendingNext->income + $recurrencesIncomeNext
+            - (float) $pendingNext->expense - $openInvoicesNext - $recurrencesExpenseNext;
 
         return [
             'currentMonth' => $projectionCurrentMonth,
@@ -155,8 +170,7 @@ class FinanceDashboardService
 
     public function getAccountBalancesChart(): array
     {
-        return FinancialAccount::withBalance()
-            ->get()
+        return $this->getAccounts()
             ->filter(fn ($account) => $account->balance > 0)
             ->map(fn ($account) => [
                 'value' => round($account->balance, 2),
@@ -168,19 +182,34 @@ class FinanceDashboardService
 
     public function getCreditCardsWidget(Carbon $referenceDate): Collection
     {
-        return FinancialCreditCard::withUsedLimit()
-            ->get()
+        return $this->getCreditCards()
             ->map(function ($card) use ($referenceDate) {
-                $currentInvoice = FinancialCreditCardInvoice::resolveForDate($card, $referenceDate);
-                
-                // Load total_amount safely for the current invoice
-                $loadedInvoice = FinancialCreditCardInvoice::withTotalAmount()->find($currentInvoice->id);
-                
-                $card->current_invoice_total = $loadedInvoice ? $loadedInvoice->total() : 0;
-                $card->current_invoice_status = $loadedInvoice ? $loadedInvoice->status() : 'open';
+                $referenceMonth = $this->resolveReferenceMonth($card, $referenceDate);
+
+                $currentInvoice = $card->invoices
+                    ->first(fn ($inv) => $inv->reference_month?->startOfMonth()->eq($referenceMonth));
+
+                $card->current_invoice_total = $currentInvoice ? $currentInvoice->total() : 0;
+                $card->current_invoice_status = $currentInvoice ? $currentInvoice->status() : 'open';
 
                 return $card;
             });
+    }
+
+    /**
+     * Resolve the reference month for a credit card invoice based on the purchase date.
+     * Pure calculation — no database queries.
+     */
+    private function resolveReferenceMonth(FinancialCreditCard $card, Carbon $date): Carbon
+    {
+        $candidateMonth = $date->copy()->startOfMonth();
+        $closingDate = $candidateMonth->copy()->day((int) min($card->closing_day, $candidateMonth->daysInMonth));
+
+        if ($date->copy()->startOfDay()->lte($closingDate)) {
+            return $candidateMonth;
+        }
+
+        return $candidateMonth->addMonth()->startOfMonth();
     }
 
     public function getJamesRadar(Carbon $referenceDate): Collection
@@ -188,9 +217,9 @@ class FinanceDashboardService
         $endDate = $referenceDate->copy()->addMonthNoOverflow();
 
         $pendingTransactions = FinancialTransaction::pending()
-            ->whereBetween('date', [$referenceDate, $endDate])
-            ->whereNull('financial_credit_card_invoice_id')
-            ->whereDoesntHave('tags', fn ($q) => $q->where('financial_tag_id', FinancialTag::TRANSFERENCIA_ID))
+            ->forPeriod($referenceDate, $endDate)
+            ->withoutInvoice()
+            ->withoutTransfers()
             ->get()
             ->map(fn ($t) => (object) [
                 'type_label' => 'Transação Agendada',
@@ -201,9 +230,8 @@ class FinanceDashboardService
                 'icon' => 'heroicon-o-clock',
             ]);
 
-        $recurrences = FinancialRecurrence::where('is_active', true)
-            ->whereBetween('next_processing_date', [$referenceDate, $endDate])
-            ->get()
+        $recurrences = $this->getActiveRecurrences()
+            ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endDate))
             ->map(fn ($r) => (object) [
                 'type_label' => 'Recorrência ('.($r->frequency === 'monthly' ? 'Mensal' : 'Anual').')',
                 'title' => $r->title,
@@ -213,15 +241,18 @@ class FinanceDashboardService
                 'icon' => 'heroicon-o-arrow-path',
             ]);
 
-        $openInvoices = FinancialCreditCardInvoice::with(['creditCard'])
-            ->withTotalAmount()
-            ->whereBetween('due_date', [$referenceDate, $endDate])
-            ->whereNull('paid_at')
+        $creditCardsById = $this->getCreditCards()->keyBy('id');
+
+        $openInvoices = FinancialCreditCardInvoice::withTotalAmount()
+            ->dueBetween($referenceDate, $endDate)
+            ->unpaid()
             ->get()
-            ->map(function ($inv) {
+            ->map(function ($inv) use ($creditCardsById) {
+                $cardName = $creditCardsById->get($inv->financial_credit_card_id)?->name ?? 'Cartão';
+
                 return (object) [
                     'type_label' => 'Fatura de Cartão',
-                    'title' => 'Fatura '.$inv->creditCard->name,
+                    'title' => 'Fatura '.$cardName,
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
                     'type' => 'expense',
                     'date' => $inv->due_date,
@@ -246,17 +277,19 @@ class FinanceDashboardService
 
         $grouped = $expenses->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
+
             return $primaryTag ? $primaryTag->id : 0;
         });
 
         $tagsData = $grouped->map(function ($transactions) {
             $tag = $transactions->first()->tags->first();
+
             return [
                 'name' => $tag ? $tag->name : 'Sem Categoria',
                 'value' => (float) $transactions->sum('amount'),
                 'itemStyle' => [
                     'color' => $tag ? $tag->color_hex : '#9ca3af',
-                ]
+                ],
             ];
         })->sortByDesc('value')->values();
 
@@ -269,7 +302,7 @@ class FinanceDashboardService
                 'value' => (float) $others->sum('value'),
                 'itemStyle' => [
                     'color' => '#d1d5db',
-                ]
+                ],
             ]);
         }
 
@@ -279,7 +312,7 @@ class FinanceDashboardService
         ];
     }
 
-    public function getRecentTransactions(Carbon $referenceDate): Collection
+    public function getRecentTransactions(): Collection
     {
         return FinancialTransaction::with(['account', 'invoice.creditCard', 'tags', 'recurrence'])
             ->orderBy('date', 'desc')
@@ -291,7 +324,7 @@ class FinanceDashboardService
     public function getNetWorthChartData(string $period): array
     {
         $today = Carbon::today();
-        
+
         $startDate = match ($period) {
             '1m' => $today->copy()->subMonth(),
             '3m' => $today->copy()->subMonths(3),
@@ -304,14 +337,14 @@ class FinanceDashboardService
         $groupBy = in_array($period, ['1y', 'all']) ? 'week' : 'day';
 
         // Get initial balance before start date
-        $initialBalance = FinancialTransaction::where('is_posted', true)
+        $initialBalance = FinancialTransaction::posted()
             ->where('date', '<', $startDate)
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0) as balance")
             ->value('balance') ?? 0;
 
         // Get flows during the period
-        $flows = FinancialTransaction::where('is_posted', true)
-            ->whereBetween('date', [$startDate, $today])
+        $flows = FinancialTransaction::posted()
+            ->forPeriod($startDate, $today)
             ->withoutTransfers()
             ->selectRaw("
                 date, 
@@ -325,6 +358,7 @@ class FinanceDashboardService
 
         $flowsByDate = $flows->mapWithKeys(function ($item) {
             $dateStr = is_string($item->date) ? substr($item->date, 0, 10) : $item->date->format('Y-m-d');
+
             return [$dateStr => [
                 'net_flow' => (float) $item->net_flow,
                 'income' => (float) $item->income,
@@ -334,23 +368,23 @@ class FinanceDashboardService
 
         $chartData = [];
         $runningBalance = (float) $initialBalance;
-        
+
         $currentDate = $startDate->copy();
-        
+
         if ($groupBy === 'day') {
             while ($currentDate->lte($today)) {
                 $dateStr = $currentDate->format('Y-m-d');
                 $flowData = $flowsByDate->get($dateStr, ['net_flow' => 0, 'income' => 0, 'expense' => 0]);
-                
+
                 $runningBalance += $flowData['net_flow'];
-                
+
                 $chartData[] = [
                     'date' => $dateStr,
                     'value' => round($runningBalance, 2),
                     'income' => round($flowData['income'], 2),
                     'expense' => round($flowData['expense'], 2),
                 ];
-                
+
                 $currentDate->addDay();
             }
         } else {
@@ -361,11 +395,11 @@ class FinanceDashboardService
                 if ($weekEnd->gt($today)) {
                     $weekEnd = $today->copy();
                 }
-                
+
                 $weeklyFlow = 0;
                 $weeklyIncome = 0;
                 $weeklyExpense = 0;
-                
+
                 $loopDate = $currentDate->copy();
                 while ($loopDate->lte($weekEnd)) {
                     $flowData = $flowsByDate->get($loopDate->format('Y-m-d'), ['net_flow' => 0, 'income' => 0, 'expense' => 0]);
@@ -374,16 +408,16 @@ class FinanceDashboardService
                     $weeklyExpense += $flowData['expense'];
                     $loopDate->addDay();
                 }
-                
+
                 $runningBalance += $weeklyFlow;
-                
+
                 $chartData[] = [
                     'date' => $weekEnd->format('Y-m-d'),
                     'value' => round($runningBalance, 2),
                     'income' => round($weeklyIncome, 2),
                     'expense' => round($weeklyExpense, 2),
                 ];
-                
+
                 $currentDate->addWeek();
             }
         }
