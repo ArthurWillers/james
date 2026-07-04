@@ -38,33 +38,216 @@
     <!-- Gráfico de Evolução do Saldo (Net Worth) -->
     <x-financial.net-worth-chart />
 
-    <!-- 2. O Motor de Previsibilidade -->
-    <h3 class="text-lg font-bold text-neutral-900 mb-4 mt-8">Previsibilidade de Caixa</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <x-card class="p-6 border-brand-100 bg-brand-50/30">
-            <p class="text-sm font-medium text-neutral-600 mb-1">Projeção Fim do Mês Atual</p>
-            <p class="text-2xl font-bold {{ $projections['currentMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                {{ formatCurrency($projections['currentMonth']) }}
-            </p>
-            <p class="mt-1 text-xs text-neutral-500">
-                Considerando transações agendadas e faturas abertas do mês.
-            </p>
-        </x-card>
+    <!-- 2. Previsibilidade e Saldos -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
+        
+        <!-- Previsibilidade de Caixa -->
+        <div class="lg:col-span-1 flex flex-col">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Previsibilidade de Caixa</h3>
+            <div class="grid grid-cols-1 gap-4 flex-1">
+                <x-card class="p-6 border-brand-100 bg-brand-50/30 flex flex-col justify-center">
+                    <p class="text-sm font-medium text-neutral-600 mb-1">Projeção Mês Atual</p>
+                    <p class="text-2xl font-bold {{ $projections['currentMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                        {{ formatCurrency($projections['currentMonth']) }}
+                    </p>
+                </x-card>
 
-        <x-card class="p-6 border-brand-100 bg-brand-50/30">
-            <p class="text-sm font-medium text-neutral-600 mb-1">Projeção Fim do Próximo Mês</p>
-            <p class="text-2xl font-bold {{ $projections['nextMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                {{ formatCurrency($projections['nextMonth']) }}
-            </p>
-            <p class="mt-1 text-xs text-neutral-500">
-                Projeção com base nas suas assinaturas e gastos fixos já conhecidos.
-            </p>
-        </x-card>
+                <x-card class="p-6 border-brand-100 bg-brand-50/30 flex flex-col justify-center">
+                    <p class="text-sm font-medium text-neutral-600 mb-1">Projeção Próximo Mês</p>
+                    <p class="text-2xl font-bold {{ $projections['nextMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                        {{ formatCurrency($projections['nextMonth']) }}
+                    </p>
+                </x-card>
+            </div>
+        </div>
+
+        <!-- Top Despesas (30 Dias) -->
+        <div class="lg:col-span-1 flex flex-col">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Top Despesas (30 Dias)</h3>
+            <x-card class="p-6 flex-1 flex flex-col items-center justify-center">
+                @if(count($topExpensesChart['data']) > 0)
+                    <div 
+                        class="w-full flex-1 flex items-center justify-center min-h-[12rem]"
+                        x-data="{
+                            initChart() {
+                                if (typeof echarts === 'undefined') {
+                                    console.error('Apache ECharts is not loaded.');
+                                    return;
+                                }
+                                
+                                const chart = echarts.init(this.$refs.expensesChartContainer);
+                                const data = {{ json_encode($topExpensesChart['data']) }};
+                                const totalValue = {{ json_encode($topExpensesChart['total']) }};
+                                
+                                const formattedTotal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue);
+                                
+                                const option = {
+                                    tooltip: {
+                                        trigger: 'item',
+                                        formatter: function (params) {
+                                            const val = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(params.value);
+                                            return `${params.name}<br/><strong>${val}</strong> (${params.percent}%)`;
+                                        },
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        borderColor: '#e5e7eb',
+                                        textStyle: { color: '#374151' },
+                                        extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
+                                    },
+                                    graphic: {
+                                        type: 'text',
+                                        left: 'center',
+                                        top: 'center',
+                                        style: {
+                                            text: 'Total\n' + formattedTotal,
+                                            textAlign: 'center',
+                                            fill: '#4b5563',
+                                            fontSize: 14,
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    series: [
+                                        {
+                                            name: 'Despesas',
+                                            type: 'pie',
+                                            radius: ['55%', '75%'],
+                                            minAngle: 15,
+                                            itemStyle: {
+                                                borderRadius: 8,
+                                                borderColor: '#ffffff',
+                                                borderWidth: 3,
+                                                shadowBlur: 10,
+                                                shadowColor: 'rgba(0, 0, 0, 0.05)',
+                                                shadowOffsetX: 0,
+                                                shadowOffsetY: 4
+                                            },
+                                            label: {
+                                                show: false
+                                            },
+                                            data: data
+                                        }
+                                    ]
+                                };
+                                
+                                chart.setOption(option);
+                                
+                                window.addEventListener('resize', () => {
+                                    chart.resize();
+                                });
+                            }
+                        }"
+                        x-init="initChart"
+                    >
+                        <div x-ref="expensesChartContainer" class="w-full h-full"></div>
+                    </div>
+                @else
+                    <div class="w-full h-full min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
+                        <x-heroicon-o-chart-pie class="w-12 h-12 mb-2 text-neutral-300" />
+                        <p class="text-sm">Nenhuma despesa registrada.</p>
+                    </div>
+                @endif
+            </x-card>
+        </div>
+
+        <!-- Saldos por Conta -->
+        <div class="lg:col-span-1 flex flex-col">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Saldos por Conta</h3>
+            <x-card class="p-6 flex-1 flex flex-col items-center justify-center">
+                @if(count($accountBalancesChart) > 0)
+                    <div 
+                        class="w-full flex-1 flex items-center justify-center min-h-[12rem]"
+                        x-data="{
+                            initChart() {
+                                if (typeof echarts === 'undefined') {
+                                    console.error('Apache ECharts is not loaded.');
+                                    return;
+                                }
+                                
+                                const chart = echarts.init(this.$refs.chartContainer);
+                                const data = {{ json_encode($accountBalancesChart) }};
+                                
+                                const total = data.reduce((acc, item) => acc + item.value, 0);
+                                const formattedTotal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
+                                
+                                const option = {
+                                    color: [
+                                        '#4F46E5', // Indigo 600
+                                        '#10B981', // Emerald 500
+                                        '#F59E0B', // Amber 500
+                                        '#EC4899', // Pink 500
+                                        '#8B5CF6', // Violet 500
+                                        '#06B6D4', // Cyan 500
+                                        '#F43F5E', // Rose 500
+                                    ],
+                                    tooltip: {
+                                        trigger: 'item',
+                                        formatter: function (params) {
+                                            const val = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(params.value);
+                                            return `${params.name}<br/><strong>${val}</strong> (${params.percent}%)`;
+                                        },
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        borderColor: '#e5e7eb',
+                                        textStyle: { color: '#374151' },
+                                        extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
+                                    },
+                                    graphic: {
+                                        type: 'text',
+                                        left: 'center',
+                                        top: 'center',
+                                        style: {
+                                            text: 'Total\n' + formattedTotal,
+                                            textAlign: 'center',
+                                            fill: '#4b5563', // text-neutral-600
+                                            fontSize: 14,
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    series: [
+                                        {
+                                            name: 'Saldo',
+                                            type: 'pie',
+                                            radius: ['55%', '75%'], // Make the donut ring a bit thinner for premium feel
+                                            minAngle: 15, // Ensure small balances (like R$ 9) are visible
+                                            itemStyle: {
+                                                borderRadius: 8,
+                                                borderColor: '#ffffff',
+                                                borderWidth: 3,
+                                                shadowBlur: 10,
+                                                shadowColor: 'rgba(0, 0, 0, 0.05)',
+                                                shadowOffsetX: 0,
+                                                shadowOffsetY: 4
+                                            },
+                                            label: {
+                                                show: false
+                                            },
+                                            data: data
+                                        }
+                                    ]
+                                };
+                                
+                                chart.setOption(option);
+                                
+                                window.addEventListener('resize', () => {
+                                    chart.resize();
+                                });
+                            }
+                        }"
+                        x-init="initChart"
+                    >
+                        <div x-ref="chartContainer" class="w-full h-full"></div>
+                    </div>
+                @else
+                    <div class="w-full h-full min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
+                        <x-heroicon-o-building-library class="w-12 h-12 mb-2 text-neutral-300" />
+                        <p class="text-sm">Nenhuma conta com saldo positivo.</p>
+                    </div>
+                @endif
+            </x-card>
+        </div>
     </div>
 
-    <!-- 3. Cartões de Crédito -->
+    <!-- 4. Cartões de Crédito -->
     @if($cardsWidget->isNotEmpty())
-        <div class="mb-6">
+        <div class="mb-8">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Cartões de Crédito</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach($cardsWidget as $card)
@@ -77,7 +260,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
         
         <!-- Radar -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-3">
             <div class="flex items-center gap-2 mb-4">
                 <h3 class="text-lg font-bold text-neutral-900">Próximo Mês</h3>
                 <span class="text-sm font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-md">até {{ now()->addMonthNoOverflow()->format('d/m') }}</span>
@@ -114,27 +297,7 @@
             </x-card>
         </div>
 
-        <!-- Top 5 -->
-        <div class="lg:col-span-1">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Top 5 Gastos (Últimos 30 Dias)</h3>
-            <x-card class="p-4 space-y-4">
-                @forelse($topExpenses as $expense)
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <x-dynamic-component :component="$expense->icon" class="w-4 h-4" style="color: {{ $expense->color_hex }}" />
-                            <span class="text-sm font-medium text-neutral-700">
-                                {{ $expense->tag_name }}
-                            </span>
-                        </div>
-                        <span class="text-sm font-bold text-neutral-900">
-                            {{ formatCurrency($expense->total) }}
-                        </span>
-                    </div>
-                @empty
-                    <div class="text-sm text-neutral-500 text-center py-4">Nenhuma despesa registrada nestes 30 dias.</div>
-                @endforelse
-            </x-card>
-        </div>
+
     </div>
 
     <!-- 4. Últimas Transações -->

@@ -153,6 +153,19 @@ class FinanceDashboardService
         ];
     }
 
+    public function getAccountBalancesChart(): array
+    {
+        return FinancialAccount::withBalance()
+            ->get()
+            ->filter(fn ($account) => $account->balance > 0)
+            ->map(fn ($account) => [
+                'value' => round($account->balance, 2),
+                'name' => $account->name,
+            ])
+            ->values()
+            ->toArray();
+    }
+
     public function getCreditCardsWidget(Carbon $referenceDate): Collection
     {
         return FinancialCreditCard::withUsedLimit()
@@ -219,7 +232,7 @@ class FinanceDashboardService
         return $pendingTransactions->concat($recurrences)->concat($openInvoices)->sortBy('date')->values();
     }
 
-    public function getTop5Expenses(Carbon $referenceDate): Collection
+    public function getExpensesByTagChart(Carbon $referenceDate): array
     {
         $startDate = $referenceDate->copy()->subDays(30);
         $endDate = $referenceDate->copy();
@@ -233,22 +246,37 @@ class FinanceDashboardService
 
         $grouped = $expenses->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
-
             return $primaryTag ? $primaryTag->id : 0;
         });
 
-        $topTags = $grouped->map(function ($transactions, $tagId) {
+        $tagsData = $grouped->map(function ($transactions) {
             $tag = $transactions->first()->tags->first();
-
-            return (object) [
-                'tag_name' => $tag ? $tag->name : 'Sem Categoria',
-                'color_hex' => $tag ? $tag->color_hex : '#9ca3af',
-                'icon' => $tag ? $tag->icon : 'heroicon-o-tag',
-                'total' => $transactions->sum('amount'),
+            return [
+                'name' => $tag ? $tag->name : 'Sem Categoria',
+                'value' => (float) $transactions->sum('amount'),
+                'itemStyle' => [
+                    'color' => $tag ? $tag->color_hex : '#9ca3af',
+                ]
             ];
-        })->sortByDesc('total')->take(5)->values();
+        })->sortByDesc('value')->values();
 
-        return $topTags;
+        $top10 = $tagsData->take(10);
+        $others = $tagsData->slice(10);
+
+        if ($others->isNotEmpty()) {
+            $top10->push([
+                'name' => 'Outros',
+                'value' => (float) $others->sum('value'),
+                'itemStyle' => [
+                    'color' => '#d1d5db',
+                ]
+            ]);
+        }
+
+        return [
+            'data' => $top10->toArray(),
+            'total' => (float) $tagsData->sum('value'),
+        ];
     }
 
     public function getRecentTransactions(Carbon $referenceDate): Collection
