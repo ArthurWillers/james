@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -73,8 +72,6 @@ class FinancialTransaction extends Model
 
     /**
      * Get the account associated with the transaction.
-     *
-     * @return BelongsTo<FinancialAccount, $this>
      */
     public function account(): BelongsTo
     {
@@ -83,8 +80,6 @@ class FinancialTransaction extends Model
 
     /**
      * Get the invoice associated with the transaction.
-     *
-     * @return BelongsTo<FinancialCreditCardInvoice, $this>
      */
     public function invoice(): BelongsTo
     {
@@ -93,8 +88,6 @@ class FinancialTransaction extends Model
 
     /**
      * Get the items associated with the transaction.
-     *
-     * @return HasMany<FinancialTransactionItem, $this>
      */
     public function items(): HasMany
     {
@@ -103,29 +96,14 @@ class FinancialTransaction extends Model
 
     /**
      * Get the recurrence associated with the transaction.
-     *
-     * @return BelongsTo<FinancialRecurrence, $this>
      */
     public function recurrence(): BelongsTo
     {
         return $this->belongsTo(FinancialRecurrence::class, 'financial_recurrence_id');
     }
 
-    public function getTransferPairAttribute(): ?self
-    {
-        if (! $this->transfer_pair_id) {
-            return null;
-        }
-
-        return self::where('transfer_pair_id', $this->transfer_pair_id)
-            ->where('id', '!=', $this->id)
-            ->first();
-    }
-
     /**
      * Get the tags associated with the transaction.
-     *
-     * @return MorphToMany<FinancialTag, $this>
      */
     public function tags(): MorphToMany
     {
@@ -139,10 +117,21 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Get the transfer pair for this transaction.
+     */
+    public function getTransferPairAttribute(): ?self
+    {
+        if (! $this->transfer_pair_id) {
+            return null;
+        }
+
+        return self::where('transfer_pair_id', $this->transfer_pair_id)
+            ->where('id', '!=', $this->id)
+            ->first();
+    }
+
+    /**
      * Scope a query to only include posted transactions.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
     public function scopePosted(Builder $query): Builder
     {
@@ -151,9 +140,6 @@ class FinancialTransaction extends Model
 
     /**
      * Scope a query to only include pending transactions.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
     public function scopePending(Builder $query): Builder
     {
@@ -162,9 +148,6 @@ class FinancialTransaction extends Model
 
     /**
      * Scope a query to only include expenses.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
     public function scopeExpenses(Builder $query): Builder
     {
@@ -173,9 +156,6 @@ class FinancialTransaction extends Model
 
     /**
      * Scope a query to only include incomes.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
     public function scopeIncomes(Builder $query): Builder
     {
@@ -184,9 +164,6 @@ class FinancialTransaction extends Model
 
     /**
      * Scope a query to exclude transfers.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
     public function scopeWithoutTransfers(Builder $query): Builder
     {
@@ -197,9 +174,6 @@ class FinancialTransaction extends Model
 
     /**
      * Scope a query for a specific period.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
     public function scopeForPeriod(Builder $query, Carbon $startDate, Carbon $endDate): Builder
     {
@@ -208,8 +182,6 @@ class FinancialTransaction extends Model
 
     /**
      * Create installments on a standard account.
-     *
-     * @return Collection<int, self>
      */
     public static function createInstallmentsOnAccount(
         FinancialAccount $account,
@@ -254,8 +226,6 @@ class FinancialTransaction extends Model
 
     /**
      * Create a transfer between two accounts.
-     *
-     * @return array<int, self>
      */
     public static function createTransfer(
         FinancialAccount $from,
