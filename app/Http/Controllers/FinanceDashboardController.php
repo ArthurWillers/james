@@ -18,7 +18,7 @@ class FinanceDashboardController extends Controller
         $projections = $this->dashboardService->getCashFlowProjections($referenceDate);
         $cardsWidget = $this->dashboardService->getCreditCardsWidget($referenceDate);
         $radar = $this->dashboardService->getJamesRadar($referenceDate);
-        $topExpensesChart = $this->dashboardService->getExpensesByTagChart($referenceDate);
+        $topExpenseTags = $this->dashboardService->getTopExpenseTags($referenceDate);
         $recentTransactions = $this->dashboardService->getRecentTransactions();
 
         $accountBalancesChart = $this->dashboardService->getAccountBalancesChart();
@@ -28,7 +28,7 @@ class FinanceDashboardController extends Controller
             'projections',
             'cardsWidget',
             'radar',
-            'topExpensesChart',
+            'topExpenseTags',
             'recentTransactions',
             'accountBalancesChart'
         ));

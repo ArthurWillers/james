@@ -39,122 +39,68 @@
     <x-financial.net-worth-chart />
 
     <!-- 2. Previsibilidade e Saldos -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8 items-stretch">
         
         <!-- Previsibilidade de Caixa -->
-        <div class="lg:col-span-1 flex flex-col">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Previsibilidade de Caixa</h3>
-            <div class="grid grid-cols-1 gap-4 flex-1">
-                <x-card class="p-6 border-brand-100 bg-brand-50/30 flex flex-col justify-center">
-                    <p class="text-sm font-medium text-neutral-600 mb-1">Projeção Mês Atual</p>
-                    <p class="text-2xl font-bold {{ $projections['currentMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                        {{ formatCurrency($projections['currentMonth']) }}
-                    </p>
-                </x-card>
-
-                <x-card class="p-6 border-brand-100 bg-brand-50/30 flex flex-col justify-center">
-                    <p class="text-sm font-medium text-neutral-600 mb-1">Projeção Próximo Mês</p>
-                    <p class="text-2xl font-bold {{ $projections['nextMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                        {{ formatCurrency($projections['nextMonth']) }}
-                    </p>
-                </x-card>
-            </div>
-        </div>
-
-        <!-- Top Despesas (30 Dias) -->
-        <div class="lg:col-span-1 flex flex-col">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Top Despesas (30 Dias)</h3>
-            <x-card class="p-6 flex-1 flex flex-col items-center justify-center">
-                @if(count($topExpensesChart['data']) > 0)
-                    <div 
-                        class="w-full flex-1 flex items-center justify-center min-h-[12rem]"
-                        x-data="{
-                            initChart() {
-                                if (typeof echarts === 'undefined') {
-                                    console.error('Apache ECharts is not loaded.');
-                                    return;
-                                }
-                                
-                                const chart = echarts.init(this.$refs.expensesChartContainer);
-                                const data = {{ json_encode($topExpensesChart['data']) }};
-                                const totalValue = {{ json_encode($topExpensesChart['total']) }};
-                                
-                                const formattedTotal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue);
-                                
-                                const option = {
-                                    tooltip: {
-                                        trigger: 'item',
-                                        formatter: function (params) {
-                                            const val = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(params.value);
-                                            return `${params.name}<br/><strong>${val}</strong> (${params.percent}%)`;
-                                        },
-                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                        borderColor: '#e5e7eb',
-                                        textStyle: { color: '#374151' },
-                                        extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
-                                    },
-                                    graphic: {
-                                        type: 'text',
-                                        left: 'center',
-                                        top: 'center',
-                                        style: {
-                                            text: 'Total\n' + formattedTotal,
-                                            textAlign: 'center',
-                                            fill: '#4b5563',
-                                            fontSize: 14,
-                                            fontWeight: 'bold'
-                                        }
-                                    },
-                                    series: [
-                                        {
-                                            name: 'Despesas',
-                                            type: 'pie',
-                                            radius: ['55%', '75%'],
-                                            minAngle: 15,
-                                            itemStyle: {
-                                                borderRadius: 8,
-                                                borderColor: '#ffffff',
-                                                borderWidth: 3,
-                                                shadowBlur: 10,
-                                                shadowColor: 'rgba(0, 0, 0, 0.05)',
-                                                shadowOffsetX: 0,
-                                                shadowOffsetY: 4
-                                            },
-                                            label: {
-                                                show: false
-                                            },
-                                            data: data
-                                        }
-                                    ]
-                                };
-                                
-                                chart.setOption(option);
-                                
-                                window.addEventListener('resize', () => {
-                                    chart.resize();
-                                });
-                            }
-                        }"
-                        x-init="initChart"
-                    >
-                        <div x-ref="expensesChartContainer" class="w-full h-full"></div>
+        <div class="lg:col-span-1 flex flex-col h-full">
+            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+                <h3 class="text-lg font-bold text-neutral-900 mb-4">Projeção de Caixa</h3>
+                
+                <div class="flex-1 flex flex-col justify-center gap-4">
+                    <!-- Mês Atual -->
+                    <div class="bg-neutral-50/70 rounded-xl p-5 border border-neutral-100 relative overflow-hidden transition-all hover:shadow-sm">
+                        <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l {{ $projections['currentMonth'] >= 0 ? 'from-green-50' : 'from-red-50' }} to-transparent opacity-50"></div>
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-neutral-500 flex items-center gap-1.5">
+                                    <x-heroicon-s-calendar class="w-4 h-4 text-neutral-400" /> Fim do Mês Atual
+                                </p>
+                                <p class="text-2xl font-bold mt-1 {{ $projections['currentMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ formatCurrency($projections['currentMonth']) }}
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm {{ $projections['currentMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                @if($projections['currentMonth'] >= 0)
+                                    <x-heroicon-o-arrow-trending-up class="w-6 h-6" />
+                                @else
+                                    <x-heroicon-o-arrow-trending-down class="w-6 h-6" />
+                                @endif
+                            </div>
+                        </div>
                     </div>
-                @else
-                    <div class="w-full h-full min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
-                        <x-heroicon-o-chart-pie class="w-12 h-12 mb-2 text-neutral-300" />
-                        <p class="text-sm">Nenhuma despesa registrada.</p>
+
+                    <!-- Próximo Mês -->
+                    <div class="bg-neutral-50/70 rounded-xl p-5 border border-neutral-100 relative overflow-hidden transition-all hover:shadow-sm">
+                        <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l {{ $projections['nextMonth'] >= 0 ? 'from-green-50' : 'from-red-50' }} to-transparent opacity-50"></div>
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-neutral-500 flex items-center gap-1.5">
+                                    <x-heroicon-s-calendar class="w-4 h-4 text-neutral-400" /> Fim do Próximo Mês
+                                </p>
+                                <p class="text-2xl font-bold mt-1 {{ $projections['nextMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ formatCurrency($projections['nextMonth']) }}
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm {{ $projections['nextMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                @if($projections['nextMonth'] >= 0)
+                                    <x-heroicon-o-arrow-trending-up class="w-6 h-6" />
+                                @else
+                                    <x-heroicon-o-arrow-trending-down class="w-6 h-6" />
+                                @endif
+                            </div>
+                        </div>
                     </div>
-                @endif
+                </div>
             </x-card>
         </div>
 
-        <!-- Saldos por Conta -->
-        <div class="lg:col-span-1 flex flex-col">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Saldos por Conta</h3>
-            <x-card class="p-6 flex-1 flex flex-col items-center justify-center">
+        <!-- Lado Direito (lg:col-span-1): "Saldos por Conta" -->
+        <div class="lg:col-span-1 flex flex-col h-full">
+            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+                <h3 class="text-lg font-bold text-neutral-900 mb-4">Saldos por Conta</h3>
                 @if(count($accountBalancesChart) > 0)
                     <div 
-                        class="w-full flex-1 flex items-center justify-center min-h-[12rem]"
+                        class="w-full flex-1 min-h-[12rem]"
                         x-data="{
                             initChart() {
                                 if (typeof echarts === 'undefined') {
@@ -170,13 +116,7 @@
                                 
                                 const option = {
                                     color: [
-                                        '#4F46E5', // Indigo 600
-                                        '#10B981', // Emerald 500
-                                        '#F59E0B', // Amber 500
-                                        '#EC4899', // Pink 500
-                                        '#8B5CF6', // Violet 500
-                                        '#06B6D4', // Cyan 500
-                                        '#F43F5E', // Rose 500
+                                        '#4F46E5', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E',
                                     ],
                                     tooltip: {
                                         trigger: 'item',
@@ -205,8 +145,8 @@
                                         {
                                             name: 'Saldo',
                                             type: 'pie',
-                                            radius: ['55%', '75%'], // Make the donut ring a bit thinner for premium feel
-                                            minAngle: 15, // Ensure small balances (like R$ 9) are visible
+                                            radius: ['55%', '75%'], 
+                                            minAngle: 15, 
                                             itemStyle: {
                                                 borderRadius: 8,
                                                 borderColor: '#ffffff',
@@ -216,29 +156,55 @@
                                                 shadowOffsetX: 0,
                                                 shadowOffsetY: 4
                                             },
-                                            label: {
-                                                show: false
-                                            },
+                                            label: { show: false },
                                             data: data
                                         }
                                     ]
                                 };
                                 
                                 chart.setOption(option);
-                                
-                                window.addEventListener('resize', () => {
-                                    chart.resize();
-                                });
+                                window.addEventListener('resize', () => { chart.resize(); });
                             }
                         }"
                         x-init="initChart"
                     >
-                        <div x-ref="chartContainer" class="w-full h-full"></div>
+                        <div x-ref="chartContainer" class="w-full h-full absolute inset-0" style="position: relative;"></div>
                     </div>
                 @else
-                    <div class="w-full h-full min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
+                    <div class="w-full flex-1 min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
                         <x-heroicon-o-building-library class="w-12 h-12 mb-2 text-neutral-300" />
                         <p class="text-sm">Nenhuma conta com saldo positivo.</p>
+                    </div>
+                @endif
+            </x-card>
+        </div>
+
+        <!-- Top 5 Despesas -->
+        <div class="lg:col-span-1 flex flex-col h-full">
+            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+                <h3 class="text-lg font-bold text-neutral-900 mb-4">Top Despesas (30 Dias)</h3>
+                @if(count($topExpenseTags) > 0)
+                    <ul class="flex-1 flex flex-col gap-3 justify-center">
+                        @foreach($topExpenseTags as $tag)
+                            <li class="flex items-center justify-between p-2 -mx-2 rounded-lg hover:bg-neutral-50 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white" style="background-color: {{ $tag['color'] }}">
+                                            <x-dynamic-component :component="$tag['icon']" class="w-4 h-4" />
+                                        </div>
+                                    </div>
+                                    <p class="text-sm font-medium text-neutral-900 truncate max-w-[120px]">{{ $tag['name'] }}</p>
+                                </div>
+                                <p class="text-sm font-bold text-red-600">
+                                    {{ formatCurrency($tag['value']) }}
+                                </p>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="w-full flex-1 min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
+                        <x-heroicon-o-tag class="w-12 h-12 mb-2 text-neutral-300" />
+                        <p class="text-sm">Nenhuma despesa registrada.</p>
                     </div>
                 @endif
             </x-card>

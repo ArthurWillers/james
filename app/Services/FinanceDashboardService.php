@@ -262,65 +262,36 @@ class FinanceDashboardService
 
         return $pendingTransactions->concat($recurrences)->concat($openInvoices)->sortBy('date')->values();
     }
-
-    public function getExpensesByTagChart(Carbon $referenceDate): array
+    public function getTopExpenseTags(Carbon $referenceDate): array
     {
         $startDate = $referenceDate->copy()->subDays(30);
         $endDate = $referenceDate->copy();
 
-        $transactions = FinancialTransaction::forPeriod($startDate, $endDate)
+        $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
             ->posted()
+            ->expenses()
             ->withoutTransfers()
             ->with(['tags' => fn ($q) => $q->wherePivot('is_primary', true)])
             ->get();
 
-        $grouped = $transactions->groupBy(function ($transaction) {
+        $grouped = $expenses->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
-
             return $primaryTag ? $primaryTag->id : 0;
         });
 
-        $tagsData = $grouped->map(function ($groupTransactions) {
-            $tag = $groupTransactions->first()->tags->first();
-
-            $netBalance = $groupTransactions->reduce(function ($carry, $transaction) {
-                return $transaction->type === 'income' 
-                    ? $carry + $transaction->amount 
-                    : $carry - $transaction->amount;
-            }, 0.0);
-
-            // Ignora a tag se o saldo final for positivo ou zerado (receitas maiores ou iguais às despesas)
-            if ($netBalance >= 0) {
-                return null;
-            }
+        return $grouped->map(function ($transactions) {
+            $tag = $transactions->first()->tags->first();
 
             return [
                 'name' => $tag ? $tag->name : 'Sem Categoria',
-                'value' => (float) round(abs($netBalance), 2),
-                'itemStyle' => [
-                    'color' => $tag ? $tag->color_hex : '#9ca3af',
-                ],
+                'value' => (float) $transactions->sum('amount'),
+                'color' => $tag ? $tag->color_hex : '#9ca3af',
+                'icon' => $tag ? $tag->icon : 'heroicon-o-tag',
             ];
-        })->filter()->sortByDesc('value')->values();
-
-        $top10 = $tagsData->take(10);
-        $others = $tagsData->slice(10);
-
-        if ($others->isNotEmpty()) {
-            $top10->push([
-                'name' => 'Outros',
-                'value' => (float) round($others->sum('value'), 2),
-                'itemStyle' => [
-                    'color' => '#d1d5db',
-                ],
-            ]);
-        }
-
-        return [
-            'data' => $top10->toArray(),
-            'total' => (float) round($tagsData->sum('value'), 2),
-        ];
+        })->sortByDesc('value')->take(5)->values()->toArray();
     }
+
+
 
     public function getRecentTransactions(): Collection
     {
