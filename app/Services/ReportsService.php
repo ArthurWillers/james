@@ -21,7 +21,7 @@ class ReportsService
         $transactions = $this->getUnifiedTransactions($startDate, $endDate, $accountIds);
 
         return [
-            'sankey' => $this->buildSankeyData($transactions),
+            'sankey' => $this->buildSankeyData($transactions, $startDate, $accountIds),
             'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $accountIds, $interval),
             'tags' => $this->buildTagsData($transactions),
             'transactions' => $transactions,
@@ -38,33 +38,34 @@ class ReportsService
             ->whereBetween('date', [$startDate, $endDate])
             ->withoutTransfers();
 
-        if (!empty($accountIds)) {
+        if (! empty($accountIds)) {
             $query->where(function ($q) use ($accountIds) {
                 $q->whereIn('financial_account_id', $accountIds)
-                  ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
-                      $q2->whereIn('financial_account_id', $accountIds);
-                  });
+                    ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
+                        $q2->whereIn('financial_account_id', $accountIds);
+                    });
             });
         }
 
         $realTransactions = $query->get()->map(function ($t) {
             $t->is_virtual = false;
+
             return $t;
         });
 
         // 2. Virtual Transactions from Recurrences
         $recurrenceQuery = FinancialRecurrence::with(['tags', 'financialAccount', 'financialCreditCard'])
             ->where('is_active', true)
-            ->where(function ($q) use ($endDate) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', $endDate);
+            ->where(function ($q) use ($startDate) {
+                $q->whereNull('end_date')->orWhere('end_date', '>=', $startDate);
             });
 
-        if (!empty($accountIds)) {
+        if (! empty($accountIds)) {
             $recurrenceQuery->where(function ($q) use ($accountIds) {
                 $q->whereIn('financial_account_id', $accountIds)
-                  ->orWhereHas('financialCreditCard', function ($q2) use ($accountIds) {
-                      $q2->whereIn('financial_account_id', $accountIds);
-                  });
+                    ->orWhereHas('financialCreditCard', function ($q2) use ($accountIds) {
+                        $q2->whereIn('financial_account_id', $accountIds);
+                    });
             });
         }
 
@@ -73,25 +74,24 @@ class ReportsService
 
         foreach ($recurrences as $recurrence) {
             $currentDate = $recurrence->next_processing_date ? $recurrence->next_processing_date->copy() : $recurrence->start_date->copy();
-            
+
             // Fast forward to startDate if needed
             while ($currentDate->lt($startDate)) {
                 $currentDate = $this->addFrequency($currentDate, $recurrence->frequency);
             }
-
 
             while ($currentDate->between($startDate, $endDate)) {
                 $t = new FinancialTransaction([
                     'type' => $recurrence->type,
                     'amount' => $recurrence->amount,
                     'date' => $currentDate->copy(),
-                    'description' => $recurrence->title . ' (Projeção)',
+                    'description' => $recurrence->title.' (Projeção)',
                     'is_posted' => false,
                 ]);
-                
+
                 $t->id = 'v_'.$recurrence->id.'_'.$currentDate->format('Ymd');
                 $t->is_virtual = true;
-                
+
                 // Mock relations
                 if ($recurrence->relationLoaded('tags')) {
                     $t->setRelation('tags', $recurrence->tags);
@@ -101,7 +101,7 @@ class ReportsService
                 }
                 if ($recurrence->relationLoaded('financialCreditCard') && $recurrence->financialCreditCard) {
                     // Create a fake invoice so the transaction-table component can read the credit card name
-                    $fakeInvoice = new FinancialCreditCardInvoice();
+                    $fakeInvoice = new FinancialCreditCardInvoice;
                     $fakeInvoice->setRelation('creditCard', $recurrence->financialCreditCard);
                     $t->setRelation('invoice', $fakeInvoice);
                 }
@@ -125,7 +125,7 @@ class ReportsService
         };
     }
 
-    private function buildSankeyData(Collection $transactions): array
+    private function buildSankeyData(Collection $transactions, Carbon $startDate, ?array $accountIds = null): array
     {
         $nodes = collect();
         $links = collect();
@@ -149,7 +149,7 @@ class ReportsService
             $sum = $items->sum('amount');
             if ($sum > 0) {
                 $tag = $getPrimaryTag($items->first());
-                $nodeName = $tagName . ' (R)';
+                $nodeName = $tagName.' (R)';
                 $nodes->push([
                     'name' => $nodeName,
                     'itemStyle' => ['color' => $tag?->color_hex ?? '#9ca3af'],
@@ -178,6 +178,18 @@ class ReportsService
                     'value' => round($sum, 2),
                 ]);
             }
+        }
+
+        // Initial Balance (Saldo Anterior)
+        $initialBalance = $this->getInitialBalance($startDate, $accountIds);
+        if ($initialBalance > 0) {
+            $nodes->push(['name' => 'Saldo Anterior', 'itemStyle' => ['color' => '#64748b']]);
+            $links->push([
+                'source' => 'Saldo Anterior',
+                'target' => 'Fluxo de Caixa',
+                'value' => round($initialBalance, 2),
+            ]);
+            $totalIncome += $initialBalance;
         }
 
         // Surplus / Deficit
@@ -209,41 +221,12 @@ class ReportsService
 
     private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, ?array $accountIds, string $interval): array
     {
-        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
-        
-        $baseQuery = function () use ($accountIds, $transferTagId) {
-            $q = \DB::table('financial_transactions')
-                ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-                ->whereNull('financial_transactions.deleted_at')
-                ->whereNotIn('financial_transactions.id', function($sub) use ($transferTagId) {
-                    $sub->select('financial_taggable_id')
-                      ->from('financial_taggables')
-                      ->where('financial_taggable_type', FinancialTransaction::class)
-                      ->where('financial_tag_id', $transferTagId);
-                });
-                
-            if (!empty($accountIds)) {
-                $q->where(function ($sub) use ($accountIds) {
-                    $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
-                        ->orWhereExists(function ($ex) use ($accountIds) {
-                            $ex->select(\DB::raw(1))
-                               ->from('financial_credit_cards')
-                               ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
-                               ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
-                        });
-                });
-            }
-            return $q;
-        };
-
-        $initialBalance = $baseQuery()
-            ->whereRaw("COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?", [$startDate])
-            ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END")) ?? 0;
+        $initialBalance = $this->getInitialBalance($startDate, $accountIds);
 
         $diffInDays = $startDate->diffInDays($endDate);
-        
+
         if ($interval === 'auto') {
-            if ($diffInDays <= 31) {
+            if ($diffInDays <= 95) {
                 $interval = 'daily';
             } elseif ($diffInDays <= 180) {
                 $interval = 'weekly';
@@ -256,7 +239,7 @@ class ReportsService
 
         $periods = [];
         $currentDate = $startDate->copy();
-        
+
         if ($interval === 'daily') {
             while ($currentDate->lte($endDate)) {
                 $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
@@ -285,16 +268,38 @@ class ReportsService
             }
         }
 
-        $cashFlows = $baseQuery()
-            ->whereRaw("COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?", [$startDate, $endDate])
-            ->selectRaw("COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date")
+        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
+        $cashFlows = \DB::table('financial_transactions')
+            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
+            ->whereNull('financial_transactions.deleted_at')
+            ->whereNotIn('financial_transactions.id', function ($sub) use ($transferTagId) {
+                $sub->select('financial_taggable_id')
+                    ->from('financial_taggables')
+                    ->where('financial_taggable_type', FinancialTransaction::class)
+                    ->where('financial_tag_id', $transferTagId);
+            });
+
+        if (! empty($accountIds)) {
+            $cashFlows->where(function ($sub) use ($accountIds) {
+                $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
+                    ->orWhereExists(function ($ex) use ($accountIds) {
+                        $ex->select(\DB::raw(1))
+                            ->from('financial_credit_cards')
+                            ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
+                            ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
+                    });
+            });
+        }
+
+        $cashFlows = $cashFlows->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->selectRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN amount ELSE 0 END) as income")
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN amount ELSE 0 END) as expense")
             ->groupBy('effective_date')
             ->get();
 
         $virtuals = $transactions->where('is_virtual', true);
-        
+
         // Populate amounts
         foreach ($cashFlows as $cf) {
             $date = Carbon::parse($cf->effective_date);
@@ -323,7 +328,7 @@ class ReportsService
         foreach ($periods as $key => $data) {
             $net = $data['income'] - $data['expense'];
             $runningBalance += $net;
-            
+
             $chartData[] = [
                 'date' => $key,
                 'value' => round($runningBalance, 2),
@@ -347,18 +352,18 @@ class ReportsService
 
         foreach ($transactions as $t) {
             $amount = $t->amount;
-            $tags = $t->tags->isEmpty() ? collect([(object)['id' => 0, 'name' => 'Sem Categoria', 'color_hex' => '#cbd5e1', 'icon' => 'heroicon-o-tag', 'pivot' => (object)['is_primary' => true]]]) : $t->tags;
+            $tags = $t->tags->isEmpty() ? collect([(object) ['id' => 0, 'name' => 'Sem Categoria', 'color_hex' => '#cbd5e1', 'icon' => 'heroicon-o-tag', 'pivot' => (object) ['is_primary' => true]]]) : $t->tags;
 
-            $primaryTag = $tags->first(fn($tg) => !empty($tg->pivot) && $tg->pivot->is_primary) ?? $tags->first();
+            $primaryTag = $tags->first(fn ($tg) => ! empty($tg->pivot) && $tg->pivot->is_primary) ?? $tags->first();
             $isExpense = $t->type === 'expense';
 
             // primary tags logic
             $targetPrimary = &$primaryExpenses;
-            if (!$isExpense) {
+            if (! $isExpense) {
                 $targetPrimary = &$primaryIncomes;
             }
 
-            if (!isset($targetPrimary[$primaryTag->id])) {
+            if (! isset($targetPrimary[$primaryTag->id])) {
                 $targetPrimary[$primaryTag->id] = [
                     'id' => $primaryTag->id,
                     'name' => $primaryTag->name,
@@ -380,11 +385,11 @@ class ReportsService
                 $id = $tag->id;
 
                 $targetAll = &$allExpenses;
-                if (!$isExpense) {
+                if (! $isExpense) {
                     $targetAll = &$allIncomes;
                 }
 
-                if (!isset($targetAll[$id])) {
+                if (! isset($targetAll[$id])) {
                     $targetAll[$id] = [
                         'id' => $id,
                         'name' => $tag->name,
@@ -400,22 +405,52 @@ class ReportsService
 
         $primaryExpenses = collect(array_values($primaryExpenses))->sortByDesc('value')->map(function ($item) use ($primaryTotalExp) {
             $item['percentage'] = $primaryTotalExp > 0 ? round(($item['value'] / $primaryTotalExp) * 100, 1) : 0;
+
             return $item;
         })->values()->toArray();
 
         $primaryIncomes = collect(array_values($primaryIncomes))->sortByDesc('value')->map(function ($item) use ($primaryTotalInc) {
             $item['percentage'] = $primaryTotalInc > 0 ? round(($item['value'] / $primaryTotalInc) * 100, 1) : 0;
+
             return $item;
         })->values()->toArray();
 
         $allExpenses = collect(array_values($allExpenses))->sortByDesc('value')->values()->toArray();
         $allIncomes = collect(array_values($allIncomes))->sortByDesc('value')->values()->toArray();
 
+        // Calculate Net Tags
+        $netTags = [];
+        $allTagIds = array_unique(array_merge(array_keys($allExpenses), array_keys($allIncomes)));
+
+        foreach ($allTagIds as $id) {
+            $incomeItem = $allIncomes[$id] ?? null;
+            $expenseItem = $allExpenses[$id] ?? null;
+
+            $incomeVal = $incomeItem ? $incomeItem['value'] : 0;
+            $expenseVal = $expenseItem ? $expenseItem['value'] : 0;
+
+            $baseItem = $incomeItem ?? $expenseItem;
+
+            $netTags[] = [
+                'id' => $id,
+                'name' => $baseItem['name'],
+                'color' => $baseItem['color'],
+                'icon' => $baseItem['icon'],
+                'income' => $incomeVal,
+                'expense' => $expenseVal,
+                'value' => $incomeVal - $expenseVal,
+            ];
+        }
+
+        // Sort by value (highest profit first, highest loss last)
+        $netTags = collect($netTags)->sortByDesc('value')->values()->toArray();
+
         return [
             'expenses' => $primaryExpenses,
             'incomes' => $primaryIncomes,
             'allExpenses' => $allExpenses,
             'allIncomes' => $allIncomes,
+            'netTags' => $netTags,
             'totalExpense' => $primaryTotalExp,
             'totalIncome' => $primaryTotalInc,
         ];
@@ -429,5 +464,35 @@ class ReportsService
             'yearly' => $date->format('Y'),
             default => $date->format('Y-m'),
         };
+    }
+
+    private function getInitialBalance(Carbon $startDate, ?array $accountIds = null): float
+    {
+        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
+
+        $q = \DB::table('financial_transactions')
+            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
+            ->whereNull('financial_transactions.deleted_at')
+            ->whereNotIn('financial_transactions.id', function ($sub) use ($transferTagId) {
+                $sub->select('financial_taggable_id')
+                    ->from('financial_taggables')
+                    ->where('financial_taggable_type', FinancialTransaction::class)
+                    ->where('financial_tag_id', $transferTagId);
+            });
+
+        if (! empty($accountIds)) {
+            $q->where(function ($sub) use ($accountIds) {
+                $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
+                    ->orWhereExists(function ($ex) use ($accountIds) {
+                        $ex->select(\DB::raw(1))
+                            ->from('financial_credit_cards')
+                            ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
+                            ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
+                    });
+            });
+        }
+
+        return (float) $q->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate])
+            ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 }

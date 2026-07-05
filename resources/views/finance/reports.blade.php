@@ -18,11 +18,9 @@
         </div>
 
         <!-- Filters Bar -->
-        <form method="GET" action="{{ route('financial.reports') }}"
-              x-ref="filtersForm"
-              class="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm w-full sm:sticky sm:top-4 z-20"
-              x-bind:class="{ 'hidden sm:block': !showFilters }">
-            <div class="flex flex-col sm:flex-row items-end gap-4">
+        <div class="w-full sm:sticky sm:top-4 z-20" x-bind:class="{ 'hidden sm:block': !showFilters }">
+            <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}">
+                <div class="flex flex-col sm:flex-row items-end gap-4 p-2">
                 <div class="flex items-center gap-4 w-full md:w-auto flex-wrap sm:flex-nowrap">
                     <!-- Period -->
                     <div class="flex flex-col w-full sm:w-48">
@@ -33,6 +31,7 @@
                             <option value="last_3m" @selected($period === 'last_3m')>Últimos 3 Meses</option>
                             <option value="last_6m" @selected($period === 'last_6m')>Últimos 6 Meses</option>
                             <option value="this_year" @selected($period === 'this_year')>Este Ano</option>
+                            <option value="next_month" @selected($period === 'next_month')>Próximo Mês</option>
                             <option value="next_6m" @selected($period === 'next_6m')>Próximos 6 Meses</option>
                             <option value="next_12m" @selected($period === 'next_12m')>Próximos 12 Meses</option>
                             <option value="all_time" @selected($period === 'all_time')>Todo o Tempo</option>
@@ -45,14 +44,14 @@
                     <div class="flex flex-col w-full sm:w-36">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Início</label>
                         <input type="date" name="startDate" value="{{ $startDate }}"
-                               @change="period = 'custom'; submit()"
+                               @change="period = 'custom'"
                                x-bind:disabled="period === 'all_time' || period === 'until_today'"
                                class="w-full border-neutral-200 text-sm rounded-xl block py-2.5 px-4 bg-white shadow-xs focus:shadow-lg text-neutral-700 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors disabled:opacity-50">
                     </div>
                     <div class="flex flex-col w-full sm:w-36">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Fim</label>
                         <input type="date" name="endDate" value="{{ $endDate }}"
-                               @change="period = 'custom'; submit()"
+                               @change="period = 'custom'"
                                x-bind:disabled="period === 'all_time' || period === 'until_today'"
                                class="w-full border-neutral-200 text-sm rounded-xl block py-2.5 px-4 bg-white shadow-xs focus:shadow-lg text-neutral-700 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors disabled:opacity-50">
                     </div>
@@ -82,8 +81,8 @@
                         </x-form.select>
                     </div>
                 </div>
-            </div>
-        </form>
+            </x-filter-bar>
+        </div>
 
         @if($isSingleDay)
             <div class="bg-accent/10 border border-accent/20 rounded-xl p-4 text-accent-700 flex items-center gap-3">
@@ -118,9 +117,14 @@
             <x-card class="p-6">
                 @include('finance.partials.reports-tags')
             </x-card>
-            <x-card class="p-6">
-                @include('finance.partials.reports-all-tags')
-            </x-card>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <x-card class="p-6">
+                    @include('finance.partials.reports-all-tags')
+                </x-card>
+                <x-card class="p-6">
+                    @include('finance.partials.reports-net-tags')
+                </x-card>
+            </div>
         </div>
 
         <!-- Transactions -->
