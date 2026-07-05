@@ -332,8 +332,8 @@ class ReportsService
             });
         }
 
-        $cashFlows = $cashFlows->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate])
-            ->selectRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
+        $cashFlows = $cashFlows->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->selectRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN amount ELSE 0 END) as income")
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN amount ELSE 0 END) as expense")
             ->groupBy('effective_date')
