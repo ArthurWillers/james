@@ -247,6 +247,7 @@ class FinanceDashboardService
                     'is_posted' => false,
                 ]);
                 $t->is_recurrence = true;
+                $t->recurrence_id = $r->id;
                 $t->setRelation('tags', $r->tags);
 
                 if ($r->financial_credit_card_id) {

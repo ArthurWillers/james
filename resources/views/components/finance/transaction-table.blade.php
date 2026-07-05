@@ -13,7 +13,17 @@
 
     <x-ui.table.body>
         @forelse($transactions as $transaction)
-            <x-ui.table.row href="{{ $transaction->id ? route('financial.transactions.show', $transaction->id) : '#' }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
+            @php
+                $href = '#';
+                if (!empty($transaction->is_invoice) && $transaction->invoice) {
+                    $href = route('financial.cards.invoices.show', [$transaction->invoice->financial_credit_card_id, $transaction->invoice->id]);
+                } elseif (!empty($transaction->is_recurrence) && !empty($transaction->recurrence_id)) {
+                    $href = route('financial.recurrences.edit', $transaction->recurrence_id);
+                } elseif ($transaction->id) {
+                    $href = route('financial.transactions.show', $transaction->id);
+                }
+            @endphp
+            <x-ui.table.row href="{{ $href }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
                 <x-ui.table.cell>
                     <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
                 </x-ui.table.cell>
