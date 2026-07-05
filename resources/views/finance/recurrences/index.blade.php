@@ -1,5 +1,5 @@
 <x-layouts.financial>
-    <x-page-header title="Recorrencias" :action="route('financial.recurrences.create')" actionText="Nova Recorrência" icon="heroicon-o-plus">
+    <x-page-header title="Recorrências" :action="route('financial.recurrences.create')" actionText="Nova Recorrência" icon="heroicon-o-plus">
         @if($hasTrashed)
             <x-button color="outline" href="{{ route('financial.recurrences.trashed') }}" class="bg-white">
                 <x-heroicon-o-trash class="size-4" />

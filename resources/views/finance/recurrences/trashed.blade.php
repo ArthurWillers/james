@@ -1,14 +1,14 @@
 <x-layouts.financial>
     <div class="flex justify-between items-center mb-6">
         <x-breadcrumbs>
-            <x-breadcrumbs.item href="{{ route('financial.recurrences.index') }}">Recorrencias</x-breadcrumbs.item>
+            <x-breadcrumbs.item href="{{ route('financial.recurrences.index') }}">Recorrências</x-breadcrumbs.item>
             <x-breadcrumbs.item>Lixeira</x-breadcrumbs.item>
         </x-breadcrumbs>
     </div>
 
     <x-page-header 
         title="Lixeira" 
-        description="Recorrencias excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
+        description="Recorrências excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
         <x-button color="outline" href="{{ route('financial.recurrences.index') }}" class="bg-white">
             <x-heroicon-o-arrow-left class="size-4" />

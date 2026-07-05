@@ -9,7 +9,7 @@
 
         <div class="flex justify-between items-center mb-6">
             <x-breadcrumbs>
-                <x-breadcrumbs.item href="{{ route('financial.recurrences.index') }}">Assinaturas e Contas Fixas</x-breadcrumbs.item>
+                <x-breadcrumbs.item href="{{ route('financial.recurrences.index') }}">Recorrências</x-breadcrumbs.item>
                 <x-breadcrumbs.item>Editar</x-breadcrumbs.item>
             </x-breadcrumbs>
         </div>
