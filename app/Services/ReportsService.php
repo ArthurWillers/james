@@ -456,10 +456,7 @@ class ReportsService
             return $item;
         })->values()->toArray();
 
-        $allExpenses = collect(array_values($allExpenses))->sortByDesc('value')->values()->toArray();
-        $allIncomes = collect(array_values($allIncomes))->sortByDesc('value')->values()->toArray();
-
-        // Calculate Net Tags
+        // Calculate Net Tags (Before destroying the ID keys of allExpenses and allIncomes)
         $netTags = [];
         $allTagIds = array_unique(array_merge(array_keys($allExpenses), array_keys($allIncomes)));
 
@@ -485,6 +482,9 @@ class ReportsService
 
         // Sort by value (highest profit first, highest loss last)
         $netTags = collect($netTags)->sortByDesc('value')->values()->toArray();
+
+        $allExpenses = collect(array_values($allExpenses))->sortByDesc('value')->values()->toArray();
+        $allIncomes = collect(array_values($allIncomes))->sortByDesc('value')->values()->toArray();
 
         return [
             'expenses' => $primaryExpenses,
