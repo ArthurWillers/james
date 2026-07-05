@@ -58,20 +58,4 @@ class FinancialTransactionItem extends Model
             'financial_tag_id'
         )->withPivot('is_primary');
     }
-
-    /**
-     * The "booted" method of the model.
-     */
-    protected static function booted(): void
-    {
-        static::created(function (self $item) {
-            $item->financialTransaction?->tags()
-                ->wherePivot('is_primary', true)
-                ->get()
-                ->each(fn ($tag) => $item->financialTransaction
-                    ->tags()
-                    ->updateExistingPivot($tag->id, ['is_primary' => false])
-                );
-        });
-    }
 }

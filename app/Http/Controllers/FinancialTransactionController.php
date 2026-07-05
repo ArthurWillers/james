@@ -109,8 +109,18 @@ class FinancialTransactionController extends Controller
                 ]);
             }
 
+            $hasItemTags = false;
+            if (! empty($validated['items'])) {
+                foreach ($validated['items'] as $itemData) {
+                    if (! empty($itemData['tags'])) {
+                        $hasItemTags = true;
+                        break;
+                    }
+                }
+            }
+
             $globalTags = $validated['tags'] ?? [];
-            $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
+            $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
             $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
             if (! empty($validated['items'])) {
@@ -145,8 +155,18 @@ class FinancialTransactionController extends Controller
                 );
             }
 
+            $hasItemTags = false;
+            if (! empty($validated['items'])) {
+                foreach ($validated['items'] as $itemData) {
+                    if (! empty($itemData['tags'])) {
+                        $hasItemTags = true;
+                        break;
+                    }
+                }
+            }
+
             $globalTags = $validated['tags'] ?? [];
-            $globalPrimaryId = empty($validated['items']) ? ($validated['primary_tag_id'] ?? null) : null;
+            $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
 
             if (! empty($validated['tags']) || ! empty($validated['items'])) {
                 foreach ($transactions as $t) {
@@ -244,8 +264,18 @@ class FinancialTransactionController extends Controller
             ]);
         }
 
+        $hasItemTags = false;
+        if (! empty($validated['items'])) {
+            foreach ($validated['items'] as $itemData) {
+                if (! empty($itemData['tags'])) {
+                    $hasItemTags = true;
+                    break;
+                }
+            }
+        }
+
         $globalTags = $validated['tags'] ?? [];
-        $globalPrimaryId = ! $request->has('items') ? ($validated['primary_tag_id'] ?? null) : null;
+        $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
         $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
         if ($request->has('items')) {
