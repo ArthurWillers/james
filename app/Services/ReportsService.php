@@ -21,9 +21,11 @@ class ReportsService
         $transactions = $this->getUnifiedTransactions($startDate, $endDate, $accountIds);
         $flattenedForTags = $this->flattenTransactionsForTags($transactions);
 
+        $initialBalance = $this->getInitialBalance($startDate, $accountIds);
+
         return [
-            'sankey' => $this->buildSankeyData($flattenedForTags, $startDate, $accountIds),
-            'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $accountIds, $interval),
+            'sankey' => $this->buildSankeyData($flattenedForTags, $initialBalance),
+            'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $interval, $initialBalance),
             'tags' => $this->buildTagsData($flattenedForTags),
             'transactions' => $transactions,
         ];
@@ -166,7 +168,7 @@ class ReportsService
         };
     }
 
-    private function buildSankeyData(Collection $transactions, Carbon $startDate, ?array $accountIds = null): array
+    private function buildSankeyData(Collection $transactions, float $initialBalance): array
     {
         $nodes = collect();
         $links = collect();
@@ -222,7 +224,6 @@ class ReportsService
         }
 
         // Initial Balance (Saldo Anterior)
-        $initialBalance = $this->getInitialBalance($startDate, $accountIds);
         if ($initialBalance > 0) {
             $nodes->push(['name' => 'Saldo Anterior', 'itemStyle' => ['color' => '#64748b']]);
             $links->push([
@@ -260,10 +261,8 @@ class ReportsService
         ];
     }
 
-    private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, ?array $accountIds, string $interval): array
+    private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialBalance): array
     {
-        $initialBalance = $this->getInitialBalance($startDate, $accountIds);
-
         $diffInDays = $startDate->diffInDays($endDate);
 
         if ($interval === 'auto') {
