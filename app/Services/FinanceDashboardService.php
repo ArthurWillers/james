@@ -57,28 +57,44 @@ class FinanceDashboardService
         return $this->creditCardsCache;
     }
 
-    private function getAccountBalance(): float
+    private function getAccountBalance(bool $includeInvestments = false): float
     {
-        return (float) $this->getAccounts()->sum('balance');
+        $accounts = $this->getAccounts();
+        
+        if (!$includeInvestments) {
+            $accounts = $accounts->where('type', '!=', \App\Enums\FinancialAccountType::Investment);
+        }
+        
+        return (float) $accounts->sum('balance');
     }
 
-    public function getKpiNumbers(): array
+    public function getKpiNumbers(bool $includeInvestments = false): array
     {
-        $accountBalance = $this->getAccountBalance();
+        $accountBalance = $this->getAccountBalance($includeInvestments);
 
-        $creditCardDebt = $this->getOpenInvoicesTotalForPeriod();
+        $creditCardDebt = $this->getOpenInvoicesTotalForPeriod(null, null, $includeInvestments);
 
-        $otherDebts = FinancialTransaction::pending()
+        $otherDebtsQuery = FinancialTransaction::pending()
             ->expenses()
             ->withoutTransfers()
-            ->withoutInvoice()
-            ->sum('amount');
+            ->withoutInvoice();
+            
+        if (!$includeInvestments) {
+            $otherDebtsQuery->withoutInvestments();
+        }
+
+        $otherDebts = $otherDebtsQuery->sum('amount');
 
         $netBalance = $accountBalance - $creditCardDebt - $otherDebts;
 
-        $totals = FinancialTransaction::posted()
-            ->withoutTransfers()
-            ->toBase()
+        $totalsQuery = FinancialTransaction::posted()
+            ->withoutTransfers();
+            
+        if (!$includeInvestments) {
+            $totalsQuery->withoutInvestments();
+        }
+
+        $totals = $totalsQuery->toBase()
             ->selectRaw("
                 COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
                 COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
@@ -97,7 +113,7 @@ class FinanceDashboardService
         ];
     }
 
-    public function getCashFlowProjections(Carbon $referenceDate): array
+    public function getCashFlowProjections(Carbon $referenceDate, bool $includeInvestments = false): array
     {
         $startOfMonth = $referenceDate->copy()->startOfMonth();
         $endOfMonth = $referenceDate->copy()->endOfMonth();
@@ -105,15 +121,23 @@ class FinanceDashboardService
         $nextMonthStart = $referenceDate->copy()->addMonth()->startOfMonth();
         $nextMonthEnd = $referenceDate->copy()->addMonth()->endOfMonth();
 
-        $accountBalance = $this->getAccountBalance();
+        $accountBalance = $this->getAccountBalance($includeInvestments);
 
         // --- Mês Atual (Projeção) ---
-        $pendingCurrent = $this->getPendingTotalsForPeriod($startOfMonth, $endOfMonth);
-        $openInvoicesCurrent = $this->getOpenInvoicesTotalForPeriod($startOfMonth, $endOfMonth);
+        $pendingCurrent = $this->getPendingTotalsForPeriod($startOfMonth, $endOfMonth, $includeInvestments);
+        $openInvoicesCurrent = $this->getOpenInvoicesTotalForPeriod($startOfMonth, $endOfMonth, $includeInvestments);
 
         // Recorrências do mês atual (ainda não materializadas)
         $recurrencesCurrent = $this->getActiveRecurrences()
             ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endOfMonth));
+            
+        if (!$includeInvestments) {
+            $recurrencesCurrent = $recurrencesCurrent->filter(function($r) {
+                if ($r->financialAccount && $r->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+                return true;
+            });
+        }
 
         $recurrencesIncomeCurrent = $recurrencesCurrent->where('type', 'income')->sum('amount');
         $recurrencesExpenseCurrent = $recurrencesCurrent->where('type', 'expense')->sum('amount');
@@ -123,8 +147,8 @@ class FinanceDashboardService
             - (float) $pendingCurrent->expense - $openInvoicesCurrent - $recurrencesExpenseCurrent;
 
         // --- Próximo Mês (Projeção) ---
-        $pendingNext = $this->getPendingTotalsForPeriod($nextMonthStart, $nextMonthEnd);
-        $openInvoicesNext = $this->getOpenInvoicesTotalForPeriod($nextMonthStart, $nextMonthEnd);
+        $pendingNext = $this->getPendingTotalsForPeriod($nextMonthStart, $nextMonthEnd, $includeInvestments);
+        $openInvoicesNext = $this->getOpenInvoicesTotalForPeriod($nextMonthStart, $nextMonthEnd, $includeInvestments);
 
         // Recorrências do próximo mês (filtradas do cache)
         $recurrencesNext = $this->getActiveRecurrences()
@@ -133,6 +157,14 @@ class FinanceDashboardService
                     || ($r->next_processing_date->lt($nextMonthStart)
                         && ($r->end_date === null || $r->end_date->gte($nextMonthEnd)));
             });
+            
+        if (!$includeInvestments) {
+            $recurrencesNext = $recurrencesNext->filter(function($r) {
+                if ($r->financialAccount && $r->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+                return true;
+            });
+        }
 
         $recurrencesIncomeNext = $recurrencesNext->where('type', 'income')->sum('amount');
         $recurrencesExpenseNext = $recurrencesNext->where('type', 'expense')->sum('amount');
@@ -147,13 +179,18 @@ class FinanceDashboardService
         ];
     }
 
-    private function getPendingTotalsForPeriod(Carbon $start, Carbon $end): object
+    private function getPendingTotalsForPeriod(Carbon $start, Carbon $end, bool $includeInvestments): object
     {
-        return FinancialTransaction::forPeriod($start, $end)
+        $query = FinancialTransaction::forPeriod($start, $end)
             ->pending()
             ->withoutInvoice()
-            ->withoutTransfers()
-            ->toBase()
+            ->withoutTransfers();
+            
+        if (!$includeInvestments) {
+            $query->withoutInvestments();
+        }
+
+        return $query->toBase()
             ->selectRaw("
                 COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
                 COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
@@ -161,9 +198,13 @@ class FinanceDashboardService
             ->first();
     }
 
-    private function getOpenInvoicesTotalForPeriod(?Carbon $start = null, ?Carbon $end = null): float
+    private function getOpenInvoicesTotalForPeriod(?Carbon $start = null, ?Carbon $end = null, bool $includeInvestments = false): float
     {
         $query = FinancialCreditCardInvoice::unpaid()->withTotalAmount();
+        
+        if (!$includeInvestments) {
+            $query->withoutInvestments();
+        }
 
         if ($start && $end) {
             $query->dueBetween($start, $end);
@@ -172,12 +213,16 @@ class FinanceDashboardService
         return (float) $query->get()->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
     }
 
-    public function getAccountBalancesChart(?array $accountIds = null): array
+    public function getAccountBalancesChart(?array $accountIds = null, bool $includeInvestments = false): array
     {
         $accounts = $this->getAccounts();
         
         if ($accountIds) {
             $accounts = $accounts->whereIn('id', $accountIds);
+        }
+
+        if (!$includeInvestments) {
+            $accounts = $accounts->where('type', '!=', \App\Enums\FinancialAccountType::Investment);
         }
 
         return $accounts
@@ -337,7 +382,7 @@ class FinanceDashboardService
         return $transactions;
     }
 
-    public function getNetWorthChartData(string $period): array
+    public function getNetWorthChartData(string $period, bool $includeInvestments = false): array
     {
         $today = Carbon::today();
         $endDate = $today->copy()->addMonthNoOverflow();
@@ -351,16 +396,28 @@ class FinanceDashboardService
             default => $today->copy()->subMonth(),
         };
 
+        $initialBalanceQuery = FinancialTransaction::posted()
+            ->where('date', '<', $startDate);
+            
+        if (!$includeInvestments) {
+            $initialBalanceQuery->withoutInvestments();
+        }
+
         // Get initial balance before start date
-        $initialBalance = FinancialTransaction::posted()
-            ->where('date', '<', $startDate)
+        $initialBalance = $initialBalanceQuery
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0) as balance")
             ->value('balance') ?? 0;
 
-        // Get flows during the period
-        $flows = FinancialTransaction::posted()
+        $flowsQuery = FinancialTransaction::posted()
             ->forPeriod($startDate, $today)
-            ->withoutTransfers()
+            ->withoutTransfers();
+            
+        if (!$includeInvestments) {
+            $flowsQuery->withoutInvestments();
+        }
+
+        // Get flows during the period
+        $flows = $flowsQuery
             ->selectRaw("
                 date, 
                 COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0) as net_flow,
@@ -383,6 +440,14 @@ class FinanceDashboardService
 
         // Add future projections (pending, recurrences, open invoices)
         $futureTransactions = $this->getJamesRadar($today);
+
+        if (!$includeInvestments) {
+            $futureTransactions = $futureTransactions->filter(function($t) {
+                if ($t->account && $t->account->type === \App\Enums\FinancialAccountType::Investment) return false;
+                if ($t->invoice && $t->invoice->creditCard && $t->invoice->creditCard->financialAccount && $t->invoice->creditCard->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+                return true;
+            });
+        }
 
         foreach ($futureTransactions as $t) {
             $dateStr = is_string($t->date) ? substr($t->date, 0, 10) : $t->date->format('Y-m-d');

@@ -74,4 +74,12 @@ class FinancialAccount extends Model
                 ->where('is_posted', true),
         ])->withCasts(['balance' => 'float']);
     }
+
+    /**
+     * Scope a query to exclude investment accounts.
+     */
+    public function scopeWithoutInvestments(Builder $query): void
+    {
+        $query->where('type', '!=', FinancialAccountType::Investment);
+    }
 }

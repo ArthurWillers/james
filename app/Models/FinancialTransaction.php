@@ -189,6 +189,18 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Scope a query to exclude transactions linked to investment accounts.
+     */
+    public function scopeWithoutInvestments(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('account', function ($q) {
+            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+        })->whereDoesntHave('invoice.creditCard.financialAccount', function ($q) {
+            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+        });
+    }
+
+    /**
      * Create installments on a standard account.
      */
     public static function createInstallmentsOnAccount(

@@ -1,5 +1,11 @@
 <x-layouts.financial>
-    <x-page-header title="Dashboard Financeiro" :action="route('financial.transactions.create')" actionText="Nova Transação" icon="heroicon-o-plus"></x-page-header>
+    <x-page-header title="Dashboard Financeiro" :action="route('financial.transactions.create')" actionText="Nova Transação" icon="heroicon-o-plus">
+        <form method="GET" action="{{ route('financial.dashboard') }}" x-data x-ref="filterForm" class="flex items-center bg-white border border-neutral-200 px-3 py-1.5 rounded-lg shadow-sm">
+            <div @click="setTimeout(() => $refs.filterForm.submit(), 150)">
+                <x-form.switch name="include_investments" :checked="$includeInvestments" label="Investimentos" />
+            </div>
+        </form>
+    </x-page-header>
 
     <!-- 1. Linha de Destaque: Os Grandes Números -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

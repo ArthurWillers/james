@@ -111,6 +111,16 @@ class FinancialCreditCardInvoice extends Model
     }
 
     /**
+     * Scope a query to exclude invoices linked to investment accounts.
+     */
+    public function scopeWithoutInvestments(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('creditCard.financialAccount', function ($q) {
+            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+        });
+    }
+
+    /**
      * Calculate the total amount of the invoice.
      * Expenses sum, incomes subtract.
      */

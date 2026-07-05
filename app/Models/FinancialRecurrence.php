@@ -117,4 +117,16 @@ class FinancialRecurrence extends Model
     {
         return $query->whereBetween('next_processing_date', [$startDate, $endDate]);
     }
+
+    /**
+     * Scope a query to exclude recurrences linked to investment accounts.
+     */
+    public function scopeWithoutInvestments(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('financialAccount', function ($q) {
+            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+        })->whereDoesntHave('financialCreditCard.financialAccount', function ($q) {
+            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+        });
+    }
 }
