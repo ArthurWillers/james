@@ -64,7 +64,7 @@
             }
         } else {
             this.selectedIds.push(id);
-            if (!this.primaryId && !({{ $xDisablePrimary }})) {
+            if (!this.primaryId && !({{ $xDisablePrimary === 'false' ? 'false' : $xDisablePrimary }})) {
                 this.primaryId = id;
             }
         }
@@ -99,7 +99,7 @@
                         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border relative group"
                         :style="opt.color_hex ? `background-color: ${opt.color_hex}15; color: ${opt.color_hex}; border-color: ${opt.color_hex}40;` : 'background-color: #f3f4f6; color: #374151; border-color: #e5e7eb;'"
                     >
-                        <span x-show="primaryId === opt.id && !({{ $xDisablePrimary }})" class="text-yellow-500 absolute -top-1.5 -right-1.5 bg-white rounded-full border border-yellow-200 p-0.5 shadow-sm">
+                        <span x-show="primaryId === opt.id && !({{ $xDisablePrimary === 'false' ? 'false' : $xDisablePrimary }})" class="text-yellow-500 absolute -top-1.5 -right-1.5 bg-white rounded-full border border-yellow-200 p-0.5 shadow-sm">
                             <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                               <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
                             </svg>
@@ -119,7 +119,7 @@
             <input type="hidden" :name="{{ $xName ? $xName : '`' . $name . (str_ends_with($name, '[]') ? '' : '[]') . '`' }}" :value="id">
         </template>
         <template x-if="primaryId">
-            <input type="hidden" :name="{{ $xName ? $xName . '.replace(\'tags[]\', \'primary_tag_id\').replace(\'tags\', \'primary_tag_id\')' : '`' . $primaryName . '`' }}" :value="primaryId">
+            <input type="hidden" :name="{{ $xName ? $xName . '.replace(\'[tags][]\', \'[primary_tag_id]\').replace(\'tags[]\', \'primary_tag_id\')' : '`' . $primaryName . '`' }}" :value="primaryId">
         </template>
         <x-form-error name="{{ $baseName }}" />
     </div>
@@ -176,7 +176,7 @@
                                     <span class="text-sm font-semibold transition-colors" :class="selectedIds.includes(tag.id) ? 'text-accent' : 'text-neutral-700 group-hover:text-neutral-900'" x-text="tag.name"></span>
                                     
                                     <!-- Primary Tag indicator -->
-                                    <div x-show="selectedIds.includes(tag.id) && !({{ $xDisablePrimary }})" 
+                                    <div x-show="selectedIds.includes(tag.id) && !({{ $xDisablePrimary === 'false' ? 'false' : $xDisablePrimary }})" 
                                          @click.stop="setPrimary(tag.id)"
                                          class="absolute top-2 right-2 p-1.5 rounded-full transition-colors z-10"
                                          :title="primaryId === tag.id ? 'Tag Principal' : 'Definir como Principal'"

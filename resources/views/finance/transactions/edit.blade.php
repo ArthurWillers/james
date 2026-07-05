@@ -6,7 +6,8 @@
                 'description' => $i->description,
                 'quantity' => $i->quantity,
                 'unit_price' => number_format($i->unit_price, 2, ',', ''),
-                'tags' => $i->tags->pluck('id')->toArray()
+                'tags' => $i->tags->pluck('id')->toArray(),
+                'primary_tag_id' => $i->tags->firstWhere('pivot.is_primary', true)?->id,
             ];
         })->toArray();
         $itemsJson = json_encode(array_values(old('items', $defaultItems)));

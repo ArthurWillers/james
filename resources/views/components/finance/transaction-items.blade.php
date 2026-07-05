@@ -34,6 +34,7 @@
                         :options="$tags" 
                         x-value="item.tags ? Object.values(item.tags).map(Number) : []"
                         x-primary-value="item.primary_tag_id ? Number(item.primary_tag_id) : null"
+                        @tags-changed="item.tags = $event.detail.ids; item.primary_tag_id = $event.detail.primaryId; items = [...items]"
                     >
                         <x-slot:trigger>
                             <button type="button" class="cursor-pointer p-1.5 text-neutral-400 hover:text-accent hover:bg-neutral-100 rounded-lg transition-colors relative" title="Gerenciar Tags">
