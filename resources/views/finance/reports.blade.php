@@ -1,10 +1,10 @@
 <x-layouts.financial>
     <x-page-header title="Relatórios Financeiros" icon="heroicon-o-chart-pie"></x-page-header>
 
-    <div x-data="reportsPage()" x-init="initCharts()" class="space-y-6 pb-20">
+    <div x-data="reportsPage()" x-init="initCharts()" class="pb-20">
 
         <!-- Mobile Filters Toggle -->
-        <div class="sm:hidden">
+        <div class="sm:hidden mb-6">
             <button @click="showFilters = !showFilters"
                     class="w-full flex justify-between items-center bg-white p-4 rounded-xl border border-neutral-200 shadow-sm">
                 <span class="font-bold text-neutral-800">Filtros</span>
@@ -18,7 +18,7 @@
         </div>
 
         <!-- Filters Bar -->
-        <div class="w-full sm:sticky sm:top-4 z-20" x-bind:class="{ 'hidden sm:block': !showFilters }">
+        <div class="w-full sm:sticky sm:top-4 z-20 mb-6" x-bind:class="{ 'hidden sm:block': !showFilters }">
             <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}">
                 <div class="flex flex-col sm:flex-row items-end gap-4 p-2">
                 <div class="flex items-center gap-4 w-full md:w-auto flex-wrap sm:flex-nowrap">
@@ -55,6 +55,12 @@
                                x-bind:disabled="period === 'all_time' || period === 'until_today'"
                                class="w-full border-neutral-200 text-sm rounded-xl block py-2.5 px-4 bg-white shadow-xs focus:shadow-lg text-neutral-700 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors disabled:opacity-50">
                     </div>
+                    <div class="flex flex-col w-full sm:w-auto self-end">
+                        <button type="button" @click="submit()" x-show="period === 'custom'" class="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 bg-accent text-white font-bold rounded-xl hover:bg-accent-600 transition-colors shadow-sm">
+                            <x-heroicon-o-funnel class="w-5 h-5" />
+                            <span>Filtrar</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-4 w-full md:w-auto">
@@ -85,7 +91,7 @@
         </div>
 
         @if($isSingleDay)
-            <div class="bg-accent/10 border border-accent/20 rounded-xl p-4 text-accent-700 flex items-center gap-3">
+            <div class="bg-accent/10 border border-accent/20 rounded-xl p-4 text-accent-700 flex items-center gap-3 mb-6">
                 <x-heroicon-o-calendar-days class="w-6 h-6" />
                 <div>
                     <strong class="block">Data Específica Selecionada</strong>
@@ -95,7 +101,7 @@
         @endif
 
         <!-- Sankey Chart -->
-        <x-card class="p-6">
+        <x-card class="p-6 mb-6">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa (Origem e Destino)</h3>
             <div class="relative w-full h-[400px]">
                 <div x-ref="chartSankey" class="w-full h-full"></div>
@@ -104,7 +110,7 @@
 
         <!-- Evolution Chart -->
         @if(!$isSingleDay)
-            <x-card class="p-6">
+            <x-card class="p-6 mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
                 <div class="relative w-full h-[350px]">
                     <div x-ref="chartEvolution" class="w-full h-full"></div>
@@ -112,23 +118,23 @@
             </x-card>
         @endif
 
-        <!-- Tags -->
-        <div class="space-y-6">
-            <x-card class="p-6">
+        <!-- Top Categories and Net Balance -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <x-card class="p-6 xl:col-span-2">
                 @include('finance.partials.reports-tags')
             </x-card>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <x-card class="p-6">
-                    @include('finance.partials.reports-all-tags')
-                </x-card>
-                <x-card class="p-6">
-                    @include('finance.partials.reports-net-tags')
-                </x-card>
-            </div>
+            <x-card class="p-6">
+                @include('finance.partials.reports-net-tags')
+            </x-card>
         </div>
 
+        <!-- All Tags -->
+        <x-card class="p-6 mb-6">
+            @include('finance.partials.reports-all-tags')
+        </x-card>
+
         <!-- Transactions -->
-        <x-card class="p-0 overflow-hidden">
+        <x-card class="p-0 overflow-hidden mb-6">
             <div class="p-6 border-b border-neutral-200">
                 <h3 class="text-lg font-bold text-neutral-900">Transações do Período</h3>
             </div>
