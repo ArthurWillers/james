@@ -107,6 +107,11 @@ class ReportsController extends Controller
             ['path' => request()->url(), 'query' => request()->query(), 'pageName' => 'virtual_page']
         );
 
+        $accountBalancesChart = [];
+        if (empty($accountId) || str_starts_with($accountId, 'type:')) {
+            $accountBalancesChart = app(\App\Services\FinanceDashboardService::class)->getAccountBalancesChart($accountIds);
+        }
+
         return view('finance.reports', [
             'accounts' => $accounts,
             'sankey' => $reportData['sankey'],
@@ -124,6 +129,7 @@ class ReportsController extends Controller
             'endDate' => $endDate->format('Y-m-d'),
             'accountId' => $accountId,
             'isSingleDay' => $isSingleDay,
+            'accountBalancesChart' => $accountBalancesChart,
         ]);
     }
 }

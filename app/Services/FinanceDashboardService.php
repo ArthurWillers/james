@@ -172,9 +172,15 @@ class FinanceDashboardService
         return (float) $query->get()->sum(fn ($invoice) => max(0, $invoice->total() - $invoice->amount_paid));
     }
 
-    public function getAccountBalancesChart(): array
+    public function getAccountBalancesChart(?array $accountIds = null): array
     {
-        return $this->getAccounts()
+        $accounts = $this->getAccounts();
+        
+        if ($accountIds) {
+            $accounts = $accounts->whereIn('id', $accountIds);
+        }
+
+        return $accounts
             ->filter(fn ($account) => $account->balance > 0)
             ->map(fn ($account) => [
                 'value' => round($account->balance, 2),
