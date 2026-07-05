@@ -109,7 +109,7 @@ class ReportsController extends Controller
 
         $accountBalancesChart = [];
         if (empty($accountId) || str_starts_with($accountId, 'type:')) {
-            $accountBalancesChart = app(\App\Services\FinanceDashboardService::class)->getAccountBalancesChart($accountIds);
+            $accountBalancesChart = app(\App\Services\FinanceDashboardService::class)->getAccountBalancesChart($accountIds, true);
         }
 
         return view('finance.reports', [
