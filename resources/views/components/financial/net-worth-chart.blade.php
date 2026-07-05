@@ -116,7 +116,16 @@ document.addEventListener('alpine:init', () => {
             });
             const values = data.map(item => item.value);
 
-            this.currentValue = values[values.length - 1] || 0;
+            // Find index of today's date or the closest upcoming date
+            const todayRaw = new Date();
+            const todayYMD = todayRaw.getFullYear() + '-' + String(todayRaw.getMonth() + 1).padStart(2, '0') + '-' + String(todayRaw.getDate()).padStart(2, '0');
+            
+            let todayIndex = data.findIndex(item => item.date >= todayYMD);
+            if (todayIndex === -1) {
+                todayIndex = data.length > 0 ? data.length - 1 : 0;
+            }
+
+            this.currentValue = values[todayIndex !== -1 ? todayIndex : values.length - 1] || values[values.length - 1] || 0;
             const startValue = values[0] || 0;
             this.diff = this.currentValue - startValue;
 
@@ -223,7 +232,24 @@ document.addEventListener('alpine:init', () => {
                             ])
                         },
                         markLine: {
-                            data: [{ yAxis: 0 }],
+                            data: [
+                                { yAxis: 0 },
+                                { 
+                                    xAxis: todayIndex, 
+                                    label: { 
+                                        show: true, 
+                                        formatter: 'Hoje', 
+                                        position: 'insideStartTop', 
+                                        color: '#9ca3af',
+                                        fontSize: 10
+                                    }, 
+                                    lineStyle: { 
+                                        color: '#9ca3af', 
+                                        type: 'dashed',
+                                        width: 1
+                                    } 
+                                }
+                            ],
                             symbol: 'none',
                             lineStyle: { color: '#d1d5db', type: 'solid', width: 1 },
                             label: { show: false }

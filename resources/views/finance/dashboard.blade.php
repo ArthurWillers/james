@@ -184,23 +184,11 @@
             <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Top Despesas (30 Dias)</h3>
                 @if(count($topExpenseTags) > 0)
-                    <ul class="flex-1 flex flex-col gap-3 justify-center">
-                        @foreach($topExpenseTags as $tag)
-                            <li class="flex items-center justify-between p-2 -mx-2 rounded-lg hover:bg-neutral-50 transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white" style="background-color: {{ $tag['color'] }}">
-                                            <x-dynamic-component :component="$tag['icon']" class="w-4 h-4" />
-                                        </div>
-                                    </div>
-                                    <p class="text-sm font-medium text-neutral-900 truncate max-w-[120px]">{{ $tag['name'] }}</p>
-                                </div>
-                                <p class="text-sm font-bold text-red-600">
-                                    {{ formatCurrency($tag['value']) }}
-                                </p>
-                            </li>
+                    <div class="space-y-6 flex-1 mt-2">
+                        @foreach($topExpenseTags as $index => $tag)
+                            <x-finance.tag-list-item :index="$index + 1" :item="$tag" type="expense" :showBar="true" />
                         @endforeach
-                    </ul>
+                    </div>
                 @else
                     <div class="w-full flex-1 min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
                         <x-heroicon-o-tag class="w-12 h-12 mb-2 text-neutral-300" />

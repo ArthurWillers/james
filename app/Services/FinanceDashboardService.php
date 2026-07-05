@@ -294,6 +294,8 @@ class FinanceDashboardService
             ->withoutTransfers()
             ->with(['tags' => fn ($q) => $q->wherePivot('is_primary', true)])
             ->get();
+            
+        $totalExpenses = $expenses->sum('amount');
 
         $grouped = $expenses->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
@@ -301,12 +303,14 @@ class FinanceDashboardService
             return $primaryTag ? $primaryTag->id : 0;
         });
 
-        return $grouped->map(function ($transactions) {
+        return $grouped->map(function ($transactions) use ($totalExpenses) {
             $tag = $transactions->first()->tags->first();
+            $value = (float) $transactions->sum('amount');
 
             return [
                 'name' => $tag ? $tag->name : 'Sem Categoria',
-                'value' => (float) $transactions->sum('amount'),
+                'value' => $value,
+                'percentage' => $totalExpenses > 0 ? round(($value / $totalExpenses) * 100, 1) : 0,
                 'color' => $tag ? $tag->color_hex : '#9ca3af',
                 'icon' => $tag ? $tag->icon : 'heroicon-o-tag',
             ];
@@ -335,6 +339,7 @@ class FinanceDashboardService
     public function getNetWorthChartData(string $period): array
     {
         $today = Carbon::today();
+        $endDate = $today->copy()->addMonthNoOverflow();
 
         $startDate = match ($period) {
             '1m' => $today->copy()->subMonth(),
@@ -344,8 +349,6 @@ class FinanceDashboardService
             'all' => Carbon::parse(FinancialTransaction::min('date') ?? $today->copy()->subYears(5)),
             default => $today->copy()->subMonth(),
         };
-
-        $groupBy = in_array($period, ['1y', 'all']) ? 'week' : 'day';
 
         // Get initial balance before start date
         $initialBalance = FinancialTransaction::posted()
@@ -375,62 +378,53 @@ class FinanceDashboardService
                 'income' => (float) $item->income,
                 'expense' => (float) $item->expense,
             ]];
-        });
+        })->toArray();
+
+        // Add future projections (pending, recurrences, open invoices)
+        $futureTransactions = $this->getJamesRadar($today);
+
+        foreach ($futureTransactions as $t) {
+            $dateStr = is_string($t->date) ? substr($t->date, 0, 10) : $t->date->format('Y-m-d');
+            
+            if (Carbon::parse($dateStr)->gt($endDate)) {
+                continue;
+            }
+
+            if (!isset($flowsByDate[$dateStr])) {
+                $flowsByDate[$dateStr] = ['net_flow' => 0, 'income' => 0, 'expense' => 0];
+            }
+
+            $amount = (float) $t->amount;
+            if ($t->type === 'income') {
+                $flowsByDate[$dateStr]['income'] += $amount;
+                $flowsByDate[$dateStr]['net_flow'] += $amount;
+            } else {
+                $flowsByDate[$dateStr]['expense'] += $amount;
+                $flowsByDate[$dateStr]['net_flow'] -= $amount;
+            }
+        }
+        
+        $flowsByDate = collect($flowsByDate);
 
         $chartData = [];
         $runningBalance = (float) $initialBalance;
 
         $currentDate = $startDate->copy();
 
-        if ($groupBy === 'day') {
-            while ($currentDate->lte($today)) {
-                $dateStr = $currentDate->format('Y-m-d');
-                $flowData = $flowsByDate->get($dateStr, ['net_flow' => 0, 'income' => 0, 'expense' => 0]);
+        while ($currentDate->lte($endDate)) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $flowData = $flowsByDate->get($dateStr, ['net_flow' => 0, 'income' => 0, 'expense' => 0]);
 
-                $runningBalance += $flowData['net_flow'];
+            $runningBalance += $flowData['net_flow'];
 
-                $chartData[] = [
-                    'date' => $dateStr,
-                    'value' => round($runningBalance, 2),
-                    'income' => round($flowData['income'], 2),
-                    'expense' => round($flowData['expense'], 2),
-                ];
+            $chartData[] = [
+                'date' => $dateStr,
+                'value' => round($runningBalance, 2),
+                'income' => round($flowData['income'], 2),
+                'expense' => round($flowData['expense'], 2),
+            ];
 
-                $currentDate->addDay();
-            }
-        } else {
-            // Group by week
-            $currentDate = $startDate->copy()->startOfWeek();
-            while ($currentDate->lte($today)) {
-                $weekEnd = $currentDate->copy()->endOfWeek();
-                if ($weekEnd->gt($today)) {
-                    $weekEnd = $today->copy();
-                }
-
-                $weeklyFlow = 0;
-                $weeklyIncome = 0;
-                $weeklyExpense = 0;
-
-                $loopDate = $currentDate->copy();
-                while ($loopDate->lte($weekEnd)) {
-                    $flowData = $flowsByDate->get($loopDate->format('Y-m-d'), ['net_flow' => 0, 'income' => 0, 'expense' => 0]);
-                    $weeklyFlow += $flowData['net_flow'];
-                    $weeklyIncome += $flowData['income'];
-                    $weeklyExpense += $flowData['expense'];
-                    $loopDate->addDay();
-                }
-
-                $runningBalance += $weeklyFlow;
-
-                $chartData[] = [
-                    'date' => $weekEnd->format('Y-m-d'),
-                    'value' => round($runningBalance, 2),
-                    'income' => round($weeklyIncome, 2),
-                    'expense' => round($weeklyExpense, 2),
-                ];
-
-                $currentDate->addWeek();
-            }
+            $currentDate->addDay();
         }
 
         return $chartData;
