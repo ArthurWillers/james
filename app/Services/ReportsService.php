@@ -19,11 +19,12 @@ class ReportsService
     public function getAll(Carbon $startDate, Carbon $endDate, ?array $accountIds = null, string $interval = 'auto'): array
     {
         $transactions = $this->getUnifiedTransactions($startDate, $endDate, $accountIds);
+        $flattenedForTags = $this->flattenTransactionsForTags($transactions);
 
         return [
-            'sankey' => $this->buildSankeyData($transactions, $startDate, $accountIds),
+            'sankey' => $this->buildSankeyData($flattenedForTags, $startDate, $accountIds),
             'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $accountIds, $interval),
-            'tags' => $this->buildTagsData($transactions),
+            'tags' => $this->buildTagsData($flattenedForTags),
             'transactions' => $transactions,
         ];
     }
@@ -34,7 +35,7 @@ class ReportsService
     private function getUnifiedTransactions(Carbon $startDate, Carbon $endDate, ?array $accountIds = null): Collection
     {
         // 1. Real Transactions (includes future credit card installments since they are materialized)
-        $query = FinancialTransaction::with(['tags', 'invoice.creditCard', 'account'])
+        $query = FinancialTransaction::with(['tags', 'items.tags', 'invoice.creditCard', 'account'])
             ->whereBetween('date', [$startDate, $endDate])
             ->withoutTransfers();
 
@@ -115,6 +116,46 @@ class ReportsService
         return $realTransactions->concat($virtualTransactions)->sortBy('date')->values();
     }
 
+    private function flattenTransactionsForTags(Collection $transactions): Collection
+    {
+        $flattened = collect();
+
+        foreach ($transactions as $t) {
+            if ($t->relationLoaded('items') && $t->items->isNotEmpty()) {
+                $itemsSum = 0;
+                foreach ($t->items as $item) {
+                    $itemAmount = $item->unit_price * $item->quantity;
+                    $itemsSum += $itemAmount;
+                    
+                    // Create a fake entry
+                    $entry = new \stdClass();
+                    $entry->type = $t->type;
+                    $entry->amount = $itemAmount;
+                    $entry->tags = $item->tags;
+                    
+                    $flattened->push($entry);
+                }
+                
+                $remainingAmount = $t->amount - $itemsSum;
+                if ($remainingAmount > 0.01) {
+                    $entry = new \stdClass();
+                    $entry->type = $t->type;
+                    $entry->amount = $remainingAmount;
+                    $entry->tags = $t->tags;
+                    $flattened->push($entry);
+                }
+            } else {
+                $entry = new \stdClass();
+                $entry->type = $t->type;
+                $entry->amount = $t->amount;
+                $entry->tags = $t->tags;
+                $flattened->push($entry);
+            }
+        }
+        
+        return $flattened;
+    }
+
     private function addFrequency(Carbon $date, string $frequency): Carbon
     {
         return match ($frequency) {
@@ -139,7 +180,7 @@ class ReportsService
         // Central Node
         $nodes->push(['name' => 'Fluxo de Caixa', 'itemStyle' => ['color' => '#3b82f6']]);
 
-        $getPrimaryTag = function (FinancialTransaction $t): ?FinancialTag {
+        $getPrimaryTag = function ($t): ?FinancialTag {
             return $t->tags->where('pivot.is_primary', true)->first() ?? $t->tags->first();
         };
 
