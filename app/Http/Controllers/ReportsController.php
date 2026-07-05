@@ -7,6 +7,7 @@ use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTransaction;
 use App\Services\ReportsService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 
 class ReportsController extends Controller
@@ -18,7 +19,16 @@ class ReportsController extends Controller
         $period = $request->input('period', 'this_month');
         $interval = $request->input('interval', 'auto');
         $accountId = $request->input('account');
-        $accountIds = $accountId ? [$accountId] : null;
+        
+        $accountIds = null;
+        if ($accountId) {
+            if (str_starts_with($accountId, 'type:')) {
+                $type = substr($accountId, 5);
+                $accountIds = FinancialAccount::where('type', $type)->pluck('id')->toArray();
+            } else {
+                $accountIds = [$accountId];
+            }
+        }
 
         $now = Carbon::today();
 
@@ -72,6 +82,31 @@ class ReportsController extends Controller
 
         $isSingleDay = $startDate->format('Y-m-d') === $endDate->format('Y-m-d');
 
+        $allTransactions = $reportData['transactions'];
+
+        $realTransactions = $allTransactions->reject(fn ($t) => isset($t->is_virtual) && $t->is_virtual);
+        $virtualTransactions = $allTransactions->filter(fn ($t) => isset($t->is_virtual) && $t->is_virtual);
+
+        $page = request()->get('page', 1);
+        $virtualPage = request()->get('virtual_page', 1);
+        $perPage = 50;
+
+        $paginatedTransactions = new LengthAwarePaginator(
+            $realTransactions->forPage($page, $perPage),
+            $realTransactions->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query(), 'pageName' => 'page']
+        );
+
+        $paginatedVirtual = new LengthAwarePaginator(
+            $virtualTransactions->forPage($virtualPage, $perPage),
+            $virtualTransactions->count(),
+            $perPage,
+            $virtualPage,
+            ['path' => request()->url(), 'query' => request()->query(), 'pageName' => 'virtual_page']
+        );
+
         return view('finance.reports', [
             'accounts' => $accounts,
             'sankey' => $reportData['sankey'],
@@ -81,7 +116,8 @@ class ReportsController extends Controller
             'allExpenses' => $reportData['tags']['allExpenses'],
             'allIncomes' => $reportData['tags']['allIncomes'],
             'netTags' => $reportData['tags']['netTags'],
-            'transactions' => $reportData['transactions'],
+            'transactions' => $paginatedTransactions,
+            'virtualTransactions' => $paginatedVirtual,
             'period' => $period,
             'interval' => $interval,
             'startDate' => $startDate->format('Y-m-d'),

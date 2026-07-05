@@ -1,9 +1,10 @@
-@php
-    $filteredTransactions = $transactions->reject(fn($t) => isset($t->is_virtual) && $t->is_virtual);
-    $virtualTransactions = $transactions->filter(fn($t) => isset($t->is_virtual) && $t->is_virtual);
-@endphp
+<x-finance.transaction-table :transactions="$transactions" />
 
-<x-finance.transaction-table :transactions="$filteredTransactions" />
+@if($transactions->hasPages())
+    <div class="mt-4">
+        {{ $transactions->links() }}
+    </div>
+@endif
 
 @if($virtualTransactions->isNotEmpty())
     <div class="px-6 pt-4 pb-2">
@@ -110,4 +111,10 @@
             @endforeach
         </x-ui.table.body>
     </x-ui.table>
+
+    @if($virtualTransactions->hasPages())
+        <div class="mt-4">
+            {{ $virtualTransactions->links() }}
+        </div>
+    @endif
 @endif

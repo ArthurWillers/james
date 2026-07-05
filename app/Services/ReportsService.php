@@ -86,7 +86,7 @@ class ReportsService
                     'type' => $recurrence->type,
                     'amount' => $recurrence->amount,
                     'date' => $currentDate->copy(),
-                    'description' => $recurrence->title.' (Projeção)',
+                    'description' => $recurrence->title,
                     'is_posted' => false,
                 ]);
 

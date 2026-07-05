@@ -5,14 +5,15 @@
     'searchValue' => request('search'),
     'filters' => ['search'],
     'showSearch' => true,
+    'buttonClass' => 'sm:w-8 h-8',
 ])
 
 @php
     $hasFilters = collect($filters)->contains(fn ($filter) => request()->filled($filter));
 @endphp
 
-<form action="{{ $action }}" method="GET" x-data="{ loading: false }" @submit="loading = true"
-    class="flex flex-col sm:flex-row items-center gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40">
+<form {{ $attributes->merge(['action' => $action, 'method' => 'GET', 'class' => 'flex flex-col sm:flex-row items-center gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40 py-4']) }}
+    x-data="{ loading: false }" @submit="loading = true">
     
     @if($showSearch)
     <div class="relative w-full sm:w-80 flex items-center">
@@ -25,7 +26,9 @@
     @endif
     
     @if($slot->isNotEmpty())
-        <div class="hidden sm:block w-px h-6 bg-neutral-200 mx-1"></div>
+        @if($showSearch)
+            <div class="hidden sm:block w-px h-6 bg-neutral-200 mx-1"></div>
+        @endif
         {{ $slot }}
     @endif
 
@@ -37,7 +40,7 @@
     @endif
 
     <div class="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-1">
-        <button type="submit" aria-label="Buscar/Filtrar" class="flex items-center justify-center w-full sm:w-8 h-8 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-500 hover:text-neutral-900 shadow-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-1">
+        <button type="submit" aria-label="Buscar/Filtrar" class="flex items-center justify-center w-full {{ $buttonClass }} rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-500 hover:text-neutral-900 shadow-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-1">
             @if($showSearch)
                 <x-heroicon-m-magnifying-glass class="w-4 h-4" />
             @else

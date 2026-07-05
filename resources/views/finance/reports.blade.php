@@ -19,8 +19,8 @@
 
         <!-- Filters Bar -->
         <div class="w-full sm:sticky sm:top-4 z-20 mb-6" x-bind:class="{ 'hidden sm:block': !showFilters }">
-            <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}">
-                <div class="flex flex-col sm:flex-row items-end gap-4 p-2">
+            <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}" class="!items-end" button-class="sm:w-[44px] h-[44px]">
+                <div class="flex flex-col sm:flex-row items-end gap-4 px-2 py-0">
                 <div class="flex items-center gap-4 w-full md:w-auto flex-wrap sm:flex-nowrap">
                     <!-- Period -->
                     <div class="flex flex-col w-full sm:w-48">
@@ -55,12 +55,6 @@
                                x-bind:disabled="period === 'all_time' || period === 'until_today'"
                                class="w-full border-neutral-200 text-sm rounded-xl block py-2.5 px-4 bg-white shadow-xs focus:shadow-lg text-neutral-700 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors disabled:opacity-50">
                     </div>
-                    <div class="flex flex-col w-full sm:w-auto self-end">
-                        <button type="button" @click="submit()" x-show="period === 'custom'" class="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 bg-accent text-white font-bold rounded-xl hover:bg-accent-600 transition-colors shadow-sm">
-                            <x-heroicon-o-funnel class="w-5 h-5" />
-                            <span>Filtrar</span>
-                        </button>
-                    </div>
                 </div>
 
                 <div class="flex items-center gap-4 w-full md:w-auto">
@@ -81,9 +75,18 @@
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Contas</label>
                         <x-form.select name="account" @change="submit()" class="w-full">
                             <option value="">Todas as Contas</option>
-                            @foreach($accounts as $acc)
-                                <option value="{{ $acc->id }}" @selected($accountId == $acc->id)>{{ $acc->name }}</option>
-                            @endforeach
+                            
+                            <optgroup label="Por Tipo">
+                                @foreach(\App\Enums\FinancialAccountType::cases() as $type)
+                                    <option value="type:{{ $type->value }}" @selected($accountId === 'type:'.$type->value)>Todas: {{ $type->label() }}</option>
+                                @endforeach
+                            </optgroup>
+
+                            <optgroup label="Contas Específicas">
+                                @foreach($accounts as $acc)
+                                    <option value="{{ $acc->id }}" @selected($accountId == $acc->id)>{{ $acc->name }}</option>
+                                @endforeach
+                            </optgroup>
                         </x-form.select>
                     </div>
                 </div>
@@ -134,12 +137,10 @@
         </x-card>
 
         <!-- Transactions -->
-        <x-card class="p-0 overflow-hidden mb-6">
-            <div class="p-6 border-b border-neutral-200">
-                <h3 class="text-lg font-bold text-neutral-900">Transações do Período</h3>
-            </div>
+        <div class="mb-6">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Transações do Período</h3>
             @include('finance.partials.reports-transactions')
-        </x-card>
+        </div>
     </div>
 
     <script>
@@ -155,7 +156,7 @@
             },
 
             submit() {
-                this.$refs.filtersForm.submit();
+                this.$root.querySelector('form').submit();
             },
 
             initCharts() {
