@@ -22,10 +22,12 @@ class ReportsService
         $flattenedForTags = $this->flattenTransactionsForTags($transactions);
 
         $initialBalance = $this->getInitialBalance($startDate, $accountIds);
+        $initialNetWorth = $this->getInitialNetWorth($startDate, $accountIds);
 
         return [
             'sankey' => $this->buildSankeyData($flattenedForTags, $initialBalance),
             'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $interval, $initialBalance),
+            'netWorthEvolution' => $this->buildNetWorthEvolutionData($transactions, $startDate, $endDate, $interval, $initialNetWorth),
             'tags' => $this->buildTagsData($flattenedForTags),
             'transactions' => $transactions,
         ];
@@ -380,6 +382,98 @@ class ReportsService
         return $chartData;
     }
 
+    private function buildNetWorthEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialNetWorth): array
+    {
+        $diffInDays = $startDate->diffInDays($endDate);
+
+        if ($interval === 'auto') {
+            if ($diffInDays <= 95) {
+                $interval = 'daily';
+            } elseif ($diffInDays <= 180) {
+                $interval = 'weekly';
+            } elseif ($diffInDays <= 730) {
+                $interval = 'monthly';
+            } else {
+                $interval = 'yearly';
+            }
+        }
+
+        $periods = [];
+        $currentDate = $startDate->copy();
+
+        if ($interval === 'daily') {
+            while ($currentDate->lte($endDate)) {
+                $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
+                $currentDate->addDay();
+            }
+        } elseif ($interval === 'weekly') {
+            $currentDate->startOfWeek();
+            $endWeek = $endDate->copy()->startOfWeek();
+            while ($currentDate->lte($endWeek)) {
+                $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
+                $currentDate->addWeek();
+            }
+        } elseif ($interval === 'yearly') {
+            $currentDate->startOfYear();
+            $endYear = $endDate->copy()->startOfYear();
+            while ($currentDate->lte($endYear)) {
+                $periods[$currentDate->format('Y')] = ['income' => 0, 'expense' => 0];
+                $currentDate->addYear();
+            }
+        } else { // monthly
+            $currentDate->startOfMonth();
+            $endMonth = $endDate->copy()->startOfMonth();
+            while ($currentDate->lte($endMonth)) {
+                $periods[$currentDate->format('Y-m')] = ['income' => 0, 'expense' => 0];
+                $currentDate->addMonth();
+            }
+        }
+
+        $partialPaymentTagId = FinancialTag::PAGAMENTO_PARCIAL_ID;
+        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
+
+        foreach ($transactions as $t) {
+            $hasIgnoredTag = false;
+            if ($t->relationLoaded('tags') && $t->tags) {
+                if ($t->tags->contains('id', $partialPaymentTagId) || $t->tags->contains('id', $transferTagId)) {
+                    $hasIgnoredTag = true;
+                }
+            }
+
+            if ($hasIgnoredTag) {
+                continue;
+            }
+
+            $date = Carbon::parse($t->date);
+            $key = $this->getPeriodKey($date, $interval);
+
+            if (isset($periods[$key])) {
+                if ($t->type === 'income') {
+                    $periods[$key]['income'] += (float) $t->amount;
+                } else {
+                    $periods[$key]['expense'] += (float) $t->amount;
+                }
+            }
+        }
+
+        $chartData = [];
+        $runningBalance = (float) $initialNetWorth;
+
+        foreach ($periods as $key => $data) {
+            $net = $data['income'] - $data['expense'];
+            $runningBalance += $net;
+
+            $chartData[] = [
+                'date' => $key,
+                'value' => round($runningBalance, 2),
+                'income' => round($data['income'], 2),
+                'expense' => round($data['expense'], 2),
+            ];
+        }
+
+        return $chartData;
+    }
+
     private function buildTagsData(Collection $transactions): array
     {
         $primaryExpenses = [];
@@ -533,6 +627,37 @@ class ReportsService
         }
 
         return (float) $q->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate])
+            ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+    }
+
+    private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float
+    {
+        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
+        $partialPaymentTagId = FinancialTag::PAGAMENTO_PARCIAL_ID;
+
+        $q = \DB::table('financial_transactions')
+            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
+            ->whereNull('financial_transactions.deleted_at')
+            ->whereNotIn('financial_transactions.id', function ($sub) use ($transferTagId, $partialPaymentTagId) {
+                $sub->select('financial_taggable_id')
+                    ->from('financial_taggables')
+                    ->where('financial_taggable_type', FinancialTransaction::class)
+                    ->whereIn('financial_tag_id', [$transferTagId, $partialPaymentTagId]);
+            });
+
+        if (! empty($accountIds)) {
+            $q->where(function ($sub) use ($accountIds) {
+                $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
+                    ->orWhereExists(function ($ex) use ($accountIds) {
+                        $ex->select(\DB::raw(1))
+                            ->from('financial_credit_cards')
+                            ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
+                            ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
+                    });
+            });
+        }
+
+        return (float) $q->where('financial_transactions.date', '<', $startDate)
             ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 }

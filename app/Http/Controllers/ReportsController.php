@@ -116,6 +116,7 @@ class ReportsController extends Controller
             'accounts' => $accounts,
             'sankey' => $reportData['sankey'],
             'evolution' => $reportData['evolution'],
+            'netWorthEvolution' => $reportData['netWorthEvolution'],
             'expenses' => $reportData['tags']['expenses'],
             'incomes' => $reportData['tags']['incomes'],
             'allExpenses' => $reportData['tags']['allExpenses'],

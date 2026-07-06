@@ -119,6 +119,14 @@
                     <div x-ref="chartEvolution" class="w-full h-full"></div>
                 </div>
             </x-card>
+
+            <!-- Net Worth Evolution Chart -->
+            <x-card class="p-6 mb-6">
+                <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
+                <div class="relative w-full h-[350px]">
+                    <div x-ref="chartNetWorthEvolution" class="w-full h-full"></div>
+                </div>
+            </x-card>
         @endif
 
         <!-- Tags and Accounts Layout -->
@@ -260,6 +268,7 @@
 
                 @if(!$isSingleDay)
                     this.renderEvolution();
+                    this.renderNetWorthEvolution();
                 @endif
             },
 
@@ -312,6 +321,83 @@
                                  + '<div class="text-sm font-bold text-gray-900 mb-2">' + fmt(item.value) + '</div>'
                                  + '<div class="text-xs text-emerald-600">↑ Receita: ' + fmt(d.income) + '</div>'
                                  + '<div class="text-xs text-red-600 mt-1">↓ Despesa: ' + fmt(d.expense) + '</div>';
+                        },
+                        axisPointer: { lineStyle: { color: '#d1d5db', type: 'dashed' } }
+                    },
+                    grid: { top: 20, right: 20, bottom: 20, left: 20, containLabel: true },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: dates,
+                        axisLine: { show: false },
+                        axisTick: { show: false },
+                        axisLabel: { color: '#9ca3af', fontSize: 11 }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        scale: true,
+                        min: 'dataMin',
+                        axisLabel: {
+                            color: '#9ca3af',
+                            fontSize: 11,
+                            formatter: (v) => new Intl.NumberFormat('pt-BR', { notation: 'compact' }).format(v)
+                        },
+                        splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }
+                    },
+                    series: [{
+                        data: values,
+                        type: 'line',
+                        smooth: false,
+                        showSymbol: false,
+                        itemStyle: { color: color },
+                        lineStyle: { color: color, width: 2 },
+                        areaStyle: {
+                            color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: color + '33' },
+                                { offset: 1, color: color + '00' }
+                            ])
+                        },
+                        markLine: {
+                            data: [{ yAxis: 0 }],
+                            symbol: 'none',
+                            lineStyle: { color: '#d1d5db', type: 'solid', width: 1 },
+                            label: { show: false }
+                        }
+                    }]
+                });
+
+                window.addEventListener('resize', () => chart.resize());
+            },
+
+            renderNetWorthEvolution() {
+                const chart = window.echarts.init(this.$refs.chartNetWorthEvolution);
+                const raw = @json($netWorthEvolution);
+                const values = raw.map(i => i.value);
+                const dates = raw.map(i => {
+                    const p = String(i.date).split('-');
+                    if (p.length === 1) return p[0];
+                    if (p.length === 2) return p[1] + '/' + p[0];
+                    return p[2] + '/' + p[1] + '/' + p[0];
+                });
+                const last = values[values.length - 1] || 0;
+                const color = last >= 0 ? '#8B5CF6' : '#ef4444';
+
+                const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+                chart.setOption({
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: '#ffffff',
+                        padding: [12, 16],
+                        textStyle: { color: '#1f2937', fontSize: 14 },
+                        extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); border-radius: 0.5rem; border: 1px solid #f3f4f6;',
+                        formatter: (params) => {
+                            const item = params[0];
+                            const d = raw[item.dataIndex];
+                            return '<div class="text-xs text-gray-500 mb-2 uppercase font-medium">' + item.name + '</div>'
+                                 + '<div class="text-sm font-bold text-gray-900 mb-2">' + fmt(item.value) + '</div>'
+                                 + '<div class="text-xs text-emerald-600">↑ Receita (Competência): ' + fmt(d.income) + '</div>'
+                                 + '<div class="text-xs text-red-600 mt-1">↓ Despesa (Competência): ' + fmt(d.expense) + '</div>';
                         },
                         axisPointer: { lineStyle: { color: '#d1d5db', type: 'dashed' } }
                     },
