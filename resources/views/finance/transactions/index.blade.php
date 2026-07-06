@@ -28,12 +28,12 @@
                             value="{{ old('description', 'Transferência entre contas') }}"
                             placeholder="Ex: Transferência poupança"
                         />
-                        <x-form-input label="Valor (R$)" name="amount" x-model="amount" :numeric="true" placeholder="0,00" />
+                        <x-form-input label="Valor (R$)" name="amount" x-model="amount" :currency="true" placeholder="0,00" />
                         <x-form-input label="Data" name="date" type="date" value="{{ old('date', \Carbon\Carbon::today()->format('Y-m-d')) }}" />
 
                         <div>
                             <p class="text-xs font-semibold text-neutral-400 uppercase tracking-widest mb-2">Taxa / IOF / Imposto <span class="font-normal normal-case">(opcional)</span></p>
-                            <x-form-input label="Valor da Taxa (R$)" name="fee_amount" x-model="feeAmount" :numeric="true" placeholder="0,00" value="{{ old('fee_amount') }}" />
+                            <x-form-input label="Valor da Taxa (R$)" name="fee_amount" x-model="feeAmount" :currency="true" placeholder="0,00" value="{{ old('fee_amount') }}" />
                         </div>
                     </div>
 

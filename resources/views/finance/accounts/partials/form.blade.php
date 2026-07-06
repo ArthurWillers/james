@@ -25,7 +25,7 @@
                 
                 @if(!isset($account))
                 <div>
-                    <x-form-input label="Saldo Inicial (R$)" name="initial_balance" :numeric="true" placeholder="0,00" value="{{ old('initial_balance') }}" help="Opcional. Se preenchido, criará uma transação na data de hoje ajustando o saldo inicial." />
+                    <x-form-input label="Saldo Inicial (R$)" name="initial_balance" :currency="true" placeholder="0,00" value="{{ old('initial_balance') }}" help="Opcional. Se preenchido, criará uma transação na data de hoje ajustando o saldo inicial." />
                 </div>
                 @endif
             </div>
