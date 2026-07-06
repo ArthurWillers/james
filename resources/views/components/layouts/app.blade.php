@@ -18,6 +18,11 @@
             Contatos
         </x-nav-link>
 
+        <x-nav-link :href="route('contact-groups.index')" :current="request()->routeIs('contact-groups.*')">
+            <x-heroicon-o-tag class="w-4 h-4" />
+            Grupos de Contato
+        </x-nav-link>
+
         <x-nav-link :href="route('financial.dashboard')" :current="request()->routeIs('financial.*')">
             <x-heroicon-o-banknotes class="w-4 h-4" />
             Finanças

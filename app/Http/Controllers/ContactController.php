@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
+use App\Models\ContactGroup;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -66,7 +68,9 @@ class ContactController extends Controller
      */
     public function show(Contact $contact): View
     {
-        return view('contacts.show', compact('contact'));
+        $allGroups = ContactGroup::orderBy('name')->get();
+
+        return view('contacts.show', compact('contact', 'allGroups'));
     }
 
     /**
@@ -98,6 +102,16 @@ class ContactController extends Controller
         return redirect()
             ->route('contacts.show', $contact)
             ->with('success', 'Contato atualizado com sucesso.');
+    }
+
+    /**
+     * Sync the groups for a contact.
+     */
+    public function syncGroups(Request $request, Contact $contact): RedirectResponse
+    {
+        $contact->groups()->sync($request->input('group_ids', []));
+
+        return back()->with('success', 'Grupos atualizados com sucesso.');
     }
 
     /**
