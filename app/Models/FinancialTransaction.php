@@ -201,6 +201,33 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Scope a query to only include transactions for specific accounts.
+     */
+    public function scopeForAccounts(Builder $query, ?array $accountIds): Builder
+    {
+        if (empty($accountIds)) {
+            return $query;
+        }
+
+        return $query->where(function ($sub) use ($accountIds) {
+            $sub->whereIn('financial_account_id', $accountIds)
+                ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
+                    $q2->whereIn('financial_account_id', $accountIds);
+                });
+        });
+    }
+
+    /**
+     * Scope a query to exclude partial payments.
+     */
+    public function scopeWithoutPartialPayments(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('tags', function ($q) {
+            $q->where('financial_tag_id', FinancialTag::PAGAMENTO_PARCIAL_ID);
+        });
+    }
+
+    /**
      * Create installments on a standard account.
      */
     public static function createInstallmentsOnAccount(

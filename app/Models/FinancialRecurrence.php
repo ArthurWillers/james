@@ -129,4 +129,21 @@ class FinancialRecurrence extends Model
             $q->where('type', \App\Enums\FinancialAccountType::Investment);
         });
     }
+
+    /**
+     * Scope a query to only include recurrences for specific accounts.
+     */
+    public function scopeForAccounts(Builder $query, ?array $accountIds): Builder
+    {
+        if (empty($accountIds)) {
+            return $query;
+        }
+
+        return $query->where(function ($sub) use ($accountIds) {
+            $sub->whereIn('financial_account_id', $accountIds)
+                ->orWhereHas('financialCreditCard', function ($q2) use ($accountIds) {
+                    $q2->whereIn('financial_account_id', $accountIds);
+                });
+        });
+    }
 }

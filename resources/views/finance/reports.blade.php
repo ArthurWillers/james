@@ -160,77 +160,7 @@
                 <!-- Account Balances -->
                 <x-card class="p-6 flex flex-col h-full min-h-[400px]">
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Saldos por Conta</h3>
-                    <div 
-                        class="w-full flex-1 relative min-h-[16rem]"
-                        x-data="{
-                            initChart() {
-                                if (typeof echarts === 'undefined') {
-                                    console.error('Apache ECharts is not loaded.');
-                                    return;
-                                }
-                                
-                                const chart = echarts.init(this.$refs.chartContainer);
-                                const data = {{ json_encode($accountBalancesChart) }};
-                                
-                                const total = data.reduce((acc, item) => acc + item.value, 0);
-                                const formattedTotal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total);
-                                
-                                const option = {
-                                    color: [
-                                        '#4F46E5', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E',
-                                    ],
-                                    tooltip: {
-                                        trigger: 'item',
-                                        formatter: function (params) {
-                                            const val = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(params.value);
-                                            return `${params.name}<br/><strong>${val}</strong> (${params.percent}%)`;
-                                        },
-                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                        borderColor: '#e5e7eb',
-                                        textStyle: { color: '#374151' },
-                                        extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px;'
-                                    },
-                                    graphic: {
-                                        type: 'text',
-                                        left: 'center',
-                                        top: 'center',
-                                        style: {
-                                            text: 'Total\n' + formattedTotal,
-                                            textAlign: 'center',
-                                            fill: '#4b5563',
-                                            fontSize: 14,
-                                            fontWeight: 'bold'
-                                        }
-                                    },
-                                    series: [
-                                        {
-                                            name: 'Saldo',
-                                            type: 'pie',
-                                            radius: ['55%', '75%'], 
-                                            minAngle: 15, 
-                                            itemStyle: {
-                                                borderRadius: 8,
-                                                borderColor: '#ffffff',
-                                                borderWidth: 3,
-                                                shadowBlur: 10,
-                                                shadowColor: 'rgba(0, 0, 0, 0.05)',
-                                                shadowOffsetX: 0,
-                                                shadowOffsetY: 4
-                                            },
-                                            label: { show: false },
-                                            data: data
-                                        }
-                                    ]
-                                };
-                                
-                                chart.setOption(option);
-                                window.addEventListener('resize', () => { chart.resize(); });
-                            }
-                        }"
-                        x-init="initChart"
-                    >
-                        <div x-ref="chartContainer" class="w-full h-full absolute inset-0"></div>
-                    </div>
+                    <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
                 </x-card>
                 @endif
             </div>

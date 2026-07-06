@@ -26,8 +26,8 @@ class ReportsService
 
         return [
             'sankey' => $this->buildSankeyData($flattenedForTags, $initialBalance),
-            'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $interval, $initialBalance),
-            'netWorthEvolution' => $this->buildNetWorthEvolutionData($transactions, $startDate, $endDate, $interval, $initialNetWorth),
+            'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $interval, $initialBalance, $accountIds),
+            'netWorthEvolution' => $this->buildNetWorthEvolutionData($transactions, $startDate, $endDate, $interval, $initialNetWorth, $accountIds),
             'tags' => $this->buildTagsData($flattenedForTags),
             'transactions' => $transactions,
         ];
@@ -41,16 +41,8 @@ class ReportsService
         // 1. Real Transactions (includes future credit card installments since they are materialized)
         $query = FinancialTransaction::with(['tags', 'items.tags', 'invoice.creditCard', 'account'])
             ->whereBetween('date', [$startDate, $endDate])
-            ->withoutTransfers();
-
-        if (! empty($accountIds)) {
-            $query->where(function ($q) use ($accountIds) {
-                $q->whereIn('financial_account_id', $accountIds)
-                    ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
-                        $q2->whereIn('financial_account_id', $accountIds);
-                    });
-            });
-        }
+            ->withoutTransfers()
+            ->forAccounts($accountIds);
 
         $realTransactions = $query->get()->map(function ($t) {
             $t->is_virtual = false;
@@ -61,18 +53,10 @@ class ReportsService
         // 2. Virtual Transactions from Recurrences
         $recurrenceQuery = FinancialRecurrence::with(['tags', 'financialAccount', 'financialCreditCard'])
             ->where('is_active', true)
+            ->forAccounts($accountIds)
             ->where(function ($q) use ($startDate) {
                 $q->whereNull('end_date')->orWhere('end_date', '>=', $startDate);
             });
-
-        if (! empty($accountIds)) {
-            $recurrenceQuery->where(function ($q) use ($accountIds) {
-                $q->whereIn('financial_account_id', $accountIds)
-                    ->orWhereHas('financialCreditCard', function ($q2) use ($accountIds) {
-                        $q2->whereIn('financial_account_id', $accountIds);
-                    });
-            });
-        }
 
         $recurrences = $recurrenceQuery->get();
         $virtualTransactions = collect();
@@ -263,7 +247,7 @@ class ReportsService
         ];
     }
 
-    private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialBalance): array
+    private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialBalance, ?array $accountIds = null): array
     {
         $diffInDays = $startDate->diffInDays($endDate);
 
@@ -310,30 +294,10 @@ class ReportsService
             }
         }
 
-        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
-        $cashFlows = \DB::table('financial_transactions')
+        $cashFlows = FinancialTransaction::withoutTransfers()
+            ->forAccounts($accountIds)
             ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereNull('financial_transactions.deleted_at')
-            ->whereNotIn('financial_transactions.id', function ($sub) use ($transferTagId) {
-                $sub->select('financial_taggable_id')
-                    ->from('financial_taggables')
-                    ->where('financial_taggable_type', FinancialTransaction::class)
-                    ->where('financial_tag_id', $transferTagId);
-            });
-
-        if (! empty($accountIds)) {
-            $cashFlows->where(function ($sub) use ($accountIds) {
-                $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
-                    ->orWhereExists(function ($ex) use ($accountIds) {
-                        $ex->select(\DB::raw(1))
-                            ->from('financial_credit_cards')
-                            ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
-                            ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
-                    });
-            });
-        }
-
-        $cashFlows = $cashFlows->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate])
             ->selectRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN amount ELSE 0 END) as income")
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN amount ELSE 0 END) as expense")
@@ -382,7 +346,7 @@ class ReportsService
         return $chartData;
     }
 
-    private function buildNetWorthEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialNetWorth): array
+    private function buildNetWorthEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialNetWorth, ?array $accountIds = null): array
     {
         $diffInDays = $startDate->diffInDays($endDate);
 
@@ -602,62 +566,19 @@ class ReportsService
 
     private function getInitialBalance(Carbon $startDate, ?array $accountIds = null): float
     {
-        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
-
-        $q = \DB::table('financial_transactions')
+        return (float) FinancialTransaction::withoutTransfers()
+            ->forAccounts($accountIds)
             ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereNull('financial_transactions.deleted_at')
-            ->whereNotIn('financial_transactions.id', function ($sub) use ($transferTagId) {
-                $sub->select('financial_taggable_id')
-                    ->from('financial_taggables')
-                    ->where('financial_taggable_type', FinancialTransaction::class)
-                    ->where('financial_tag_id', $transferTagId);
-            });
-
-        if (! empty($accountIds)) {
-            $q->where(function ($sub) use ($accountIds) {
-                $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
-                    ->orWhereExists(function ($ex) use ($accountIds) {
-                        $ex->select(\DB::raw(1))
-                            ->from('financial_credit_cards')
-                            ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
-                            ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
-                    });
-            });
-        }
-
-        return (float) $q->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate])
+            ->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate])
             ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 
     private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float
     {
-        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
-        $partialPaymentTagId = FinancialTag::PAGAMENTO_PARCIAL_ID;
-
-        $q = \DB::table('financial_transactions')
-            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereNull('financial_transactions.deleted_at')
-            ->whereNotIn('financial_transactions.id', function ($sub) use ($transferTagId, $partialPaymentTagId) {
-                $sub->select('financial_taggable_id')
-                    ->from('financial_taggables')
-                    ->where('financial_taggable_type', FinancialTransaction::class)
-                    ->whereIn('financial_tag_id', [$transferTagId, $partialPaymentTagId]);
-            });
-
-        if (! empty($accountIds)) {
-            $q->where(function ($sub) use ($accountIds) {
-                $sub->whereIn('financial_transactions.financial_account_id', $accountIds)
-                    ->orWhereExists(function ($ex) use ($accountIds) {
-                        $ex->select(\DB::raw(1))
-                            ->from('financial_credit_cards')
-                            ->whereColumn('financial_credit_cards.id', 'financial_credit_card_invoices.financial_credit_card_id')
-                            ->whereIn('financial_credit_cards.financial_account_id', $accountIds);
-                    });
-            });
-        }
-
-        return (float) $q->where('financial_transactions.date', '<', $startDate)
+        return (float) FinancialTransaction::withoutTransfers()
+            ->withoutPartialPayments()
+            ->forAccounts($accountIds)
+            ->where('financial_transactions.date', '<', $startDate)
             ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 }
