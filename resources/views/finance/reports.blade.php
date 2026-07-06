@@ -90,6 +90,7 @@
                         </x-form.select>
                     </div>
                 </div>
+                </div>
             </x-filter-bar>
         </div>
 
