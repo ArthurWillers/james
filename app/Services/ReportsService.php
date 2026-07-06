@@ -8,6 +8,7 @@ use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ReportsService
 {
@@ -297,7 +298,7 @@ class ReportsService
         $cashFlows = FinancialTransaction::withoutTransfers()
             ->forAccounts($accountIds)
             ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate])
+            ->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate], 'and')
             ->selectRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN amount ELSE 0 END) as income")
             ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN amount ELSE 0 END) as expense")
@@ -569,8 +570,8 @@ class ReportsService
         return (float) FinancialTransaction::withoutTransfers()
             ->forAccounts($accountIds)
             ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate])
-            ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+            ->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate], 'and')
+            ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 
     private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float
@@ -579,6 +580,6 @@ class ReportsService
             ->withoutPartialPayments()
             ->forAccounts($accountIds)
             ->where('financial_transactions.date', '<', $startDate)
-            ->sum(\DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+            ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 }

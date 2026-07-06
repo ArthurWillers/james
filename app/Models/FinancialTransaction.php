@@ -61,7 +61,7 @@ class FinancialTransaction extends Model
                             ->get()
                             ->each(fn ($pair) => $pair->forceDelete());
                     } else {
-                        static::where('transfer_pair_id', $transaction->transfer_pair_id)
+                        static::query()->where('transfer_pair_id', $transaction->transfer_pair_id)
                             ->where('id', '!=', $transaction->id)
                             ->get()
                             ->each(fn ($pair) => $pair->delete());
@@ -126,7 +126,7 @@ class FinancialTransaction extends Model
             return null;
         }
 
-        return self::where('transfer_pair_id', $this->transfer_pair_id)
+        return self::query()->where('transfer_pair_id', $this->transfer_pair_id)
             ->where('id', '!=', $this->id)
             ->first();
     }

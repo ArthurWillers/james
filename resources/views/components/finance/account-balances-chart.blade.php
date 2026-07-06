@@ -2,7 +2,7 @@
 
 @if(count($chartData) > 0)
     <div 
-        class="w-full flex-1 relative min-h-[16rem]"
+        class="w-full flex-1 relative min-h-64"
         x-data="{
             initChart() {
                 if (typeof echarts === 'undefined') {
@@ -73,7 +73,7 @@
         <div x-ref="chartContainer" class="w-full h-full absolute inset-0"></div>
     </div>
 @else
-    <div class="w-full flex-1 min-h-[16rem] flex flex-col items-center justify-center text-neutral-500">
+    <div class="w-full flex-1 min-h-64 flex flex-col items-center justify-center text-neutral-500">
         <x-heroicon-o-building-library class="w-12 h-12 mb-2 text-neutral-300" />
         <p class="text-sm">Nenhuma conta com saldo positivo.</p>
     </div>

@@ -55,7 +55,7 @@
                 <div class="flex-1 flex flex-col justify-center gap-4">
                     <!-- Mês Atual -->
                     <div class="bg-neutral-50/70 rounded-xl p-5 border border-neutral-100 relative overflow-hidden transition-all hover:shadow-sm">
-                        <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l {{ $projections['currentMonth'] >= 0 ? 'from-green-50' : 'from-red-50' }} to-transparent opacity-50"></div>
+                        <div class="absolute right-0 top-0 h-full w-1/3 bg-linear-to-l {{ $projections['currentMonth'] >= 0 ? 'from-green-50' : 'from-red-50' }} to-transparent opacity-50"></div>
                         <div class="relative z-10 flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-neutral-500 flex items-center gap-1.5">
@@ -77,7 +77,7 @@
 
                     <!-- Próximo Mês -->
                     <div class="bg-neutral-50/70 rounded-xl p-5 border border-neutral-100 relative overflow-hidden transition-all hover:shadow-sm">
-                        <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l {{ $projections['nextMonth'] >= 0 ? 'from-green-50' : 'from-red-50' }} to-transparent opacity-50"></div>
+                        <div class="absolute right-0 top-0 h-full w-1/3 bg-linear-to-l {{ $projections['nextMonth'] >= 0 ? 'from-green-50' : 'from-red-50' }} to-transparent opacity-50"></div>
                         <div class="relative z-10 flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-neutral-500 flex items-center gap-1.5">
@@ -119,7 +119,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="w-full flex-1 min-h-[12rem] flex flex-col items-center justify-center text-neutral-500">
+                    <div class="w-full flex-1 min-h-48 flex flex-col items-center justify-center text-neutral-500">
                         <x-heroicon-o-tag class="w-12 h-12 mb-2 text-neutral-300" />
                         <p class="text-sm">Nenhuma despesa registrada.</p>
                     </div>
