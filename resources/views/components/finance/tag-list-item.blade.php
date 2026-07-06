@@ -29,7 +29,7 @@
     $name = $item['name'] ?? 'Sem Categoria';
 @endphp
 
-<div class="flex items-start gap-3">
+<div class="flex items-start gap-3 cursor-pointer hover:bg-neutral-50 p-2 -mx-2 rounded-lg transition-colors" @click="filterByTag({{ $item['id'] ?? 0 }})">
     <div class="shrink-0 w-6 h-6 rounded flex items-center justify-center text-xs font-bold" 
          style="background-color: {{ $color }}20; color: {{ $color }}">
         {{ $index }}

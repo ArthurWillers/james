@@ -24,7 +24,13 @@
 
         <x-table.body>
             @foreach($virtualTransactions as $transaction)
-                <x-table.row class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] opacity-60">
+                @php
+                    $virtualTagsIds = $transaction->relationLoaded('tags') ? $transaction->tags->pluck('id')->toJson() : '[]';
+                @endphp
+                <div style="display: contents"
+                     x-data="{ tags: {{ $virtualTagsIds }} }"
+                     x-show="typeof selectedTagId === 'undefined' || selectedTagId === null || tags.includes(selectedTagId) || (selectedTagId === 0 && tags.length === 0)">
+                    <x-table.row class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] opacity-60">
                     <x-table.cell>
                         <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
                     </x-table.cell>
@@ -108,6 +114,7 @@
                         </div>
                     </x-slot>
                 </x-table.row>
+                </div>
             @endforeach
         </x-table.body>
     </x-table>

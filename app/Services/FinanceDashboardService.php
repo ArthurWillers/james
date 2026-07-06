@@ -346,15 +346,51 @@ class FinanceDashboardService
         $endDate = $referenceDate->copy();
 
         $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
-            ->posted()
+            ->where(function ($q) {
+                $q->where('is_posted', true)
+                  ->orWhereNotNull('financial_credit_card_invoice_id');
+            })
             ->expenses()
             ->withoutTransfers()
-            ->with(['tags' => fn ($q) => $q->wherePivot('is_primary', true)])
+            ->with([
+                'tags' => fn ($q) => $q->wherePivot('is_primary', true),
+                'items.tags' => fn ($q) => $q->wherePivot('is_primary', true)
+            ])
             ->get();
 
-        $totalExpenses = $expenses->sum('amount');
+        $flattened = collect();
 
-        $grouped = $expenses->groupBy(function ($transaction) {
+        foreach ($expenses as $t) {
+            if ($t->relationLoaded('items') && $t->items->isNotEmpty()) {
+                $itemsSum = 0;
+                foreach ($t->items as $item) {
+                    $itemAmount = $item->unit_price * $item->quantity;
+                    $itemsSum += $itemAmount;
+
+                    $flattened->push((object)[
+                        'amount' => $itemAmount,
+                        'tags' => $item->tags,
+                    ]);
+                }
+
+                $remainingAmount = $t->amount - $itemsSum;
+                if ($remainingAmount > 0.01) {
+                    $flattened->push((object)[
+                        'amount' => $remainingAmount,
+                        'tags' => $t->tags,
+                    ]);
+                }
+            } else {
+                $flattened->push((object)[
+                    'amount' => $t->amount,
+                    'tags' => $t->tags,
+                ]);
+            }
+        }
+
+        $totalExpenses = $flattened->sum('amount');
+
+        $grouped = $flattened->groupBy(function ($transaction) {
             $primaryTag = $transaction->tags->first();
 
             return $primaryTag ? $primaryTag->id : 0;

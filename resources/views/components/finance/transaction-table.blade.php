@@ -23,10 +23,16 @@
                     $href = route('financial.transactions.show', $transaction->id);
                 }
             @endphp
-            <x-table.row href="{{ $href }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
-                <x-table.cell>
-                    <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
-                </x-table.cell>
+            @php
+                $tagsIds = $transaction->relationLoaded('tags') ? $transaction->tags->pluck('id')->toJson() : '[]';
+            @endphp
+            <div style="display: contents"
+                 x-data="{ tags: {{ $tagsIds }} }"
+                 x-show="typeof selectedTagId === 'undefined' || selectedTagId === null || tags.includes(selectedTagId) || (selectedTagId === 0 && tags.length === 0)">
+                <x-table.row href="{{ $href }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
+                    <x-table.cell>
+                        <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
+                    </x-table.cell>
 
                 <x-table.cell>
                     <div class="flex items-center gap-2">
@@ -144,6 +150,7 @@
                     </div>
                 </x-slot>
             </x-table.row>
+            </div>
         @empty
             <x-empty-state 
                 icon="heroicon-o-banknotes" 

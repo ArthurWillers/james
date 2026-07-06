@@ -83,7 +83,7 @@ class ReportsController extends Controller
 
         $isSingleDay = $startDate->format('Y-m-d') === $endDate->format('Y-m-d');
 
-        $allTransactions = $reportData['transactions'];
+        $allTransactions = $reportData['tableTransactions'];
 
         $realTransactions = $allTransactions->reject(fn ($t) => isset($t->is_virtual) && $t->is_virtual);
         $virtualTransactions = $allTransactions->filter(fn ($t) => isset($t->is_virtual) && $t->is_virtual);
