@@ -215,5 +215,17 @@ Foi decidido extrair essas lógicas para componentes Blade altamente reutilizáv
 - `form-markdown-editor`: Isola a integração e inicialização do editor visual (EasyMDE) para campos de texto rico.
 - `form-key-value-repeater`: Componente para gerenciamento dinâmico (adicionar/remover/editar) de pares de chave e valor (ex: múltiplos e-mails e telefones salvos em JSON).
 
-**Observações:**
 Essa abstração limpou massivamente as views (reduzindo centenas de linhas na criação de contatos), melhorou a legibilidade e pavimentou a reutilização imediata para os futuros módulos do sistema.
+
+## 014 — Biblioteca Gráfica (Apache ECharts)
+
+**Data:** 22 de Junho de 2026
+
+**Contexto:**
+Para a visualização de dados financeiros (Evolução Patrimonial, Fluxo de Caixa, Despesas por Categoria), precisávamos de uma biblioteca capaz de renderizar gráficos complexos, como o Diagrama de Sankey (cashflow) com alta qualidade visual, mantendo a performance com milhares de dados e sem depender de frameworks JavaScript pesados (como React).
+
+**Decisão:**
+Adoção do **Apache ECharts** como biblioteca padrão para visualização de dados no James.
+
+**Observações:**
+O ECharts suporta nativamente o Diagrama de Sankey (crucial para o fluxo de caixa), possui renderização ultrarrápida via Canvas e SVG, e sua integração é feita via JavaScript Vanilla (o que se alinha perfeitamente com a stack do projeto em Laravel + Alpine.js). Ele será utilizado para todos os gráficos analíticos complexos do painel de finanças.

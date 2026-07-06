@@ -4,16 +4,16 @@
     'labelClass' => '',
 ])
 
-<x-form.field>
+<x-field>
     @if ($label)
-        <x-form.label :for="$name" class="{{ $labelClass }}">
+        <x-label :for="$name" class="{{ $labelClass }}">
             {{ $label }}
-        </x-form.label>
+        </x-label>
     @endif
 
-    <x-form.select :name="$name" {{ $attributes }}>
+    <x-select :name="$name" {{ $attributes }}>
         {{ $slot }}
-    </x-form.select>
+    </x-select>
 
-    <x-form.error :name="$name" />
-</x-form.field>
+    <x-error :name="$name" />
+</x-field>

@@ -13,5 +13,5 @@
         </span>
     @endif
 
-    <x-icons.heroicons.mini.chevron-right class="size-4 mx-2 text-neutral-300 group-last/breadcrumb:hidden" />
+    <x-heroicon-m-chevron-right class="size-4 mx-2 text-neutral-300 group-last/breadcrumb:hidden" />
 </li>

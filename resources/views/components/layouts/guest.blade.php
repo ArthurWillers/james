@@ -10,7 +10,7 @@
         <div class="flex w-full max-w-sm flex-col gap-6">
             <a href="{{ url('/') }}" class="flex flex-col items-center gap-2 font-medium">
                 <span class="flex h-10 w-10 items-center justify-center rounded-lg">
-                    <x-layout.app-logo-icon class="size-10" />
+                    <x-app-logo-icon class="size-10" />
                 </span>
                 <span class="sr-only">{{ config('app.name') }}</span>
             </a>
@@ -20,7 +20,7 @@
             </div>
         </div>
     </main>
-    <x-layout.guest-footer />
+    <x-guest-footer />
 </body>
 
 </html>

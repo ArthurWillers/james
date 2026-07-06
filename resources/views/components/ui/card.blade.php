@@ -16,7 +16,7 @@
     };
 
     $interactiveClasses = $isInteractive 
-        ? 'hover:border-accent hover:shadow-md hover:-translate-y-1' 
+        ? 'hover:border-accent hover:shadow hover:-translate-y-0.5' 
         : '';
 
     $classes = trim("$baseClasses $sizeClasses $interactiveClasses");

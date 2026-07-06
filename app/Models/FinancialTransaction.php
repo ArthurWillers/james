@@ -1,0 +1,334 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\FinancialAccountType;
+use App\Traits\Searchable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+
+#[Fillable([
+    'financial_account_id',
+    'financial_credit_card_invoice_id',
+    'type',
+    'amount',
+    'description',
+    'date',
+    'is_posted',
+    'transfer_pair_id',
+    'installment_current',
+    'installment_total',
+    'financial_recurrence_id',
+])]
+class FinancialTransaction extends Model
+{
+    use HasFactory, Searchable, SoftDeletes;
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+            'date' => 'date',
+            'is_posted' => 'boolean',
+        ];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $transaction) {
+            if ($transaction->transfer_pair_id) {
+                static::withoutEvents(function () use ($transaction) {
+                    if ($transaction->isForceDeleting()) {
+                        static::withTrashed()
+                            ->where('transfer_pair_id', $transaction->transfer_pair_id)
+                            ->where('id', '!=', $transaction->id)
+                            ->get()
+                            ->each(fn ($pair) => $pair->forceDelete());
+                    } else {
+                        static::query()->where('transfer_pair_id', $transaction->transfer_pair_id)
+                            ->where('id', '!=', $transaction->id)
+                            ->get()
+                            ->each(fn ($pair) => $pair->delete());
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Get the account associated with the transaction.
+     */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(FinancialAccount::class, 'financial_account_id');
+    }
+
+    /**
+     * Get the invoice associated with the transaction.
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(FinancialCreditCardInvoice::class, 'financial_credit_card_invoice_id');
+    }
+
+    /**
+     * Get the items associated with the transaction.
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(FinancialTransactionItem::class);
+    }
+
+    /**
+     * Get the recurrence associated with the transaction.
+     */
+    public function recurrence(): BelongsTo
+    {
+        return $this->belongsTo(FinancialRecurrence::class, 'financial_recurrence_id');
+    }
+
+    /**
+     * Get the tags associated with the transaction.
+     */
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(
+            FinancialTag::class,
+            'financial_taggable',
+            'financial_taggables',
+            'financial_taggable_id',
+            'financial_tag_id'
+        )->withPivot('is_primary');
+    }
+
+    /**
+     * Get the transfer pair for this transaction.
+     */
+    public function getTransferPairAttribute(): ?self
+    {
+        if (! $this->transfer_pair_id) {
+            return null;
+        }
+
+        return self::query()->where('transfer_pair_id', $this->transfer_pair_id)
+            ->where('id', '!=', $this->id)
+            ->first();
+    }
+
+    /**
+     * Scope a query to only include posted transactions.
+     */
+    public function scopePosted(Builder $query): Builder
+    {
+        return $query->where('is_posted', true);
+    }
+
+    /**
+     * Scope a query to only include pending transactions.
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('is_posted', false);
+    }
+
+    /**
+     * Scope a query to only include expenses.
+     */
+    public function scopeExpenses(Builder $query): Builder
+    {
+        return $query->where('type', 'expense');
+    }
+
+    /**
+     * Scope a query to only include incomes.
+     */
+    public function scopeIncomes(Builder $query): Builder
+    {
+        return $query->where('type', 'income');
+    }
+
+    /**
+     * Scope a query to exclude transfers.
+     */
+    public function scopeWithoutTransfers(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('tags', function ($q) {
+            $q->where('financial_tag_id', FinancialTag::TRANSFERENCIA_ID);
+        });
+    }
+
+    /**
+     * Scope a query for a specific period.
+     */
+    public function scopeForPeriod(Builder $query, Carbon $startDate, Carbon $endDate): Builder
+    {
+        return $query->whereBetween('date', [$startDate, $endDate]);
+    }
+
+    /**
+     * Scope a query to only include transactions without an invoice.
+     */
+    public function scopeWithoutInvoice(Builder $query): Builder
+    {
+        return $query->whereNull('financial_credit_card_invoice_id');
+    }
+
+    /**
+     * Scope a query to exclude transactions linked to investment accounts.
+     */
+    public function scopeWithoutInvestments(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('account', function ($q) {
+            $q->where('type', FinancialAccountType::Investment);
+        })->whereDoesntHave('invoice.creditCard.financialAccount', function ($q) {
+            $q->where('type', FinancialAccountType::Investment);
+        });
+    }
+
+    /**
+     * Scope a query to only include transactions for specific accounts.
+     */
+    public function scopeForAccounts(Builder $query, ?array $accountIds): Builder
+    {
+        if (empty($accountIds)) {
+            return $query;
+        }
+
+        return $query->where(function ($sub) use ($accountIds) {
+            $sub->whereIn('financial_account_id', $accountIds)
+                ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
+                    $q2->whereIn('financial_account_id', $accountIds);
+                });
+        });
+    }
+
+    /**
+     * Scope a query to exclude partial payments.
+     */
+    public function scopeWithoutPartialPayments(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('tags', function ($q) {
+            $q->where('financial_tag_id', FinancialTag::PAGAMENTO_PARCIAL_ID);
+        });
+    }
+
+    /**
+     * Create installments on a standard account.
+     */
+    public static function createInstallmentsOnAccount(
+        FinancialAccount $account,
+        Carbon $purchaseDate,
+        float $totalAmount,
+        int $installments,
+        string $description,
+        string $type = 'expense'
+    ): Collection {
+        $totalCents = (int) round($totalAmount * 100);
+        $installmentCents = (int) floor($totalCents / $installments);
+        $remainderCents = $totalCents - ($installmentCents * $installments);
+
+        $createdTransactions = collect();
+
+        for ($i = 1; $i <= $installments; $i++) {
+            $amountCents = $installmentCents;
+            if ($i === $installments) {
+                $amountCents += $remainderCents;
+            }
+
+            $amount = round($amountCents / 100, 2);
+            $date = $purchaseDate->copy()->addMonths($i - 1);
+            $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
+
+            $transaction = static::create([
+                'financial_account_id' => $account->id,
+                'type' => $type,
+                'amount' => $amount,
+                'description' => $description,
+                'date' => $date,
+                'is_posted' => $isPosted,
+                'installment_current' => $i,
+                'installment_total' => $installments,
+            ]);
+
+            $createdTransactions->push($transaction);
+        }
+
+        return $createdTransactions;
+    }
+
+    /**
+     * Create a transfer between two accounts.
+     */
+    public static function createTransfer(
+        FinancialAccount $from,
+        FinancialAccount $to,
+        float $amount,
+        Carbon $date,
+        string $description,
+        ?float $feeAmount = null,
+        ?int $feeTagId = null
+    ): array {
+        $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
+
+        $expense = static::create([
+            'financial_account_id' => $from->id,
+            'type' => 'expense',
+            'amount' => $amount,
+            'description' => $description,
+            'date' => $date,
+            'is_posted' => $isPosted,
+        ]);
+
+        $expense->update(['transfer_pair_id' => $expense->id]);
+
+        $income = static::create([
+            'financial_account_id' => $to->id,
+            'type' => 'income',
+            'amount' => $amount,
+            'description' => $description,
+            'date' => $date,
+            'is_posted' => $isPosted,
+            'transfer_pair_id' => $expense->id,
+        ]);
+
+        $expense->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
+        $income->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
+
+        $transactions = [$expense, $income];
+
+        if ($feeAmount !== null && $feeAmount > 0) {
+            $fee = static::create([
+                'financial_account_id' => $from->id,
+                'type' => 'expense',
+                'amount' => $feeAmount,
+                'description' => "Taxa/imposto — {$description}",
+                'date' => $date,
+                'is_posted' => $isPosted,
+            ]);
+
+            if ($feeTagId !== null) {
+                $fee->tags()->attach($feeTagId, ['is_primary' => true]);
+            }
+
+            $transactions[] = $fee;
+        }
+
+        return $transactions;
+    }
+}

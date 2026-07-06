@@ -1,8 +1,8 @@
 <x-layouts.app>
-    <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="plus">
+    <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="heroicon-o-plus">
         @if ($hasTrashed)
             <x-button color="outline" href="{{ route('contacts.trashed') }}">
-                <x-icons.heroicons.outline.trash class="size-5!" />
+                <x-heroicon-o-trash class="size-5!" />
                 Lixeira
             </x-button>
         @endif
@@ -14,7 +14,7 @@
         :filters="['search', 'category']">
         
         <div class="w-full sm:w-auto">
-            <select name="category" onchange="this.form.submit()" 
+            <select name="category" 
                     class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                 <option value="">Todas categorias</option>
                 @foreach($categories as $cat)
@@ -41,7 +41,7 @@
         @empty
             <div class="col-span-full bg-white rounded-xl border border-neutral-200">
                 <x-empty-state 
-                    icon="users" 
+                    icon="heroicon-o-users" 
                     message="Nenhum contato encontrado." 
                     actionText="Novo Contato" 
                     :actionRoute="route('contacts.create')" 

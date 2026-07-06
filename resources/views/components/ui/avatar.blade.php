@@ -1,6 +1,7 @@
 @props([
-    'model',
-    'size' => 'md'
+    'model' => null,
+    'size' => 'md',
+    'icon' => null
 ])
 
 @php
@@ -15,10 +16,14 @@
     };
 
     $avatarUrl = $model->avatar ?? null;
-    $initials = method_exists($model, 'initials') ? $model->initials() : '';
+    $initials = $model && method_exists($model, 'initials') ? $model->initials() : '';
 @endphp
 
-@if($avatarUrl)
+@if($icon)
+    <div {{ $attributes->merge(['class' => "shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-400 {$sizeClasses}"]) }}>
+        <x-dynamic-component :component="$icon" class="w-[65%] h-[65%]" />
+    </div>
+@elseif($avatarUrl)
     <img src="{{ $avatarUrl }}" alt="{{ $model->name ?? 'Avatar' }}" {{ $attributes->merge(['class' => "shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] {$sizeClasses}"]) }}>
 @elseif(!empty($initials))
     <div {{ $attributes->merge(['class' => "shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 {$sizeClasses}"]) }}>
@@ -26,6 +31,6 @@
     </div>
 @else
     <div {{ $attributes->merge(['class' => "shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-400 {$sizeClasses}"]) }}>
-        <x-icons.heroicons.outline.user class="w-[50%] h-[50%]" />
+        <x-heroicon-o-user class="w-[65%] h-[65%]" />
     </div>
 @endif

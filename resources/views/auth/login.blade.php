@@ -30,7 +30,7 @@
 
         {{-- Botão de login --}}
         <x-button type="submit" class="w-full">
-            <x-icons.heroicons.outline.arrow-right-on-rectangle class="w-6 h-6" />
+            <x-heroicon-o-arrow-right-on-rectangle class="w-6 h-6" />
             Entrar
         </x-button>
 

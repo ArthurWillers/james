@@ -42,6 +42,10 @@
 }
 
 @layer base {
+    html {
+        scrollbar-gutter: stable;
+    }
+
     /* Focus global usando o sistema nativo do Tailwind para evitar conflitos com shadows.
        Excluímos inputs, selects e textareas para que mantenham seu design suave original. */
     :where(*:focus-visible):not(input, select, textarea) {

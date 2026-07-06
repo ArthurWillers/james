@@ -36,8 +36,10 @@ class AppServiceProvider extends ServiceProvider
         setlocale(LC_ALL, config('app.locale').'.UTF-8');
         date_default_timezone_set(config('app.timezone'));
         Number::useCurrency(config('app.currency'));
+        Number::useLocale(config('app.locale'));
 
         require_once app_path('Helpers/DateHelper.php');
+        require_once app_path('Helpers/CurrencyHelper.php');
 
         Carbon::macro('formatDate', function () {
             return DateHelper::format($this);

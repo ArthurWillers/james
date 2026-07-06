@@ -9,12 +9,12 @@
 
     <x-page-header title="Editar Contato">
         <x-button color="outline" href="{{ route('contacts.show', $contact) }}" class="bg-white">
-            <x-icons.heroicons.outline.arrow-left class="size-4" />
+            <x-heroicon-o-arrow-left class="size-4" />
             Cancelar
         </x-button>
 
         <x-button type="submit" form="edit-contact-form">
-            <x-icons.heroicons.outline.check class="size-4" />
+            <x-heroicon-o-check class="size-4" />
             Salvar
         </x-button>
     </x-page-header>
