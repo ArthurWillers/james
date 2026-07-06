@@ -1,7 +1,7 @@
 <x-layouts.financial>
     <x-page-header title="Relatórios Financeiros" icon="heroicon-o-chart-pie"></x-page-header>
 
-    <div x-data="reportsPage()" x-init="initCharts()" class="pb-20">
+    <div x-data="reportsPage()" x-init="initCharts()" class="pb-2">
 
         <!-- Mobile Filters Toggle -->
         <div class="sm:hidden mb-6">
@@ -18,7 +18,7 @@
         </div>
 
         <!-- Filters Bar -->
-        <div class="w-full sm:sticky sm:top-4 z-20 mb-6" x-bind:class="{ 'hidden sm:block': !showFilters }">
+        <div class="w-full mb-6" x-bind:class="{ 'hidden sm:block': !showFilters }">
             <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}" class="items-end! pe-2 py-3" button-class="sm:w-[44px] h-[44px]">
                 <div class="flex flex-col sm:flex-row items-end gap-4 px-2 py-0">
                 <div class="flex items-center gap-4 w-full md:w-auto flex-wrap sm:flex-nowrap">
@@ -167,8 +167,17 @@
         </div>
 
         <!-- Transactions -->
-        <div class="mb-6">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Transações do Período</h3>
+        <div id="transactions-table" class="mb-6 pt-4">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <h3 class="text-lg font-bold text-neutral-900">Transações do Período</h3>
+                
+                <button x-cloak x-show="selectedTagId !== null" 
+                        @click="selectedTagId = null" 
+                        class="cursor-pointer text-xs font-bold text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                    <x-heroicon-s-x-mark class="size-3.5" />
+                    Limpar Filtro
+                </button>
+            </div>
             @include('finance.partials.reports-transactions')
         </div>
     </div>
@@ -178,6 +187,15 @@
         Alpine.data('reportsPage', () => ({
             period: @json($period),
             showFilters: false,
+            selectedTagId: null,
+
+            filterByTag(tagId) {
+                this.selectedTagId = tagId;
+                const table = document.getElementById('transactions-table');
+                if (table) {
+                    table.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            },
 
             submitIfNotCustom() {
                 if (this.period !== 'custom') {

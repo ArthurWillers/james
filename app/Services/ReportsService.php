@@ -21,6 +21,7 @@ class ReportsService
     {
         $transactions = $this->getUnifiedTransactions($startDate, $endDate, $accountIds);
         $flattenedForTags = $this->flattenTransactionsForTags($transactions);
+        $tableTransactions = $this->flattenTransactionsForTable($transactions);
 
         $initialBalance = $this->getInitialBalance($startDate, $accountIds);
         $initialNetWorth = $this->getInitialNetWorth($startDate, $accountIds);
@@ -31,6 +32,7 @@ class ReportsService
             'netWorthEvolution' => $this->buildNetWorthEvolutionData($transactions, $startDate, $endDate, $interval, $initialNetWorth, $accountIds),
             'tags' => $this->buildTagsData($flattenedForTags),
             'transactions' => $transactions,
+            'tableTransactions' => $tableTransactions,
         ];
     }
 
@@ -139,6 +141,42 @@ class ReportsService
                 $entry->amount = $t->amount;
                 $entry->tags = $t->tags;
                 $flattened->push($entry);
+            }
+        }
+
+        return $flattened;
+    }
+
+    private function flattenTransactionsForTable(Collection $transactions): Collection
+    {
+        $flattened = collect();
+
+        foreach ($transactions as $t) {
+            if ($t->relationLoaded('items') && $t->items->isNotEmpty()) {
+                $itemsSum = 0;
+                foreach ($t->items as $item) {
+                    $itemAmount = $item->unit_price * $item->quantity;
+                    $itemsSum += $itemAmount;
+
+                    $entry = clone $t;
+                    $entry->id = $t->id.'_item_'.$item->id;
+                    $entry->amount = $itemAmount;
+                    $entry->description = $t->description.' - '.$item->description;
+                    $entry->setRelation('tags', $item->tags);
+
+                    $flattened->push($entry);
+                }
+
+                $remainingAmount = $t->amount - $itemsSum;
+                if ($remainingAmount > 0.01) {
+                    $entry = clone $t;
+                    $entry->id = $t->id.'_rem';
+                    $entry->amount = $remainingAmount;
+                    $entry->description = $t->description.' (Restante)';
+                    $flattened->push($entry);
+                }
+            } else {
+                $flattened->push($t);
             }
         }
 
