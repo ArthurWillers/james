@@ -354,7 +354,7 @@ class FinanceDashboardService
             ->withoutTransfers()
             ->with([
                 'tags' => fn ($q) => $q->wherePivot('is_primary', true),
-                'items.tags' => fn ($q) => $q->wherePivot('is_primary', true)
+                'items.tags' => fn ($q) => $q->wherePivot('is_primary', true),
             ])
             ->get();
 
@@ -367,7 +367,7 @@ class FinanceDashboardService
                     $itemAmount = $item->unit_price * $item->quantity;
                     $itemsSum += $itemAmount;
 
-                    $flattened->push((object)[
+                    $flattened->push((object) [
                         'amount' => $itemAmount,
                         'tags' => $item->tags,
                     ]);
@@ -375,13 +375,13 @@ class FinanceDashboardService
 
                 $remainingAmount = $t->amount - $itemsSum;
                 if ($remainingAmount > 0.01) {
-                    $flattened->push((object)[
+                    $flattened->push((object) [
                         'amount' => $remainingAmount,
                         'tags' => $t->tags,
                     ]);
                 }
             } else {
-                $flattened->push((object)[
+                $flattened->push((object) [
                     'amount' => $t->amount,
                     'tags' => $t->tags,
                 ]);
