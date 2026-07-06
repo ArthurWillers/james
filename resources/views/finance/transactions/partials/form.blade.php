@@ -26,7 +26,7 @@
                 @endif
                 
                 <div>
-                    <x-form.tags-selector name="tags[]" :options="$tags" label="Tags (Opcional)" :value="old('tags', $defaultTags ?? [])" :primaryValue="old('primary_tag_id', $defaultPrimaryTag ?? null)" xDisablePrimary="items.some(i => i.tags && Object.values(i.tags).length > 0)" />
+                    <x-tags-selector name="tags[]" :options="$tags" label="Tags (Opcional)" :value="old('tags', $defaultTags ?? [])" :primaryValue="old('primary_tag_id', $defaultPrimaryTag ?? null)" xDisablePrimary="items.some(i => i.tags && Object.values(i.tags).length > 0)" />
                 </div>
             </div>
         </x-card>
@@ -42,24 +42,24 @@
 
             @if(!isset($transaction))
             {{-- Tipo de Movimento --}}
-            <x-form.radio-block-group legend="Tipo">
-                <x-form.radio-block name="mode" x-model="mode" value="single" icon="heroicon-o-currency-dollar" label="Única" />
-                <x-form.radio-block name="mode" x-model="mode" value="installment" icon="heroicon-o-calendar-days" label="Parcelada" />
-            </x-form.radio-block-group>
+            <x-radio-block-group legend="Tipo">
+                <x-radio-block name="mode" x-model="mode" value="single" icon="heroicon-o-currency-dollar" label="Única" />
+                <x-radio-block name="mode" x-model="mode" value="installment" icon="heroicon-o-calendar-days" label="Parcelada" />
+            </x-radio-block-group>
             @endif
 
             {{-- Receita ou Despesa --}}
-            <x-form.radio-block-group legend="Classificação">
-                <x-form.radio-block name="type" x-model="type" value="expense" icon="heroicon-o-arrow-trending-down" label="Despesa" activeClass="peer-checked:text-red-600" inactiveClass="text-red-600 hover:text-red-700" />
-                <x-form.radio-block name="type" x-model="type" value="income" icon="heroicon-o-arrow-trending-up" label="Receita" activeClass="peer-checked:text-green-600" inactiveClass="text-green-600 hover:text-green-700" />
-            </x-form.radio-block-group>
+            <x-radio-block-group legend="Classificação">
+                <x-radio-block name="type" x-model="type" value="expense" icon="heroicon-o-arrow-trending-down" label="Despesa" activeClass="peer-checked:text-red-600" inactiveClass="text-red-600 hover:text-red-700" />
+                <x-radio-block name="type" x-model="type" value="income" icon="heroicon-o-arrow-trending-up" label="Receita" activeClass="peer-checked:text-green-600" inactiveClass="text-green-600 hover:text-green-700" />
+            </x-radio-block-group>
 
             {{-- Conta ou Cartão --}}
             <div class="space-y-4 pt-2">
-                <x-form.radio-block-group legend="Onde">
-                    <x-form.radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
-                    <x-form.radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
-                </x-form.radio-block-group>
+                <x-radio-block-group legend="Onde">
+                    <x-radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
+                    <x-radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
+                </x-radio-block-group>
                 
                 <div>
                     <div x-show="targetType === 'account'">
@@ -81,7 +81,7 @@
                 </div>
                 
                 <div x-show="targetType === 'account'" class="pt-4 border-t border-neutral-100">
-                    <x-form.switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
+                    <x-switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
                     <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
                 </div>
             </div>

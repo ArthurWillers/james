@@ -5,7 +5,7 @@
             <div class="flex flex-col gap-4">
                 @isset($account)
                     <div class="flex items-center gap-6 mb-2">
-                        <x-ui.avatar :icon="$account->type->icon()" size="2xl" />
+                        <x-avatar :icon="$account->type->icon()" size="2xl" />
                     </div>
                 @endisset
                 

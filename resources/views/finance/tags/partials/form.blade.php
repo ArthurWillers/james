@@ -58,7 +58,7 @@
                         <div class="w-full h-full flex items-center justify-center">
                             @foreach($suggestedIcons as $icon)
                                 <div x-show="selectedIcon === '{{ $icon }}'">
-                                    <x-ui.avatar :icon="$icon" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
+                                    <x-avatar :icon="$icon" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
                                 </div>
                             @endforeach
                         </div>
@@ -71,7 +71,7 @@
                             </div>
                         </template>
                         <template x-if="!customIconHtml">
-                            <x-ui.avatar icon="heroicon-o-question-mark-circle" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
+                            <x-avatar icon="heroicon-o-question-mark-circle" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
                         </template>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                     
                     <div class="h-10 w-px bg-neutral-200 mx-1"></div>
 
-                    <x-ui.color-picker 
+                    <x-color-picker 
                         x-model="selectedColor" 
                         x-bind:style="!colors.includes(selectedColor) ? 'background-color: ' + selectedColor + ';' : 'background-color: transparent;'" 
                     />

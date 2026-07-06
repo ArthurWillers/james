@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\FinancialAccountType;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -60,11 +61,11 @@ class FinanceDashboardService
     private function getAccountBalance(bool $includeInvestments = false): float
     {
         $accounts = $this->getAccounts();
-        
-        if (!$includeInvestments) {
-            $accounts = $accounts->where('type', '!=', \App\Enums\FinancialAccountType::Investment);
+
+        if (! $includeInvestments) {
+            $accounts = $accounts->where('type', '!=', FinancialAccountType::Investment);
         }
-        
+
         return (float) $accounts->sum('balance');
     }
 
@@ -78,8 +79,8 @@ class FinanceDashboardService
             ->expenses()
             ->withoutTransfers()
             ->withoutInvoice();
-            
-        if (!$includeInvestments) {
+
+        if (! $includeInvestments) {
             $otherDebtsQuery->withoutInvestments();
         }
 
@@ -89,8 +90,8 @@ class FinanceDashboardService
 
         $totalsQuery = FinancialTransaction::posted()
             ->withoutTransfers();
-            
-        if (!$includeInvestments) {
+
+        if (! $includeInvestments) {
             $totalsQuery->withoutInvestments();
         }
 
@@ -130,11 +131,16 @@ class FinanceDashboardService
         // Recorrências do mês atual (ainda não materializadas)
         $recurrencesCurrent = $this->getActiveRecurrences()
             ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endOfMonth));
-            
-        if (!$includeInvestments) {
-            $recurrencesCurrent = $recurrencesCurrent->filter(function($r) {
-                if ($r->financialAccount && $r->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
-                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+
+        if (! $includeInvestments) {
+            $recurrencesCurrent = $recurrencesCurrent->filter(function ($r) {
+                if ($r->financialAccount && $r->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+
                 return true;
             });
         }
@@ -157,11 +163,16 @@ class FinanceDashboardService
                     || ($r->next_processing_date->lt($nextMonthStart)
                         && ($r->end_date === null || $r->end_date->gte($nextMonthEnd)));
             });
-            
-        if (!$includeInvestments) {
-            $recurrencesNext = $recurrencesNext->filter(function($r) {
-                if ($r->financialAccount && $r->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
-                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+
+        if (! $includeInvestments) {
+            $recurrencesNext = $recurrencesNext->filter(function ($r) {
+                if ($r->financialAccount && $r->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+
                 return true;
             });
         }
@@ -185,8 +196,8 @@ class FinanceDashboardService
             ->pending()
             ->withoutInvoice()
             ->withoutTransfers();
-            
-        if (!$includeInvestments) {
+
+        if (! $includeInvestments) {
             $query->withoutInvestments();
         }
 
@@ -201,8 +212,8 @@ class FinanceDashboardService
     private function getOpenInvoicesTotalForPeriod(?Carbon $start = null, ?Carbon $end = null, bool $includeInvestments = false): float
     {
         $query = FinancialCreditCardInvoice::unpaid()->withTotalAmount();
-        
-        if (!$includeInvestments) {
+
+        if (! $includeInvestments) {
             $query->withoutInvestments();
         }
 
@@ -216,13 +227,13 @@ class FinanceDashboardService
     public function getAccountBalancesChart(?array $accountIds = null, bool $includeInvestments = false): array
     {
         $accounts = $this->getAccounts();
-        
+
         if ($accountIds) {
             $accounts = $accounts->whereIn('id', $accountIds);
         }
 
-        if (!$includeInvestments) {
-            $accounts = $accounts->where('type', '!=', \App\Enums\FinancialAccountType::Investment);
+        if (! $includeInvestments) {
+            $accounts = $accounts->where('type', '!=', FinancialAccountType::Investment);
         }
 
         return $accounts
@@ -340,7 +351,7 @@ class FinanceDashboardService
             ->withoutTransfers()
             ->with(['tags' => fn ($q) => $q->wherePivot('is_primary', true)])
             ->get();
-            
+
         $totalExpenses = $expenses->sum('amount');
 
         $grouped = $expenses->groupBy(function ($transaction) {
@@ -398,8 +409,8 @@ class FinanceDashboardService
 
         $initialBalanceQuery = FinancialTransaction::posted()
             ->where('date', '<', $startDate);
-            
-        if (!$includeInvestments) {
+
+        if (! $includeInvestments) {
             $initialBalanceQuery->withoutInvestments();
         }
 
@@ -411,8 +422,8 @@ class FinanceDashboardService
         $flowsQuery = FinancialTransaction::posted()
             ->forPeriod($startDate, $today)
             ->withoutTransfers();
-            
-        if (!$includeInvestments) {
+
+        if (! $includeInvestments) {
             $flowsQuery->withoutInvestments();
         }
 
@@ -441,22 +452,27 @@ class FinanceDashboardService
         // Add future projections (pending, recurrences, open invoices)
         $futureTransactions = $this->getJamesRadar($today);
 
-        if (!$includeInvestments) {
-            $futureTransactions = $futureTransactions->filter(function($t) {
-                if ($t->account && $t->account->type === \App\Enums\FinancialAccountType::Investment) return false;
-                if ($t->invoice && $t->invoice->creditCard && $t->invoice->creditCard->financialAccount && $t->invoice->creditCard->financialAccount->type === \App\Enums\FinancialAccountType::Investment) return false;
+        if (! $includeInvestments) {
+            $futureTransactions = $futureTransactions->filter(function ($t) {
+                if ($t->account && $t->account->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+                if ($t->invoice && $t->invoice->creditCard && $t->invoice->creditCard->financialAccount && $t->invoice->creditCard->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+
                 return true;
             });
         }
 
         foreach ($futureTransactions as $t) {
             $dateStr = is_string($t->date) ? substr($t->date, 0, 10) : $t->date->format('Y-m-d');
-            
+
             if (Carbon::parse($dateStr)->gt($endDate)) {
                 continue;
             }
 
-            if (!isset($flowsByDate[$dateStr])) {
+            if (! isset($flowsByDate[$dateStr])) {
                 $flowsByDate[$dateStr] = ['net_flow' => 0, 'income' => 0, 'expense' => 0];
             }
 
@@ -469,7 +485,7 @@ class FinanceDashboardService
                 $flowsByDate[$dateStr]['net_flow'] -= $amount;
             }
         }
-        
+
         $flowsByDate = collect($flowsByDate);
 
         $chartData = [];

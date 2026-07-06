@@ -22,7 +22,7 @@
         :filters="['search']">
     </x-filter-bar>
 
-    <x-ui.table class="lg:mb-8"
+    <x-table class="lg:mb-8"
          x-data="{
              selectedTransactionId: null,
              selectedTransactionName: '',
@@ -39,18 +39,18 @@
          }">
         @if($transactions->isNotEmpty())
             {{-- Header - Desktop --}}
-            <x-ui.table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr]">
-                <x-ui.table.column>Transação</x-ui.table.column>
-                <x-ui.table.column>Valor</x-ui.table.column>
-                <x-ui.table.column>Data da Exclusão</x-ui.table.column>
-                <x-ui.table.column align="right">Ações</x-ui.table.column>
-            </x-ui.table.header>
+            <x-table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr]">
+                <x-table.column>Transação</x-table.column>
+                <x-table.column>Valor</x-table.column>
+                <x-table.column>Data da Exclusão</x-table.column>
+                <x-table.column align="right">Ações</x-table.column>
+            </x-table.header>
         @endif
 
-        <x-ui.table.body>
+        <x-table.body>
             @forelse($transactions as $transaction)
-                <x-ui.table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr]">
-                    <x-ui.table.cell>
+                <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr]">
+                    <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
                             @php
                                 $icon = match($transaction->type) {
@@ -75,21 +75,21 @@
                                 </div>
                             </div>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         <span class="font-medium {{ $transaction->type === 'income' ? 'text-green-600' : ($transaction->type === 'expense' ? 'text-red-600' : 'text-neutral-900') }} opacity-80">
                             {{ $transaction->type === 'income' ? '+' : ($transaction->type === 'expense' ? '-' : '') }}{{ formatCurrency(abs($transaction->amount)) }}
                         </span>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         <span class="text-sm text-neutral-500">
                             {{ $transaction->deleted_at->formatDateTime() }}
                         </span>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell align="right">
+                    <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
                             <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
                                 <x-heroicon-o-arrow-uturn-left class="size-4" />
@@ -101,7 +101,7 @@
                                 Excluir
                             </x-button>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
@@ -144,7 +144,7 @@
                             </div>
                         </div>
                     </x-slot>
-                </x-ui.table.row>
+                </x-table.row>
             @empty
                 <x-empty-state 
                     icon="heroicon-o-trash" 
@@ -152,7 +152,7 @@
                     description="Não há transações excluídas recentemente na lixeira." 
                 />
             @endforelse
-        </x-ui.table.body>
+        </x-table.body>
 
         <x-modal 
             name="restore-transaction"
@@ -198,7 +198,7 @@
                 </x-button>
             </form>
         </x-modal>
-    </x-ui.table>
+    </x-table>
 
     @if($transactions->hasPages())
         <div class="mt-6">

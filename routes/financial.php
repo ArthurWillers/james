@@ -1,16 +1,19 @@
 <?php
 
+use App\Http\Controllers\FinanceDashboardChartController;
+use App\Http\Controllers\FinanceDashboardController;
 use App\Http\Controllers\FinancialAccountController;
 use App\Http\Controllers\FinancialCreditCardController;
 use App\Http\Controllers\FinancialCreditCardInvoiceController;
+use App\Http\Controllers\FinancialRecurrenceController;
 use App\Http\Controllers\FinancialTagController;
 use App\Http\Controllers\FinancialTransactionController;
 use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('financial')->name('financial.')->group(function () {
-    Route::get('/dashboard', \App\Http\Controllers\FinanceDashboardController::class)->name('dashboard');
-    Route::get('/dashboard/chart-data', \App\Http\Controllers\FinanceDashboardChartController::class)->name('dashboard.chart-data');
+    Route::get('/dashboard', FinanceDashboardController::class)->name('dashboard');
+    Route::get('/dashboard/chart-data', FinanceDashboardChartController::class)->name('dashboard.chart-data');
 
     // Reports
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
@@ -49,8 +52,8 @@ Route::prefix('financial')->name('financial.')->group(function () {
     ]);
 
     // Recurrences
-    Route::get('/recurrences/trashed', [App\Http\Controllers\FinancialRecurrenceController::class, 'trashed'])->name('recurrences.trashed');
-    Route::patch('/recurrences/{recurrence}/restore', [App\Http\Controllers\FinancialRecurrenceController::class, 'restore'])->name('recurrences.restore')->withTrashed();
-    Route::delete('/recurrences/{recurrence}/force', [App\Http\Controllers\FinancialRecurrenceController::class, 'forceDestroy'])->name('recurrences.forceDestroy')->withTrashed();
-    Route::resource('recurrences', App\Http\Controllers\FinancialRecurrenceController::class);
+    Route::get('/recurrences/trashed', [FinancialRecurrenceController::class, 'trashed'])->name('recurrences.trashed');
+    Route::patch('/recurrences/{recurrence}/restore', [FinancialRecurrenceController::class, 'restore'])->name('recurrences.restore')->withTrashed();
+    Route::delete('/recurrences/{recurrence}/force', [FinancialRecurrenceController::class, 'forceDestroy'])->name('recurrences.forceDestroy')->withTrashed();
+    Route::resource('recurrences', FinancialRecurrenceController::class);
 });

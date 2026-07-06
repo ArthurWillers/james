@@ -200,21 +200,21 @@
         </div>
 
         <x-card class="overflow-hidden mb-6">
-            <x-ui.table>
-                <x-ui.table.header class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
-                    <x-ui.table.column>Descrição</x-ui.table.column>
-                    <x-ui.table.column>Tags</x-ui.table.column>
-                    <x-ui.table.column align="right">Qtd</x-ui.table.column>
-                    <x-ui.table.column align="right">Unitário</x-ui.table.column>
-                    <x-ui.table.column align="right">Total</x-ui.table.column>
-                </x-ui.table.header>
-                <x-ui.table.body>
+            <x-table>
+                <x-table.header class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
+                    <x-table.column>Descrição</x-table.column>
+                    <x-table.column>Tags</x-table.column>
+                    <x-table.column align="right">Qtd</x-table.column>
+                    <x-table.column align="right">Unitário</x-table.column>
+                    <x-table.column align="right">Total</x-table.column>
+                </x-table.header>
+                <x-table.body>
                     @foreach($transaction->items as $item)
-                        <x-ui.table.row class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
-                            <x-ui.table.cell>
+                        <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
+                            <x-table.cell>
                                 <span class="font-medium text-neutral-900">{{ $item->description }}</span>
-                            </x-ui.table.cell>
-                            <x-ui.table.cell>
+                            </x-table.cell>
+                            <x-table.cell>
                                 @if($item->tags->isNotEmpty())
                                     <div class="flex flex-wrap gap-1.5">
                                         @php
@@ -244,20 +244,20 @@
                                 @else
                                     <span class="text-neutral-400">-</span>
                                 @endif
-                            </x-ui.table.cell>
-                            <x-ui.table.cell align="right">
+                            </x-table.cell>
+                            <x-table.cell align="right">
                                 <span class="text-neutral-700">{{ $item->quantity }}</span>
-                            </x-ui.table.cell>
-                            <x-ui.table.cell align="right">
+                            </x-table.cell>
+                            <x-table.cell align="right">
                                 <span class="text-neutral-700">{{ formatCurrency($item->unit_price) }}</span>
-                            </x-ui.table.cell>
-                            <x-ui.table.cell align="right">
+                            </x-table.cell>
+                            <x-table.cell align="right">
                                 <span class="font-bold text-neutral-900">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
-                            </x-ui.table.cell>
-                        </x-ui.table.row>
+                            </x-table.cell>
+                        </x-table.row>
                     @endforeach
-                </x-ui.table.body>
-            </x-ui.table>
+                </x-table.body>
+            </x-table>
         </x-card>
     @endif
 </x-layouts.financial>

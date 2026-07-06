@@ -77,7 +77,7 @@
     <x-card class="mb-6 p-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="flex items-center gap-6">
-                <x-ui.avatar :icon="$account->type->icon()" size="xl" />
+                <x-avatar :icon="$account->type->icon()" size="xl" />
                 
                 <div class="flex flex-col gap-2">
                     <h2 class="text-2xl font-bold text-neutral-900">{{ $account->name }}</h2>

@@ -43,7 +43,7 @@
 
         @if($limit)
             <div class="mb-4">
-                <x-ui.progress 
+                <x-progress 
                     :value="$usedLimit" 
                     :max="$limit" 
                     :showValue="false" 

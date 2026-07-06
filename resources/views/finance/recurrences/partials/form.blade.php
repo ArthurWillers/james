@@ -46,7 +46,7 @@
                 </div>
                 
                 <div>
-                    <x-form.tags-selector name="tags[]" :options="$tags" label="Tags (Opcional)" :value="old('tags', isset($recurrence) ? $recurrence->tags->pluck('id')->toArray() : [])" :primaryValue="old('primary_tag_id', isset($recurrence) ? $recurrence->tags->where('pivot.is_primary', true)->first()?->id : null)" />
+                    <x-tags-selector name="tags[]" :options="$tags" label="Tags (Opcional)" :value="old('tags', isset($recurrence) ? $recurrence->tags->pluck('id')->toArray() : [])" :primaryValue="old('primary_tag_id', isset($recurrence) ? $recurrence->tags->where('pivot.is_primary', true)->first()?->id : null)" />
                 </div>
             </div>
         </x-card>
@@ -58,23 +58,23 @@
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Configurações</h3>
 
             {{-- Tipo de Recorrência --}}
-            <x-form.radio-block-group legend="Frequência">
-                <x-form.radio-block name="frequency" x-model="frequency" value="monthly" icon="heroicon-o-calendar-days" label="Mensal" />
-                <x-form.radio-block name="frequency" x-model="frequency" value="yearly" icon="heroicon-o-calendar" label="Anual" />
-            </x-form.radio-block-group>
+            <x-radio-block-group legend="Frequência">
+                <x-radio-block name="frequency" x-model="frequency" value="monthly" icon="heroicon-o-calendar-days" label="Mensal" />
+                <x-radio-block name="frequency" x-model="frequency" value="yearly" icon="heroicon-o-calendar" label="Anual" />
+            </x-radio-block-group>
 
             {{-- Receita ou Despesa --}}
-            <x-form.radio-block-group legend="Classificação">
-                <x-form.radio-block name="type" x-model="type" value="expense" icon="heroicon-o-arrow-trending-down" label="Despesa" activeClass="peer-checked:text-red-600" inactiveClass="text-red-600 hover:text-red-700" />
-                <x-form.radio-block name="type" x-model="type" value="income" icon="heroicon-o-arrow-trending-up" label="Receita" activeClass="peer-checked:text-green-600" inactiveClass="text-green-600 hover:text-green-700" />
-            </x-form.radio-block-group>
+            <x-radio-block-group legend="Classificação">
+                <x-radio-block name="type" x-model="type" value="expense" icon="heroicon-o-arrow-trending-down" label="Despesa" activeClass="peer-checked:text-red-600" inactiveClass="text-red-600 hover:text-red-700" />
+                <x-radio-block name="type" x-model="type" value="income" icon="heroicon-o-arrow-trending-up" label="Receita" activeClass="peer-checked:text-green-600" inactiveClass="text-green-600 hover:text-green-700" />
+            </x-radio-block-group>
 
             {{-- Conta ou Cartão --}}
             <div class="space-y-4 pt-2">
-                <x-form.radio-block-group legend="Onde">
-                    <x-form.radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
-                    <x-form.radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
-                </x-form.radio-block-group>
+                <x-radio-block-group legend="Onde">
+                    <x-radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
+                    <x-radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
+                </x-radio-block-group>
                 
                 <div>
                     <div x-show="targetType === 'account'">
@@ -96,7 +96,7 @@
                 </div>
                 
                 <div class="pt-4 border-t border-neutral-100">
-                    <x-form.switch name="is_active" :checked="old('is_active', isset($recurrence) ? $recurrence->is_active : true)" label="Recorrência Ativa" />
+                    <x-switch name="is_active" :checked="old('is_active', isset($recurrence) ? $recurrence->is_active : true)" label="Recorrência Ativa" />
                     <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, novas transações não serão geradas.</p>
                 </div>
             </div>

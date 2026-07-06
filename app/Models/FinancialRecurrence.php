@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,9 +125,9 @@ class FinancialRecurrence extends Model
     public function scopeWithoutInvestments(Builder $query): Builder
     {
         return $query->whereDoesntHave('financialAccount', function ($q) {
-            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+            $q->where('type', FinancialAccountType::Investment);
         })->whereDoesntHave('financialCreditCard.financialAccount', function ($q) {
-            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+            $q->where('type', FinancialAccountType::Investment);
         });
     }
 

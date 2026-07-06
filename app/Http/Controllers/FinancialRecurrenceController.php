@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FinancialRecurrenceRequest;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialRecurrence;
-use App\Http\Requests\FinancialRecurrenceRequest;
+use App\Models\FinancialTag;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\View;
 
 class FinancialRecurrenceController extends Controller
@@ -19,13 +22,13 @@ class FinancialRecurrenceController extends Controller
     {
         $query = FinancialRecurrence::query()
             ->select([
-                'id', 'title', 'amount', 'type', 'frequency', 
-                'start_date', 'next_processing_date', 'is_active', 
-                'financial_account_id', 'financial_credit_card_id'
+                'id', 'title', 'amount', 'type', 'frequency',
+                'start_date', 'next_processing_date', 'is_active',
+                'financial_account_id', 'financial_credit_card_id',
             ])
             ->with([
-                'financialAccount:id,name', 
-                'financialCreditCard:id,name'
+                'financialAccount:id,name',
+                'financialCreditCard:id,name',
             ]);
 
         if ($request->filled('search')) {
@@ -46,15 +49,15 @@ class FinancialRecurrenceController extends Controller
     {
         $accounts = FinancialAccount::orderBy('name')->get();
         $cards = FinancialCreditCard::orderBy('name')->get();
-        $tags = \App\Models\FinancialTag::all()->map(function ($tag) {
+        $tags = FinancialTag::all()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'color_hex' => $tag->color_hex,
-                'svg' => \Illuminate\Support\Facades\Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
+                'svg' => Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
             ];
         });
-        
+
         return view('finance.recurrences.create', compact('accounts', 'cards', 'tags'));
     }
 
@@ -84,15 +87,15 @@ class FinancialRecurrenceController extends Controller
         $recurrence->load('tags');
         $accounts = FinancialAccount::orderBy('name')->get();
         $cards = FinancialCreditCard::orderBy('name')->get();
-        $tags = \App\Models\FinancialTag::all()->map(function ($tag) {
+        $tags = FinancialTag::all()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,
                 'color_hex' => $tag->color_hex,
-                'svg' => \Illuminate\Support\Facades\Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
+                'svg' => Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
             ];
         });
-        
+
         return view('finance.recurrences.edit', compact('recurrence', 'accounts', 'cards', 'tags'));
     }
 
@@ -106,7 +109,7 @@ class FinancialRecurrenceController extends Controller
         $validated['is_active'] = $request->has('is_active') ? true : false;
 
         // Se a start_date for alterada para o futuro e for maior que a next_processing_date atual, atualiza
-        if (\Carbon\Carbon::parse($validated['start_date'])->gt($recurrence->next_processing_date)) {
+        if (Carbon::parse($validated['start_date'])->gt($recurrence->next_processing_date)) {
             $validated['next_processing_date'] = $validated['start_date'];
         }
 
@@ -136,14 +139,14 @@ class FinancialRecurrenceController extends Controller
     {
         $query = FinancialRecurrence::onlyTrashed()
             ->select([
-                'id', 'title', 'amount', 'type', 'frequency', 
-                'start_date', 'next_processing_date', 'is_active', 
+                'id', 'title', 'amount', 'type', 'frequency',
+                'start_date', 'next_processing_date', 'is_active',
                 'financial_account_id', 'financial_credit_card_id',
-                'deleted_at'
+                'deleted_at',
             ])
             ->with([
-                'financialAccount:id,name', 
-                'financialCreditCard:id,name'
+                'financialAccount:id,name',
+                'financialCreditCard:id,name',
             ]);
 
         if ($request->filled('search')) {
@@ -182,6 +185,7 @@ class FinancialRecurrenceController extends Controller
     {
         if (empty($tags)) {
             $model->tags()->detach();
+
             return;
         }
 

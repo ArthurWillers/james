@@ -127,7 +127,7 @@
 
     @if($status !== 'paid' && !$isFavorable && $total > 0)
         <!-- Modal Pagamento -->
-        <x-ui.modal name="pay-invoice-modal" title="Pagar Fatura">
+        <x-modal name="pay-invoice-modal" title="Pagar Fatura">
             <x-slot name="content">
                 <form action="{{ route('financial.cards.invoices.pay', [$card, $invoice]) }}" method="POST" id="pay-form" class="mt-4">
                     @csrf
@@ -167,7 +167,7 @@
             <x-button form="pay-form" type="submit" class="w-full sm:w-auto">
                 Confirmar Pagamento
             </x-button>
-        </x-ui.modal>
+        </x-modal>
     @endif
 
     <!-- Modal Editar Fatura -->

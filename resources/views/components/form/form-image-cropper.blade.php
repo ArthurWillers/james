@@ -82,7 +82,7 @@
         @endif
     </div>
 
-    <x-form.error name="{{ $name }}" />
+    <x-error name="{{ $name }}" />
 
     <div x-show="isModalOpen" x-transition.opacity x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @keydown.escape.window="closeModal">
         <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden flex flex-col" @click.away="closeModal">

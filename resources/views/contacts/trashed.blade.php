@@ -32,7 +32,7 @@
         </div>
     </x-filter-bar>
 
-    <x-ui.table class="lg:mb-8"
+    <x-table class="lg:mb-8"
          x-data="{
              selectedContactId: null,
              selectedContactName: '',
@@ -49,17 +49,17 @@
          }">
         @if($contacts->isNotEmpty())
             {{-- Header - Desktop --}}
-            <x-ui.table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
-                <x-ui.table.column>Contato</x-ui.table.column>
-                <x-ui.table.column>Data da Exclusão</x-ui.table.column>
-                <x-ui.table.column align="right">Ações</x-ui.table.column>
-            </x-ui.table.header>
+            <x-table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
+                <x-table.column>Contato</x-table.column>
+                <x-table.column>Data da Exclusão</x-table.column>
+                <x-table.column align="right">Ações</x-table.column>
+            </x-table.header>
         @endif
 
-        <x-ui.table.body>
+        <x-table.body>
             @forelse($contacts as $contact)
-                <x-ui.table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
-                    <x-ui.table.cell>
+                <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
+                    <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
                             <x-avatar :model="$contact" size="lg" class="shrink-0 grayscale opacity-80" />
                             <div class="overflow-hidden">
@@ -71,15 +71,15 @@
                                 @endif
                             </div>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         <span class="text-sm text-neutral-500">
                             {{ $contact->deleted_at->formatDateTime() }}
                         </span>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell align="right">
+                    <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
                             <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
                                 <x-heroicon-o-arrow-uturn-left class="size-4" />
@@ -91,7 +91,7 @@
                                 Excluir
                             </x-button>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
@@ -134,7 +134,7 @@
                             </div>
                         </div>
                     </x-slot>
-                </x-ui.table.row>
+                </x-table.row>
             @empty
                 <x-empty-state 
                     icon="heroicon-o-trash" 
@@ -142,7 +142,7 @@
                     description="Não há contatos excluídos recentemente." 
                 />
             @endforelse
-        </x-ui.table.body>
+        </x-table.body>
 
         <x-modal 
             name="restore-contact"
@@ -175,7 +175,7 @@
                 </x-button>
             </form>
         </x-modal>
-    </x-ui.table>
+    </x-table>
 
     @if($contacts->hasPages())
         <div class="mt-6">

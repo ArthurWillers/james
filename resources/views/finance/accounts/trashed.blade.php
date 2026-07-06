@@ -22,7 +22,7 @@
         :filters="['search']">
     </x-filter-bar>
 
-    <x-ui.table class="lg:mb-8"
+    <x-table class="lg:mb-8"
          x-data="{
              selectedAccountId: null,
              selectedAccountName: '',
@@ -39,17 +39,17 @@
          }">
         @if($accounts->isNotEmpty())
             {{-- Header - Desktop --}}
-            <x-ui.table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
-                <x-ui.table.column>Conta</x-ui.table.column>
-                <x-ui.table.column>Data da Exclusão</x-ui.table.column>
-                <x-ui.table.column align="right">Ações</x-ui.table.column>
-            </x-ui.table.header>
+            <x-table.header class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
+                <x-table.column>Conta</x-table.column>
+                <x-table.column>Data da Exclusão</x-table.column>
+                <x-table.column align="right">Ações</x-table.column>
+            </x-table.header>
         @endif
 
-        <x-ui.table.body>
+        <x-table.body>
             @forelse($accounts as $account)
-                <x-ui.table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
-                    <x-ui.table.cell>
+                <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1.5fr]">
+                    <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
                             <div class="shrink-0 flex items-center justify-center size-10 rounded-full bg-neutral-100 text-neutral-400 grayscale opacity-80">
                                 <x-heroicon-o-building-library class="size-5" />
@@ -61,15 +61,15 @@
                                 </div>
                             </div>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         <span class="text-sm text-neutral-500">
                             {{ $account->deleted_at->formatDateTime() }}
                         </span>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell align="right">
+                    <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
                             <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $account->id }}, '{{ addslashes($account->name) }}')">
                                 <x-heroicon-o-arrow-uturn-left class="size-4" />
@@ -81,7 +81,7 @@
                                 Excluir
                             </x-button>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
@@ -124,7 +124,7 @@
                             </div>
                         </div>
                     </x-slot>
-                </x-ui.table.row>
+                </x-table.row>
             @empty
                 <x-empty-state 
                     icon="heroicon-o-trash" 
@@ -132,7 +132,7 @@
                     description="Não há contas excluídas recentemente na lixeira." 
                 />
             @endforelse
-        </x-ui.table.body>
+        </x-table.body>
 
         <x-modal 
             name="restore-account"
@@ -178,7 +178,7 @@
                 </x-button>
             </form>
         </x-modal>
-    </x-ui.table>
+    </x-table>
 
     @if($accounts->hasPages())
         <div class="mt-6">

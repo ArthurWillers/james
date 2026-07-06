@@ -13,32 +13,32 @@
             Projeções (Recorrências)
         </h4>
     </div>
-    <x-ui.table>
-        <x-ui.table.header class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr]">
-            <x-ui.table.column>Data</x-ui.table.column>
-            <x-ui.table.column>Descrição</x-ui.table.column>
-            <x-ui.table.column>Conta/Fatura</x-ui.table.column>
-            <x-ui.table.column>Tags</x-ui.table.column>
-            <x-ui.table.column align="right">Valor</x-ui.table.column>
-        </x-ui.table.header>
+    <x-table>
+        <x-table.header class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr]">
+            <x-table.column>Data</x-table.column>
+            <x-table.column>Descrição</x-table.column>
+            <x-table.column>Conta/Fatura</x-table.column>
+            <x-table.column>Tags</x-table.column>
+            <x-table.column align="right">Valor</x-table.column>
+        </x-table.header>
 
-        <x-ui.table.body>
+        <x-table.body>
             @foreach($virtualTransactions as $transaction)
-                <x-ui.table.row class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] opacity-60">
-                    <x-ui.table.cell>
+                <x-table.row class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] opacity-60">
+                    <x-table.cell>
                         <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         <div class="flex items-center gap-2">
                             <span class="font-semibold text-neutral-900 truncate">
                                 {{ $transaction->description }}
                             </span>
                             <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Projeção</span>
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         @if($transaction->relationLoaded('invoice') && $transaction->invoice && $transaction->invoice->relationLoaded('creditCard') && $transaction->invoice->creditCard)
                             <div class="flex items-center gap-1.5 text-neutral-600 truncate">
                                 <x-heroicon-o-credit-card class="size-4 shrink-0" />
@@ -52,9 +52,9 @@
                         @else
                             <span class="text-neutral-400">-</span>
                         @endif
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell>
+                    <x-table.cell>
                         @php
                             $tags = $transaction->relationLoaded('tags') ? $transaction->tags : collect();
                             $primary = $tags->where('pivot.is_primary', true)->first();
@@ -83,13 +83,13 @@
                                 </span>
                             @endif
                         </div>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
-                    <x-ui.table.cell align="right">
+                    <x-table.cell align="right">
                         <span class="font-bold tracking-tight text-base {{ $transaction->type === 'expense' ? 'text-red-600' : 'text-green-600' }}">
                             {{ $transaction->type === 'expense' ? '-' : '+' }} {{ formatCurrency($transaction->amount) }}
                         </span>
-                    </x-ui.table.cell>
+                    </x-table.cell>
 
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3 w-full">
@@ -107,10 +107,10 @@
                             </div>
                         </div>
                     </x-slot>
-                </x-ui.table.row>
+                </x-table.row>
             @endforeach
-        </x-ui.table.body>
-    </x-ui.table>
+        </x-table.body>
+    </x-table>
 
     @if($virtualTransactions->hasPages())
         <div class="mt-4">

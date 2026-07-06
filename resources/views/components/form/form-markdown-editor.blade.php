@@ -26,6 +26,6 @@
             rows="{{ $rows }}"
             placeholder="{{ $placeholder }}"
             class="{{ $baseClasses }} {{ $errorClasses }}">{{ $value }}</textarea>
-        <x-form.error name="{{ $name }}" />
+        <x-error name="{{ $name }}" />
     </div>
 </x-card>

@@ -17,7 +17,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         @forelse($accounts as $account)
             <x-card href="{{ route('financial.accounts.show', $account) }}" size="sm" class="flex items-center gap-4 group">
-                <x-ui.avatar :icon="$account->type->icon()" size="lg" />
+                <x-avatar :icon="$account->type->icon()" size="lg" />
                 
                 <div class="overflow-hidden flex-1 flex flex-col justify-center">
                     <div class="flex justify-between items-center gap-2">

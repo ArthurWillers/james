@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTransaction;
+use App\Services\FinanceDashboardService;
 use App\Services\ReportsService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,7 +20,7 @@ class ReportsController extends Controller
         $period = $request->input('period', 'this_month');
         $interval = $request->input('interval', 'auto');
         $accountId = $request->input('account');
-        
+
         $accountIds = null;
         if ($accountId) {
             if (str_starts_with($accountId, 'type:')) {
@@ -109,7 +110,7 @@ class ReportsController extends Controller
 
         $accountBalancesChart = [];
         if (empty($accountId) || str_starts_with($accountId, 'type:')) {
-            $accountBalancesChart = app(\App\Services\FinanceDashboardService::class)->getAccountBalancesChart($accountIds, true);
+            $accountBalancesChart = app(FinanceDashboardService::class)->getAccountBalancesChart($accountIds, true);
         }
 
         return view('finance.reports', [

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FinancialAccountType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -116,7 +117,7 @@ class FinancialCreditCardInvoice extends Model
     public function scopeWithoutInvestments(Builder $query): Builder
     {
         return $query->whereDoesntHave('creditCard.financialAccount', function ($q) {
-            $q->where('type', \App\Enums\FinancialAccountType::Investment);
+            $q->where('type', FinancialAccountType::Investment);
         });
     }
 

@@ -36,7 +36,7 @@ class ProcessFinancialRecurrences extends Command
             ->where('next_processing_date', '<=', $today)
             ->where(function ($query) use ($today) {
                 $query->whereNull('end_date')
-                      ->orWhere('end_date', '>=', $today);
+                    ->orWhere('end_date', '>=', $today);
             })
             ->get();
 
@@ -66,11 +66,13 @@ class ProcessFinancialRecurrences extends Command
     {
         if ($recurrence->frequency === 'monthly') {
             $monthsDiff = $recurrence->start_date->diffInMonths($lastProcessedDate) + 1;
+
             return $recurrence->start_date->copy()->addMonthsNoOverflow($monthsDiff);
         }
 
         if ($recurrence->frequency === 'yearly') {
             $yearsDiff = $recurrence->start_date->diffInYears($lastProcessedDate) + 1;
+
             return $recurrence->start_date->copy()->addYearsNoOverflow($yearsDiff);
         }
 
@@ -93,7 +95,7 @@ class ProcessFinancialRecurrences extends Command
                     'is_posted' => false, // Nasce não postada por padrão
                     'financial_recurrence_id' => $recurrence->id,
                 ]);
-            } else if ($recurrence->financial_account_id) {
+            } elseif ($recurrence->financial_account_id) {
                 // Process for Account
                 $transaction = $recurrence->financialAccount->transactions()->create([
                     'date' => $date,
@@ -107,7 +109,7 @@ class ProcessFinancialRecurrences extends Command
 
             // Sync tags se houver
             $tagIds = $recurrence->tags()->pluck('financial_tags.id')->toArray();
-            if (!empty($tagIds)) {
+            if (! empty($tagIds)) {
                 $syncData = [];
                 foreach ($tagIds as $tagId) {
                     $syncData[$tagId] = ['is_primary' => false]; // TODO: Could enhance to inherit primary tag
@@ -115,11 +117,9 @@ class ProcessFinancialRecurrences extends Command
                 $transaction->tags()->sync($syncData);
             }
 
-
-
             $this->info("Recorrência '{$recurrence->title}' processada para {$date->toDateString()}");
         } catch (\Exception $e) {
-            Log::error("Erro ao processar recorrência ID {$recurrence->id}: " . $e->getMessage());
+            Log::error("Erro ao processar recorrência ID {$recurrence->id}: ".$e->getMessage());
             $this->error("Erro ao processar recorrência '{$recurrence->title}'");
         }
     }

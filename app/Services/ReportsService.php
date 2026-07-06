@@ -114,33 +114,33 @@ class ReportsService
                 foreach ($t->items as $item) {
                     $itemAmount = $item->unit_price * $item->quantity;
                     $itemsSum += $itemAmount;
-                    
+
                     // Create a fake entry
-                    $entry = new \stdClass();
+                    $entry = new \stdClass;
                     $entry->type = $t->type;
                     $entry->amount = $itemAmount;
                     $entry->tags = $item->tags;
-                    
+
                     $flattened->push($entry);
                 }
-                
+
                 $remainingAmount = $t->amount - $itemsSum;
                 if ($remainingAmount > 0.01) {
-                    $entry = new \stdClass();
+                    $entry = new \stdClass;
                     $entry->type = $t->type;
                     $entry->amount = $remainingAmount;
                     $entry->tags = $t->tags;
                     $flattened->push($entry);
                 }
             } else {
-                $entry = new \stdClass();
+                $entry = new \stdClass;
                 $entry->type = $t->type;
                 $entry->amount = $t->amount;
                 $entry->tags = $t->tags;
                 $flattened->push($entry);
             }
         }
-        
+
         return $flattened;
     }
 

@@ -25,7 +25,7 @@
                     <!-- Period -->
                     <div class="flex flex-col w-full sm:w-48">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Período</label>
-                        <x-form.select name="period" x-model="period" @change="submitIfNotCustom()" class="w-full">
+                        <x-select name="period" x-model="period" @change="submitIfNotCustom()" class="w-full">
                             <option value="this_month" @selected($period === 'this_month')>Este Mês</option>
                             <option value="last_month" @selected($period === 'last_month')>Mês Passado</option>
                             <option value="last_3m" @selected($period === 'last_3m')>Últimos 3 Meses</option>
@@ -37,7 +37,7 @@
                             <option value="all_time" @selected($period === 'all_time')>Todo o Tempo</option>
                             <option value="until_today" @selected($period === 'until_today')>Até Hoje</option>
                             <option value="custom" @selected($period === 'custom')>Personalizado</option>
-                        </x-form.select>
+                        </x-select>
                     </div>
 
                     <!-- Custom Dates -->
@@ -61,19 +61,19 @@
                     <!-- Interval -->
                     <div class="flex flex-col w-full md:w-36">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Intervalo</label>
-                        <x-form.select name="interval" @change="submit()" class="w-full" :disabled="$isSingleDay">
+                        <x-select name="interval" @change="submit()" class="w-full" :disabled="$isSingleDay">
                             <option value="auto" @selected($interval === 'auto')>Automático</option>
                             <option value="daily" @selected($interval === 'daily')>Diário</option>
                             <option value="weekly" @selected($interval === 'weekly')>Semanal</option>
                             <option value="monthly" @selected($interval === 'monthly')>Mensal</option>
                             <option value="yearly" @selected($interval === 'yearly')>Anual</option>
-                        </x-form.select>
+                        </x-select>
                     </div>
 
                     <!-- Accounts -->
                     <div class="flex flex-col w-full md:w-56">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Contas</label>
-                        <x-form.select name="account" @change="submit()" class="w-full">
+                        <x-select name="account" @change="submit()" class="w-full">
                             <option value="">Todas as Contas</option>
                             
                             <optgroup label="Por Tipo">
@@ -87,7 +87,7 @@
                                     <option value="{{ $acc->id }}" @selected($accountId == $acc->id)>{{ $acc->name }}</option>
                                 @endforeach
                             </optgroup>
-                        </x-form.select>
+                        </x-select>
                     </div>
                 </div>
                 </div>

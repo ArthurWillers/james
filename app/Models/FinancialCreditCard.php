@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 #[Fillable([
     'name',
@@ -83,8 +84,8 @@ class FinancialCreditCard extends Model
                     WHERE financial_credit_card_invoice_id = financial_credit_card_invoices.id
                 ) - amount_paid)
             ), 0)")
-            ->whereColumn('financial_credit_card_id', 'financial_credit_cards.id')
-            ->whereNull('paid_at')
+                ->whereColumn('financial_credit_card_id', 'financial_credit_cards.id')
+                ->whereNull('paid_at'),
         ]);
     }
 
@@ -128,10 +129,10 @@ class FinancialCreditCard extends Model
         float $totalAmount,
         int $installments,
         string $description
-    ): \Illuminate\Support\Collection {
+    ): Collection {
         $firstInvoice = FinancialCreditCardInvoice::resolveForDate($this, $purchaseDate);
         $installmentAmount = round($totalAmount / $installments, 2);
-        
+
         $transactions = collect();
 
         for ($i = 1; $i <= $installments; $i++) {
@@ -160,7 +161,7 @@ class FinancialCreditCard extends Model
                 'installment_total' => $installments,
             ]));
         }
-        
+
         return $transactions;
     }
 }

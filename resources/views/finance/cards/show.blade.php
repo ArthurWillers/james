@@ -77,7 +77,7 @@
                     </div>
                 </div>
                 
-                <x-ui.progress :value="$usedLimit" :max="$card->credit_limit" :showValue="false" class="h-3" />
+                <x-progress :value="$usedLimit" :max="$card->credit_limit" :showValue="false" class="h-3" />
                 <div class="mt-2 text-xs font-medium text-neutral-500">
                     Usado: {{ formatCurrency($usedLimit) }} ({{ number_format($percentage, 1, ',', '.') }}%)
                 </div>

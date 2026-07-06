@@ -10,14 +10,14 @@
     'bag' => 'default',
 ])
 
-<x-form.field>
+<x-field>
     @if ($label)
-        <x-form.label :for="$name" class="{{ $labelClass }}">
+        <x-label :for="$name" class="{{ $labelClass }}">
             {{ $label }}
-        </x-form.label>
+        </x-label>
     @endif
 
-    <x-form.input
+    <x-input
         :name="$name"
         :type="$type"
         :value="$value"
@@ -28,5 +28,5 @@
         {{ $attributes }}
     />
 
-    <x-form.error :name="$name" :bag="$bag" />
-</x-form.field>
+    <x-error :name="$name" :bag="$bag" />
+</x-field>
