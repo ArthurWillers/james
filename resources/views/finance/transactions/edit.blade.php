@@ -5,7 +5,7 @@
                 'id' => $i->id,
                 'description' => $i->description,
                 'quantity' => $i->quantity,
-                'unit_price' => number_format($i->unit_price, 2, ',', ''),
+                'unit_price' => number_format($i->unit_price, 2, '.', ''),
                 'tags' => $i->tags->pluck('id')->toArray(),
                 'primary_tag_id' => $i->tags->firstWhere('pivot.is_primary', true)?->id,
             ];
@@ -18,7 +18,7 @@
     <form action="{{ route('financial.transactions.update', $transaction->id) }}" method="POST" id="transaction-form" x-data='{
         type: "{{ old('type', $transaction->type) }}",
         targetType: "{{ old('targetType', $transaction->invoice ? 'card' : 'account') }}",
-        amount: "{{ old('amount', number_format(abs($transaction->amount), 2, ',', '')) }}",
+        amount: "{{ old('amount', number_format(abs($transaction->amount), 2, '.', '')) }}",
         date: "{{ old('date', $transaction->date->format('Y-m-d')) }}",
         items: {!! $itemsJson !!},
         addItem() {
@@ -40,7 +40,7 @@
             let options = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
             return value.toLocaleString("pt-BR", options);
         }
-    }' x-effect="if (items.length > 0) amount = formatMoney(itemsTotal); if (date) { let d = new Date(date + 'T00:00:00'); let t = new Date(); t.setHours(0,0,0,0); if (d > t) $dispatch('uncheck-posted-edit') }">
+    }' x-effect="if (items.length > 0) amount = itemsTotal.toFixed(2); if (date) { let d = new Date(date + 'T00:00:00'); let t = new Date(); t.setHours(0,0,0,0); if (d > t) $dispatch('uncheck-posted-edit') }">
         @csrf
         @method('PUT')
         <input type="hidden" name="targetType" x-model="targetType">

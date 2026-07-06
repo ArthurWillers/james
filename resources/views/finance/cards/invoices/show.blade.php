@@ -138,8 +138,7 @@
                         
                         <x-form-input 
                             name="amount" 
-                            type="number" 
-                            step="0.01" 
+                            :currency="true" 
                             label="Valor do Pagamento" 
                             value="{{ number_format($remaining, 2, '.', '') }}" 
                             required 
@@ -155,8 +154,7 @@
                         
                         <x-form-input 
                             name="interest_amount" 
-                            type="number" 
-                            step="0.01" 
+                            :currency="true" 
                             label="Juros e Multas (Opcional)" 
                             placeholder="0.00" 
                         />

@@ -7,6 +7,7 @@
     'viewable' => false,
     'labelClass' => '',
     'numeric' => false,
+    'currency' => false,
     'bag' => 'default',
 ])
 
@@ -24,6 +25,7 @@
         :placeholder="$placeholder"
         :viewable="$viewable"
         :numeric="$numeric"
+        :currency="$currency"
         :bag="$bag"
         {{ $attributes }}
     />

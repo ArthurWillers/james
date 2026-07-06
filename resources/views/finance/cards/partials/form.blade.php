@@ -16,7 +16,7 @@
                     </x-form-select>
                 </div>
                 <div>
-                    <x-form-input name="credit_limit" type="number" step="0.01" label="Limite (Opcional)" value="{{ old('credit_limit', isset($card) && $card->credit_limit ? (float) $card->credit_limit : '') }}" placeholder="Ex: 5000.00" />
+                    <x-form-input name="credit_limit" :currency="true" label="Limite (Opcional)" value="{{ old('credit_limit', isset($card) && $card->credit_limit ? (float) $card->credit_limit : '') }}" placeholder="Ex: 5000.00" />
                 </div>
             </div>
         </x-card>

@@ -54,7 +54,10 @@ it('calculates cash flow projections', function () {
 });
 
 it('returns account balances chart data', function () {
-    $account = FinancialAccount::factory()->create(['name' => 'Main Account']);
+    $account = FinancialAccount::factory()->create([
+        'name' => 'Main Account',
+        'type' => FinancialAccountType::Checking,
+    ]);
 
     FinancialTransaction::factory()->create([
         'financial_account_id' => $account->id,

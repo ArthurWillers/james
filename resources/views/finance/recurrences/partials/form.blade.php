@@ -18,7 +18,7 @@
                         <x-form-input 
                             name="amount" 
                             label="Valor (R$)" 
-                            :numeric="true"
+                            :currency="true"
                             placeholder="0,00" 
                             value="{{ old('amount', isset($recurrence) ? number_format($recurrence->amount, 2, '.', '') : '') }}" 
                             required 
