@@ -1,12 +1,8 @@
 <?php
 
-use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Schema;
-
-uses(DatabaseTransactions::class);
+use Tests\Feature\Stubs\SearchTestModel;
 
 beforeEach(function () {
     Schema::create('search_test', function (Blueprint $table) {
@@ -99,14 +95,3 @@ describe('similarity ordering', function () {
         ]);
     });
 });
-
-class SearchTestModel extends Model
-{
-    use Searchable;
-
-    protected $table = 'search_test';
-
-    protected $fillable = ['name', 'notes'];
-
-    public $timestamps = false;
-}

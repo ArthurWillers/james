@@ -20,7 +20,7 @@ class FinancialCreditCardController extends Controller
         $cards = FinancialCreditCard::query()
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name']))
             ->withUsedLimit()
-            ->with('financialAccount')
+            ->with(['financialAccount', 'invoices' => fn ($q) => $q->withTotalAmount()])
             ->latest()
             ->paginate(18)
             ->withQueryString();
