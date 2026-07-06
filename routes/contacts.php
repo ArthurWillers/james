@@ -10,6 +10,9 @@ Route::prefix('contacts')->name('contacts.')->group(function () {
     Route::get('/categories', [ContactController::class, 'categories'])->name('categories');
     Route::get('/create', [ContactController::class, 'create'])->name('create');
     Route::post('/', [ContactController::class, 'store'])->name('store');
+
+    // Groups
+    Route::resource('groups', ContactGroupController::class)->except(['show']);
     Route::get('/{contact}', [ContactController::class, 'show'])->name('show');
     Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit');
     Route::put('/{contact}', [ContactController::class, 'update'])->name('update');
@@ -20,5 +23,3 @@ Route::prefix('contacts')->name('contacts.')->group(function () {
     Route::get('/{contact}/avatar', [ContactController::class, 'avatar'])->name('avatar')->withTrashed();
     Route::delete('/{contact}/avatar', [ContactController::class, 'destroyAvatar'])->name('destroy-avatar');
 });
-
-Route::resource('contact-groups', ContactGroupController::class)->except(['show', 'create', 'edit']);

@@ -129,7 +129,7 @@
             <p class="text-sm text-neutral-400 italic">Não pertence a nenhum grupo.</p>
         @endif
 
-        <x-modal name="sync-groups" title="Grupos de {{ $contact->name }}">
+        <x-modal name="sync-groups" title="Grupos de {{ $contact->name }}" confirmVariant="">
             <form action="{{ route('contacts.groups.sync', $contact) }}" method="POST">
                 @csrf
                 <div class="space-y-2 mb-6 max-h-[400px] overflow-y-auto p-1">
@@ -141,11 +141,17 @@
                             <span class="text-sm font-medium text-neutral-700">{{ $group->name }}</span>
                         </label>
                     @empty
-                        <p class="text-sm text-neutral-500 text-center py-4">Nenhum grupo criado ainda.</p>
+                        <div class="flex flex-col items-center justify-center py-6 gap-3">
+                            <p class="text-sm text-neutral-500 text-center">Nenhum grupo criado ainda.</p>
+                            <x-button color="outline" href="{{ route('contacts.groups.index') }}" size="sm">
+                                <x-heroicon-o-plus class="size-4" />
+                                Criar Grupo
+                            </x-button>
+                        </div>
                     @endforelse
                 </div>
                 <div class="flex justify-end gap-2">
-                    <x-button type="submit" color="accent">Salvar</x-button>
+                    <x-button type="submit">Salvar</x-button>
                 </div>
             </form>
         </x-modal>

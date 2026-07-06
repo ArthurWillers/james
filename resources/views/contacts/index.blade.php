@@ -1,7 +1,11 @@
 <x-layouts.app>
     <x-page-header title="Contatos" :action="route('contacts.create')" actionText="Novo Contato" icon="heroicon-o-plus">
+        <x-button color="outline" href="{{ route('contacts.groups.index') }}" class="bg-white">
+            <x-heroicon-o-tag class="size-5!" />
+            Grupos
+        </x-button>
         @if ($hasTrashed)
-            <x-button color="outline" href="{{ route('contacts.trashed') }}">
+            <x-button color="outline" href="{{ route('contacts.trashed') }}" class="bg-white">
                 <x-heroicon-o-trash class="size-5!" />
                 Lixeira
             </x-button>
