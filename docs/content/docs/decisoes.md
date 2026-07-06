@@ -229,3 +229,23 @@ Adoção do **Apache ECharts** como biblioteca padrão para visualização de da
 
 **Observações:**
 O ECharts suporta nativamente o Diagrama de Sankey (crucial para o fluxo de caixa), possui renderização ultrarrápida via Canvas e SVG, e sua integração é feita via JavaScript Vanilla (o que se alinha perfeitamente com a stack do projeto em Laravel + Alpine.js). Ele será utilizado para todos os gráficos analíticos complexos do painel de finanças.
+
+## 015 — Separação de Contexto de Dados em Relatórios (Drill-down)
+
+**Data:** 06 de Julho de 2026
+
+**Contexto:**
+Na implementação do recurso de filtro de tags (Drill-down) na tela de Relatórios Financeiros, precisávamos que a tabela de "Transações do Período" exibisse individualmente as compras de cartão de crédito (para poder filtrá-las por tag), enquanto os gráficos da mesma página (como o Sankey e a Evolução de Saldo) precisavam visualizar a fatura fechada como uma única despesa agregada, evitando distorções de fluxo de caixa.
+
+**Decisão:**
+Optamos por manter uma separação clara entre as coleções de dados: uma exclusamente agregada usada pelos gráficos (`flattenTransactionsForTags` agrupando a fatura) e outra exclusiva consumida pela tabela (`tableTransactions`), que descompacta iterativamente a fatura preservando a estrutura dos models subjacentes. Essa divisão permite granularidade avançada na UI (como exibir as faturas descompactadas em linhas) sem ferir a integridade agregada do fluxo financeiro visual.
+
+## 016 — Regime de Competência para Compras no Cartão
+
+**Data:** 06 de Julho de 2026
+
+**Contexto:**
+Na tela principal (Dashboard), no gráfico "Top Despesas (30 Dias)", as compras feitas em cartão de crédito não estavam sendo registradas caso a fatura ainda estivesse aberta ou pendente, já que a busca padronizava olhar apenas para despesas efetivadas (`is_posted = true`).
+
+**Decisão:**
+Adotamos explicitamente o **Regime de Competência** para a visualização de gastos em dashboards de análise. Foi alterada a consulta para abranger despesas efetivadas ou qualquer compra pertencente a um cartão de crédito (`financial_credit_card_invoice_id IS NOT NULL`). Dessa forma, compras em crédito refletem na inteligência de gastos do usuário na exata data em que foram realizadas, garantindo maior fidelidade ao hábito de consumo do período atual, sem a defasagem temporal de se aguardar o pagamento da fatura.
