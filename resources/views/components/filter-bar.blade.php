@@ -12,7 +12,7 @@
     $hasFilters = collect($filters)->contains(fn ($filter) => request()->filled($filter));
 @endphp
 
-<form {{ $attributes->merge(['action' => $action, 'method' => 'GET', 'class' => 'flex flex-col sm:flex-row items-center gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40 py-4']) }}
+<form {{ $attributes->merge(['action' => $action, 'method' => 'GET', 'class' => 'flex flex-col sm:flex-row items-center gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40']) }}
     x-data="{ loading: false }" @submit="loading = true">
     
     @if($showSearch)
