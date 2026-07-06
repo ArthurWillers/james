@@ -348,7 +348,7 @@ class FinanceDashboardService
         $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
             ->where(function ($q) {
                 $q->where('is_posted', true)
-                  ->orWhereNotNull('financial_credit_card_invoice_id');
+                    ->orWhereNotNull('financial_credit_card_invoice_id');
             })
             ->expenses()
             ->withoutTransfers()
