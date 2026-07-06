@@ -105,7 +105,7 @@
 
         <!-- Sankey Chart -->
         <x-card class="p-6 mb-6">
-            <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa (Origem e Destino)</h3>
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa</h3>
             <div class="relative w-full h-[400px]">
                 <div x-ref="chartSankey" class="w-full h-full"></div>
             </div>
