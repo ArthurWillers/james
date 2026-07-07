@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -81,6 +82,14 @@ class Contact extends Model implements HasMedia
         $this->addMedia($file)
             ->usingFileName(Str::random(40).'.webp')
             ->toMediaCollection('avatar');
+    }
+
+    /**
+     * Get the groups the contact belongs to.
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(ContactGroup::class);
     }
 
     /**

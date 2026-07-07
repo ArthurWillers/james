@@ -110,6 +110,54 @@
 
 
     <x-card class="mb-4 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest shrink-0">Grupos</h3>
+            <x-modal.trigger name="sync-groups">
+                <x-button type="button" color="outline" class="bg-white">
+                    Gerenciar
+                </x-button>
+            </x-modal.trigger>
+        </div>
+        
+        @if($contact->groups->isNotEmpty())
+            <div class="flex flex-wrap gap-2">
+                @foreach($contact->groups as $group)
+                    <x-badge color="accent">{{ $group->name }}</x-badge>
+                @endforeach
+            </div>
+        @else
+            <p class="text-sm text-neutral-400 italic">Não pertence a nenhum grupo.</p>
+        @endif
+
+        <x-modal name="sync-groups" title="Grupos de {{ $contact->name }}" confirmVariant="">
+            <form action="{{ route('contacts.groups.sync', $contact) }}" method="POST">
+                @csrf
+                <div class="space-y-2 mb-6 max-h-[400px] overflow-y-auto p-1">
+                    @forelse($allGroups as $group)
+                        <label class="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors">
+                            <input type="checkbox" name="group_ids[]" value="{{ $group->id }}" 
+                                @checked($contact->groups->contains($group->id))
+                                class="rounded border-neutral-300 text-accent focus:ring-accent">
+                            <span class="text-sm font-medium text-neutral-700">{{ $group->name }}</span>
+                        </label>
+                    @empty
+                        <div class="flex flex-col items-center justify-center py-6 gap-3">
+                            <p class="text-sm text-neutral-500 text-center">Nenhum grupo criado ainda.</p>
+                            <x-button color="outline" href="{{ route('contacts.groups.index') }}" size="sm">
+                                <x-heroicon-o-plus class="size-4" />
+                                Criar Grupo
+                            </x-button>
+                        </div>
+                    @endforelse
+                </div>
+                <div class="flex justify-end gap-2">
+                    <x-button type="submit">Salvar</x-button>
+                </div>
+            </form>
+        </x-modal>
+    </x-card>
+
+    <x-card class="mb-4 p-6">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Notas</h3>
         @if($contact->notes)
             <div class="markdown-content text-[15px] text-neutral-700">

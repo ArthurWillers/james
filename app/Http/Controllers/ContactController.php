@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
+use App\Models\ContactGroup;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -19,15 +21,21 @@ class ContactController extends Controller
             ->select(['id', 'name', 'relationship_category', 'created_at'])
             ->with('media')
             ->when(request('category'), fn ($query, $category) => $query->where('relationship_category', $category))
+            ->when(request('group_id'), fn ($query, $groupId) => $query->whereHas('groups', fn ($q) => $q->where('contact_groups.id', $groupId)))
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name', 'notes']))
             ->latest()
             ->paginate(18)
             ->withQueryString();
 
-        $categories = Contact::relationshipCategories();
+        $categories = Contact::whereNotNull('relationship_category')
+            ->distinct()
+            ->pluck('relationship_category');
+
+        $groups = ContactGroup::orderBy('name')->get();
+
         $hasTrashed = Contact::onlyTrashed()->exists();
 
-        return view('contacts.index', compact('contacts', 'categories', 'hasTrashed'));
+        return view('contacts.index', compact('contacts', 'categories', 'groups', 'hasTrashed'));
     }
 
     /**
@@ -66,7 +74,9 @@ class ContactController extends Controller
      */
     public function show(Contact $contact): View
     {
-        return view('contacts.show', compact('contact'));
+        $allGroups = ContactGroup::orderBy('name')->get();
+
+        return view('contacts.show', compact('contact', 'allGroups'));
     }
 
     /**
@@ -98,6 +108,16 @@ class ContactController extends Controller
         return redirect()
             ->route('contacts.show', $contact)
             ->with('success', 'Contato atualizado com sucesso.');
+    }
+
+    /**
+     * Sync the groups for a contact.
+     */
+    public function syncGroups(Request $request, Contact $contact): RedirectResponse
+    {
+        $contact->groups()->sync($request->input('group_ids', []));
+
+        return back()->with('success', 'Grupos atualizados com sucesso.');
     }
 
     /**
