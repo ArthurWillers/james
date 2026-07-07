@@ -26,6 +26,16 @@ class ContactGroupController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(ContactGroup $group): View
+    {
+        $group->load(['contacts.media']);
+
+        return view('contacts.groups.show', compact('group'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create(): View
@@ -42,12 +52,14 @@ class ContactGroupController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:contact_groups,name'],
+            'notes' => ['nullable', 'string'],
             'contact_ids' => ['nullable', 'array'],
             'contact_ids.*' => ['exists:contacts,id'],
         ]);
 
         $group = ContactGroup::create([
             'name' => $validated['name'],
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         if (isset($validated['contact_ids'])) {
@@ -75,12 +87,14 @@ class ContactGroupController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:contact_groups,name,'.$group->id],
+            'notes' => ['nullable', 'string'],
             'contact_ids' => ['nullable', 'array'],
             'contact_ids.*' => ['exists:contacts,id'],
         ]);
 
         $group->update([
             'name' => $validated['name'],
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         $group->contacts()->sync($validated['contact_ids'] ?? []);
@@ -95,6 +109,6 @@ class ContactGroupController extends Controller
     {
         $group->delete();
 
-        return back()->with('success', 'Grupo excluído com sucesso.');
+        return redirect()->route('contacts.groups.index')->with('success', 'Grupo excluído com sucesso.');
     }
 }

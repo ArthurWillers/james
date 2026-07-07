@@ -21,15 +21,21 @@ class ContactController extends Controller
             ->select(['id', 'name', 'relationship_category', 'created_at'])
             ->with('media')
             ->when(request('category'), fn ($query, $category) => $query->where('relationship_category', $category))
+            ->when(request('group_id'), fn ($query, $groupId) => $query->whereHas('groups', fn ($q) => $q->where('contact_groups.id', $groupId)))
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name', 'notes']))
             ->latest()
             ->paginate(18)
             ->withQueryString();
 
-        $categories = Contact::relationshipCategories();
+        $categories = Contact::whereNotNull('relationship_category')
+            ->distinct()
+            ->pluck('relationship_category');
+
+        $groups = ContactGroup::orderBy('name')->get();
+
         $hasTrashed = Contact::onlyTrashed()->exists();
 
-        return view('contacts.index', compact('contacts', 'categories', 'hasTrashed'));
+        return view('contacts.index', compact('contacts', 'categories', 'groups', 'hasTrashed'));
     }
 
     /**

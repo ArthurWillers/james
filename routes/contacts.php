@@ -12,7 +12,7 @@ Route::prefix('contacts')->name('contacts.')->group(function () {
     Route::post('/', [ContactController::class, 'store'])->name('store');
 
     // Groups
-    Route::resource('groups', ContactGroupController::class)->except(['show']);
+    Route::resource('groups', ContactGroupController::class);
     Route::get('/{contact}', [ContactController::class, 'show'])->name('show');
     Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit');
     Route::put('/{contact}', [ContactController::class, 'update'])->name('update');

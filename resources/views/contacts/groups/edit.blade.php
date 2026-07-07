@@ -3,6 +3,7 @@
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('contacts.index') }}">Contatos</x-breadcrumbs.item>
             <x-breadcrumbs.item href="{{ route('contacts.groups.index') }}">Grupos de Contato</x-breadcrumbs.item>
+            <x-breadcrumbs.item href="{{ route('contacts.groups.show', $group) }}">{{ $group->name }}</x-breadcrumbs.item>
             <x-breadcrumbs.item>Editar Grupo</x-breadcrumbs.item>
         </x-breadcrumbs>
     </div>
@@ -28,6 +29,15 @@
                 <x-form-input name="name" label="Nome do Grupo" value="{{ old('name', $group->name) }}" required />
             </div>
 
+            <div class="mb-6">
+                <x-form-markdown-editor
+                    name="notes"
+                    label="Notas"
+                    placeholder="Anotações sobre o grupo..."
+                    :value="old('notes', $group->notes)"
+                />
+            </div>
+
             <div x-data="{
                 search: '',
                 contacts: {{ Js::from($allContacts) }},
@@ -47,28 +57,22 @@
                     <input type="text" x-model="search" placeholder="Buscar contatos pelo nome..." class="block w-full rounded-xl border-0 py-2.5 pl-10 pr-3 text-neutral-900 ring-1 ring-inset ring-neutral-300 placeholder:text-neutral-400 focus:ring-2 focus:ring-inset focus:ring-accent sm:text-sm sm:leading-6 transition-colors">
                 </div>
 
-                <div class="border border-neutral-200 rounded-xl max-h-[400px] overflow-y-auto divide-y divide-neutral-100 bg-neutral-50/30">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto p-1">
                     <template x-for="contact in filteredContacts" :key="contact.id">
-                        <label class="flex items-center gap-4 p-4 hover:bg-white cursor-pointer transition-colors" :class="{'bg-accent/5': selectedIds.includes(contact.id)}">
-                            <input type="checkbox" name="contact_ids[]" :value="contact.id" x-model="selectedIds" class="rounded border-neutral-300 text-accent focus:ring-accent size-4">
-                            
+                        <x-form.form-checkbox name="contact_ids[]" ::value="contact.id" id="" x-model="selectedIds" class="w-full p-3 rounded-xl border border-neutral-200 hover:border-accent hover:bg-neutral-50 transition-colors" x-bind:class="{'bg-accent/5 border-accent': selectedIds.includes(String(contact.id)) || selectedIds.includes(contact.id)}">
                             <div class="flex items-center gap-3">
-                                <div class="shrink-0">
-                                    <template x-if="contact.avatar">
-                                        <img :src="contact.avatar" class="size-10 rounded-full object-cover border border-neutral-200">
-                                    </template>
-                                    <template x-if="!contact.avatar">
-                                        <div class="size-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500 font-semibold text-sm">
-                                            <span x-text="contact.name.substring(0, 2).toUpperCase()"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                                <span class="text-sm font-medium text-neutral-700" x-text="contact.name"></span>
+                                <template x-if="contact.avatar">
+                                    <img :src="contact.avatar" class="shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] w-10 h-10 text-sm">
+                                </template>
+                                <template x-if="!contact.avatar">
+                                    <div class="shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 w-10 h-10 text-sm" x-text="contact.name.substring(0, 2).toUpperCase()"></div>
+                                </template>
+                                <span class="text-sm font-medium text-neutral-700 truncate" x-text="contact.name"></span>
                             </div>
-                        </label>
+                        </x-form.form-checkbox>
                     </template>
                     
-                    <div x-show="filteredContacts.length === 0" class="p-8 text-center text-neutral-500">
+                    <div x-show="filteredContacts.length === 0" class="col-span-full p-8 text-center text-neutral-500 bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
                         Nenhum contato encontrado.
                     </div>
                 </div>

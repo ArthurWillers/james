@@ -19,62 +19,33 @@
         :filters="['search']">
     </x-filter-bar>
 
-    <x-ui.table.index>
-        <x-ui.table.header>
-            <x-ui.table.row>
-                <x-ui.table.column>Nome do Grupo</x-ui.table.column>
-                <x-ui.table.column>Membros</x-ui.table.column>
-                <x-ui.table.column class="text-right">Ações</x-ui.table.column>
-            </x-ui.table.row>
-        </x-ui.table.header>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @forelse($groups as $group)
+            <x-card href="{{ route('contacts.groups.show', $group) }}" size="sm" class="flex items-center gap-4 relative group">
+                <div class="shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 w-12 h-12 text-lg">
+                    <x-heroicon-o-tag class="w-[65%] h-[65%] text-neutral-400" />
+                </div>
+                
+                <div class="overflow-hidden flex-1">
+                    <h3 class="font-semibold text-neutral-900 truncate">{{ $group->name }}</h3>
+                    <div class="mt-1 text-sm text-neutral-500">
+                        {{ $group->contacts_count }} {{ $group->contacts_count === 1 ? 'membro' : 'membros' }}
+                    </div>
+                </div>
 
-        <x-ui.table.body>
-            @forelse($groups as $group)
-                <x-ui.table.row>
-                    <x-ui.table.cell class="font-medium text-neutral-900">
-                        {{ $group->name }}
-                    </x-ui.table.cell>
-                    <x-ui.table.cell>
-                        <x-badge color="accent" size="sm">
-                            <x-heroicon-o-users class="size-3 mr-1" />
-                            {{ $group->contacts_count }} membros
-                        </x-badge>
-                    </x-ui.table.cell>
-                    <x-ui.table.cell class="text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <x-button color="outline" size="sm" href="{{ route('contacts.groups.edit', $group) }}" class="bg-white">
-                                Editar
-                            </x-button>
-
-                            <x-modal.trigger name="delete-group-{{ $group->id }}">
-                                <x-button type="button" color="danger-outline" size="sm">
-                                    Excluir
-                                </x-button>
-                            </x-modal.trigger>
-                        </div>
-
-                        <!-- Delete Modal -->
-                        <x-modal name="delete-group-{{ $group->id }}" title="Excluir Grupo" message="Tem certeza que deseja excluir o grupo '{{ $group->name }}'? Os contatos não serão excluídos." confirmVariant="danger">
-                            <form action="{{ route('contacts.groups.destroy', $group) }}" method="POST" class="m-0">
-                                @csrf
-                                @method('DELETE')
-                                <x-button type="submit" color="red" class="w-full sm:w-auto">Excluir</x-button>
-                            </form>
-                        </x-modal>
-                    </x-ui.table.cell>
-                </x-ui.table.row>
-            @empty
-                <x-ui.table.row>
-                    <x-ui.table.cell colspan="3">
-                        <div class="py-8">
-                            <x-empty-state 
-                                icon="heroicon-o-tag" 
-                                message="Nenhum grupo encontrado." 
-                            />
-                        </div>
-                    </x-ui.table.cell>
-                </x-ui.table.row>
-            @endforelse
-        </x-ui.table.body>
-    </x-ui.table.index>
+                <div class="text-neutral-400 group-hover:text-accent transition-colors">
+                    <x-heroicon-o-chevron-right class="size-5" />
+                </div>
+            </x-card>
+        @empty
+            <div class="col-span-full bg-white rounded-xl border border-neutral-200">
+                <x-empty-state 
+                    icon="heroicon-o-tag" 
+                    message="Nenhum grupo encontrado." 
+                    actionText="Novo Grupo" 
+                    :actionRoute="route('contacts.groups.create')" 
+                />
+            </div>
+        @endforelse
+    </div>
 </x-layouts.app>
