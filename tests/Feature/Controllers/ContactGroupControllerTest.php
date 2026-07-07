@@ -71,10 +71,10 @@ it('can display the edit screen', function () {
 
 it('can update a contact group and sync contacts', function () {
     $group = ContactGroup::factory()->create(['name' => 'Old Name']);
-    
+
     $contact1 = Contact::factory()->create();
     $contact2 = Contact::factory()->create();
-    
+
     // Attach contact1 initially
     $group->contacts()->attach($contact1);
 

@@ -6,7 +6,7 @@ use App\Models\ContactGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContactGroup>
+ * @extends Factory<ContactGroup>
  */
 class ContactGroupFactory extends Factory
 {
