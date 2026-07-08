@@ -62,7 +62,7 @@
                         <x-form.form-checkbox name="contact_ids[]" ::value="contact.id" id="" x-model="selectedIds" class="w-full p-3 rounded-xl border border-neutral-200 hover:border-accent hover:bg-neutral-50 transition-colors" x-bind:class="{'bg-accent/5 border-accent': selectedIds.includes(String(contact.id)) || selectedIds.includes(contact.id)}">
                             <div class="flex items-center gap-3">
                                 <template x-if="contact.avatar">
-                                    <img :src="contact.avatar" class="shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] w-10 h-10 text-sm">
+                                    <img :src="contact.avatar" class="shrink-0 border rounded-md object-cover bg-neutral-200 border-accent w-10 h-10 text-sm">
                                 </template>
                                 <template x-if="!contact.avatar">
                                     <div class="shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 w-10 h-10 text-sm" x-text="contact.name.substring(0, 2).toUpperCase()"></div>
