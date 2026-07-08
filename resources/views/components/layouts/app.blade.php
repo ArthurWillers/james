@@ -22,6 +22,11 @@
             <x-heroicon-o-banknotes class="w-4 h-4" />
             Finanças
         </x-nav-link>
+
+        <x-nav-link :href="route('settlements.index')" :current="request()->routeIs('settlements.*')">
+            <x-heroicon-o-scale class="w-4 h-4" />
+            Acertos
+        </x-nav-link>
     </x-sidebar>
 
     <main class="lg:ml-64 p-6 lg:pt-8 lg:px-8 lg:pb-0">
