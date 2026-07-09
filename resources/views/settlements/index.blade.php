@@ -28,21 +28,70 @@
 
     <div x-data="{
         search: '',
+        isSearching: false,
+        limit: 102,
         contacts: {{ Js::from($contacts) }},
         selectedIds: [],
-        get filteredContacts() {
-            return this.contacts.filter(c => {
-                return c.name.toLowerCase().includes(this.search.toLowerCase());
+        visibleMap: {},
+        hasMorePages: false,
+        isEmpty: false,
+        
+        updateVisibility() {
+            const map = {};
+            let currentLimit = this.limit;
+            const searchLower = this.search.toLowerCase();
+            
+            const filtered = this.contacts.filter(c => c.name.toLowerCase().includes(searchLower));
+            
+            if (this.selectedIds.length > 0) {
+                for (let i = 0; i < filtered.length; i++) {
+                    if (this.selectedIds.includes(String(filtered[i].id))) {
+                        if (i >= currentLimit) currentLimit = i + 1;
+                    }
+                }
+            }
+            
+            if (currentLimit % 3 !== 0) currentLimit += 3 - (currentLimit % 3);
+            
+            for (let i = 0; i < filtered.length; i++) {
+                if (i < currentLimit) {
+                    map[filtered[i].id] = true;
+                }
+            }
+            
+            this.visibleMap = map;
+            this.hasMorePages = filtered.length > currentLimit;
+            this.isEmpty = filtered.length === 0;
+        },
+        
+        init() {
+            this.updateVisibility();
+            this.$watch('search', () => {
+                this.limit = 102;
+                this.updateVisibility();
+            });
+            this.$watch('selectedIds', () => {
+                this.updateVisibility();
+            });
+            this.$watch('limit', () => {
+                this.updateVisibility();
             });
         },
+        
+        loadMore() {
+            this.limit += 102;
+        },
+        
         selectGroup(groupId) {
             if (!groupId) return;
+            
+            this.limit = 102;
             const id = Number(groupId);
             
-            // Filtra os contatos visíveis que pertencem ao grupo
-            const groupContacts = this.filteredContacts.filter(c => c.group_ids.includes(id));
+            const searchLower = this.search.toLowerCase();
+            const filtered = this.contacts.filter(c => c.name.toLowerCase().includes(searchLower));
+            const groupContacts = filtered.filter(c => c.group_ids.includes(id));
             
-            // Adiciona aos selecionados
             groupContacts.forEach(c => {
                 const strId = String(c.id);
                 if (!this.selectedIds.includes(strId)) {
@@ -50,13 +99,18 @@
                 }
             });
         },
+        
         toggleAll() {
-            if (this.selectedIds.length === this.filteredContacts.length && this.filteredContacts.length > 0) {
+            const searchLower = this.search.toLowerCase();
+            const filtered = this.contacts.filter(c => c.name.toLowerCase().includes(searchLower));
+            
+            if (this.selectedIds.length === filtered.length && filtered.length > 0) {
                 this.selectedIds = [];
             } else {
-                this.selectedIds = this.filteredContacts.map(c => String(c.id));
+                this.selectedIds = filtered.map(c => String(c.id));
             }
         },
+        
         archiveSelected() {
             if (this.selectedIds.length === 0) return;
             document.getElementById('archive-form-input').value = JSON.stringify(this.selectedIds);
@@ -103,9 +157,9 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-32">
             @foreach($contacts as $contact)
-                <div x-show="filteredContacts.some(c => c.id == {{ $contact->id }})" 
+                <div x-show="visibleMap[{{ $contact->id }}]" 
                      @click="if(!$event.target.closest('a') && !$event.target.closest('label')) document.getElementById('chk_contact_{{ $contact->id }}').click()"
                      class="flex items-center gap-4 p-4 rounded-2xl border border-neutral-200 bg-white hover:border-accent hover:shadow-sm transition-all cursor-pointer" 
                      x-bind:class="{'ring-2 ring-accent border-transparent': selectedIds.includes(String({{ $contact->id }}))}">
@@ -138,13 +192,20 @@
                 </div>
             @endforeach
             
-            <div x-show="filteredContacts.length === 0" x-cloak class="col-span-full">
+            <div x-show="isEmpty" x-cloak class="col-span-full">
                 <x-ui.empty-state 
                     icon="heroicon-o-users" 
                     message="Nenhum contato encontrado."
                     action-text="Novo Contato"
                     :action-route="route('contacts.create')"
                 />
+            </div>
+            
+            <div x-show="hasMorePages" x-cloak class="col-span-full flex justify-center mt-4">
+                <x-button type="button" @click="loadMore()" color="outline" class="bg-white">
+                    <x-heroicon-o-arrow-down class="size-4" />
+                    Carregar Mais
+                </x-button>
             </div>
         </div>
 

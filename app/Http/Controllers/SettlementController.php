@@ -19,6 +19,11 @@ class SettlementController extends Controller
     {
         $showArchived = $request->boolean('archived');
 
+        $toReceiveSql = "COALESCE((SELECT SUM(amount) FROM settlements WHERE contact_id = contacts.id AND type IN ('" . SettlementType::TheyOwe->value . "', '" . SettlementType::IPaid->value . "') AND deleted_at IS NULL), 0)";
+        $toPaySql = "COALESCE((SELECT SUM(amount) FROM settlements WHERE contact_id = contacts.id AND type IN ('" . SettlementType::IOwe->value . "', '" . SettlementType::TheyPaid->value . "') AND deleted_at IS NULL), 0)";
+        $netBalanceSql = "($toReceiveSql - $toPaySql)";
+        $settlementsCountSql = "(SELECT COUNT(*) FROM settlements WHERE contact_id = contacts.id AND deleted_at IS NULL)";
+
         $contacts = Contact::with(['groups', 'media'])
             ->when($showArchived, function ($query) {
                 $query->whereHas('settlementArchive');
@@ -32,6 +37,21 @@ class SettlementController extends Controller
                 $query->whereIn('type', [SettlementType::IOwe->value, SettlementType::TheyPaid->value]);
             }], 'amount')
             ->withCount('settlements')
+            ->orderByRaw("
+                CASE 
+                    WHEN $netBalanceSql > 0 THEN 3
+                    WHEN $netBalanceSql < 0 THEN 2
+                    WHEN $settlementsCountSql > 0 THEN 1
+                    ELSE 0
+                END DESC
+            ")
+            ->orderByRaw("
+                CASE 
+                    WHEN $netBalanceSql > 0 THEN $netBalanceSql
+                    WHEN $netBalanceSql < 0 THEN ABS($netBalanceSql)
+                    ELSE 0
+                END DESC
+            ")
             ->get()
             ->map(function ($contact) {
                 $contact->to_receive = $contact->to_receive ?? 0;
@@ -41,14 +61,6 @@ class SettlementController extends Controller
                 // Add group_ids for filtering in Alpine
                 $contact->group_ids = $contact->groups->pluck('id')->toArray();
                 return $contact;
-            })
-            ->sortByDesc(function ($contact) {
-                if ($contact->net_balance > 0) return 1000000000 + $contact->net_balance; // Me deve (Topo)
-                if ($contact->net_balance < 0) return 500000000 + abs($contact->net_balance); // Eu devo (Meio)
-                
-                // Saldo Zero:
-                if ($contact->settlements_count > 0) return 1; // Já teve histórico, mas tá quite
-                return 0; // Nunca teve histórico (Fundo)
             })
             ->values();
 
