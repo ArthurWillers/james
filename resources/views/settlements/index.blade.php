@@ -3,12 +3,13 @@
 
     </x-page-header>
 
-    <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
         <x-finance.kpi-card 
             title="A Receber" 
             :value="formatCurrency($toReceive)" 
             icon="heroicon-o-arrow-trending-up" 
             color="green" 
+            :hide-icon-on-mobile="true"
         />
         
         <x-finance.kpi-card 
@@ -16,6 +17,7 @@
             :value="formatCurrency($toPay)" 
             icon="heroicon-o-arrow-trending-down" 
             color="red" 
+            :hide-icon-on-mobile="true"
         />
         
         <x-finance.kpi-card 
@@ -23,6 +25,7 @@
             :value="formatCurrency($netBalance)" 
             icon="heroicon-o-scale" 
             :color="$netBalance == 0 ? 'neutral' : ($netBalance > 0 ? 'green' : 'red')" 
+            :hide-icon-on-mobile="true"
         />
     </div>
 
