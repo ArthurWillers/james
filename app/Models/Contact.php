@@ -102,6 +102,22 @@ class Contact extends Model implements HasMedia
     }
 
     /**
+     * Get the settlement archive record for the contact.
+     */
+    public function settlementArchive()
+    {
+        return $this->hasOne(ContactSettlementArchive::class);
+    }
+
+    /**
+     * Scope a query to only include contacts that are not archived in the settlements module.
+     */
+    public function scopeNotSettlementArchived(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('settlementArchive');
+    }
+
+    /**
      * Get the distinct relationship categories in use.
      *
      * @param  Builder  $query

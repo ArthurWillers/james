@@ -6,24 +6,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'contact_id',
-    'financial_transaction_id',
-    'type',
-    'amount',
-    'description',
-    'date',
 ])]
-class Settlement extends Model
+class ContactSettlementArchive extends Model
 {
-    use HasFactory, SoftDeletes;
-
-    public function financialTransaction(): BelongsTo
-    {
-        return $this->belongsTo(FinancialTransaction::class);
-    }
+    use HasFactory;
 
     public function contact(): BelongsTo
     {

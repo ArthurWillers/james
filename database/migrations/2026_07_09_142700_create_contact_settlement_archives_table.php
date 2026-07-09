@@ -11,16 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('settlements', function (Blueprint $table) {
+        Schema::create('contact_settlement_archives', function (Blueprint $table) {
             $table->id();
             $table->foreignId('contact_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('financial_transaction_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('type');
-            $table->decimal('amount', 10, 2);
-            $table->string('description');
-            $table->date('date');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('settlements');
+        Schema::dropIfExists('contact_settlement_archives');
     }
 };
