@@ -64,18 +64,8 @@ class SettlementController extends Controller
             })
             ->values();
 
-        // Calculate global totals for active contacts only
-        $globalTotals = Contact::notSettlementArchived()
-            ->withSum(['settlements as to_receive' => function ($query) {
-                $query->whereIn('type', [SettlementType::TheyOwe->value, SettlementType::IPaid->value]);
-            }], 'amount')
-            ->withSum(['settlements as to_pay' => function ($query) {
-                $query->whereIn('type', [SettlementType::IOwe->value, SettlementType::TheyPaid->value]);
-            }], 'amount')
-            ->get();
-
-        $toReceive = $globalTotals->sum('to_receive') ?? 0;
-        $toPay = $globalTotals->sum('to_pay') ?? 0;
+        $toReceive = $contacts->sum('to_receive') ?? 0;
+        $toPay = $contacts->sum('to_pay') ?? 0;
         $netBalance = $toReceive - $toPay;
 
         $groups = ContactGroup::orderBy('name')->get();
