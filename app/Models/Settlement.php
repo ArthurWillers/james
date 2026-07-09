@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SettlementType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Settlement extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'type' => SettlementType::class,
+            'date' => 'date',
+            'amount' => 'float',
+        ];
+    }
 
     public function financialTransaction(): BelongsTo
     {
