@@ -145,21 +145,28 @@
     }">
         <div class="flex flex-col sm:flex-row justify-between items-start mb-6 gap-4">
             <div class="flex flex-col sm:flex-row sm:items-start gap-2 w-full sm:w-auto">
-                <button type="button" @click="toggleAll()" class="p-2.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-600 transition-colors shadow-sm shrink-0" title="Selecionar Todos" style="height: 42px;">
+                <x-ui.button type="button" @click="toggleAll()" color="outline" title="Selecionar Todos" class="h-11 sm:h-[42px] px-3 bg-white shrink-0">
                     <x-heroicon-o-check-circle class="size-5" />
-                </button>
+                </x-ui.button>
                 
-                <div class="w-full sm:w-48 shrink-0">
-                    <x-form.form-select name="group_select" @change="selectGroup($event.target.value); $event.target.value = ''" class="shadow-sm h-[42px]">
+                <div class="flex flex-col sm:flex-row items-center gap-1 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full flex-1 transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40">
+                    <div class="relative w-full flex-1 flex items-center">
+                        <div class="absolute left-3 flex items-center pointer-events-none">
+                            <x-heroicon-m-magnifying-glass class="h-4 w-4 text-neutral-400" />
+                        </div>
+                        <input type="text" x-model="search" placeholder="Buscar pessoa..." 
+                               class="w-full pl-9 pr-3 py-1.5 bg-transparent border-0 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-0">
+                    </div>
+                    
+                    <div class="hidden sm:block w-px h-6 bg-neutral-200 mx-1"></div>
+                    
+                    <select name="group_select" @change="selectGroup($event.target.value); $event.target.value = ''" 
+                            class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                         <option value="">Selecionar Grupo...</option>
                         @foreach($groups as $group)
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                         @endforeach
-                    </x-form.form-select>
-                </div>
-
-                <div class="w-full sm:w-72 flex-1">
-                    <x-form.form-input name="search" x-model="search" placeholder="Buscar pessoa..." class="shadow-sm h-[42px]" />
+                    </select>
                 </div>
             </div>
             
