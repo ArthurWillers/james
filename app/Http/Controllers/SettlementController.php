@@ -31,6 +31,7 @@ class SettlementController extends Controller
             ->withSum(['settlements as to_pay' => function ($query) {
                 $query->whereIn('type', [SettlementType::IOwe->value, SettlementType::TheyPaid->value]);
             }], 'amount')
+            ->withCount('settlements')
             ->get()
             ->map(function ($contact) {
                 $contact->to_receive = $contact->to_receive ?? 0;
@@ -40,6 +41,14 @@ class SettlementController extends Controller
                 // Add group_ids for filtering in Alpine
                 $contact->group_ids = $contact->groups->pluck('id')->toArray();
                 return $contact;
+            })
+            ->sortByDesc(function ($contact) {
+                if ($contact->net_balance > 0) return 1000000000 + $contact->net_balance; // Me deve (Topo)
+                if ($contact->net_balance < 0) return 500000000 + abs($contact->net_balance); // Eu devo (Meio)
+                
+                // Saldo Zero:
+                if ($contact->settlements_count > 0) return 1; // Já teve histórico, mas tá quite
+                return 0; // Nunca teve histórico (Fundo)
             })
             ->values();
 
