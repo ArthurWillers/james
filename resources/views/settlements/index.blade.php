@@ -113,13 +113,31 @@
         
         archiveSelected() {
             if (this.selectedIds.length === 0) return;
-            document.getElementById('archive-form-input').value = JSON.stringify(this.selectedIds);
-            document.getElementById('archive-form').submit();
+            const form = document.getElementById('archive-form');
+            form.querySelectorAll('.dynamic-input').forEach(e => e.remove());
+            this.selectedIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'contact_ids[]';
+                input.value = id;
+                input.className = 'dynamic-input';
+                form.appendChild(input);
+            });
+            form.submit();
         },
         unarchiveSelected() {
             if (this.selectedIds.length === 0) return;
-            document.getElementById('unarchive-form-input').value = JSON.stringify(this.selectedIds);
-            document.getElementById('unarchive-form').submit();
+            const form = document.getElementById('unarchive-form');
+            form.querySelectorAll('.dynamic-input').forEach(e => e.remove());
+            this.selectedIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'contact_ids[]';
+                input.value = id;
+                input.className = 'dynamic-input';
+                form.appendChild(input);
+            });
+            form.submit();
         }
     }">
         <div class="flex flex-col sm:flex-row justify-between items-start mb-6 gap-4">
@@ -217,31 +235,33 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-10"
-             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200" style="display: none;">
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200 min-w-[300px]" style="display: none;">
             
-            <div class="text-sm font-medium text-neutral-700">
-                <span x-text="selectedIds.length"></span> selecionado(s)
-            </div>
-            
-            <div class="w-px h-6 bg-neutral-200"></div>
-            
-            <div class="flex items-center gap-2">
-                <button type="button" @click="toggleAll()" class="p-2 rounded-xl text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção">
-                    <x-heroicon-o-x-mark class="size-5" />
-                </button>
+            <div class="flex items-center gap-4">
+                <div class="text-sm font-medium text-neutral-700">
+                    <span x-text="selectedIds.length"></span> selecionado(s)
+                </div>
                 
-                @if($showArchived)
-                    <x-button type="button" @click="unarchiveSelected()" color="primary">
-                        <x-heroicon-o-arrow-path class="size-4" />
-                        Desarquivar
-                    </x-button>
-                @else
-                    <x-button type="button" @click="archiveSelected()" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
-                        <x-heroicon-o-archive-box class="size-4" />
-                        Arquivar
-                    </x-button>
-                @endif
+                <div class="w-px h-6 bg-neutral-200"></div>
+                
+                <div class="flex items-center gap-2">
+                    @if($showArchived)
+                        <x-button type="button" @click="unarchiveSelected()" color="primary">
+                            <x-heroicon-o-arrow-path class="size-4" />
+                            Desarquivar
+                        </x-button>
+                    @else
+                        <x-button type="button" @click="archiveSelected()" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
+                            <x-heroicon-o-archive-box class="size-4" />
+                            Arquivar
+                        </x-button>
+                    @endif
+                </div>
             </div>
+
+            <button type="button" @click="selectedIds = []" class="p-2 -mr-2 rounded-xl text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção">
+                <x-heroicon-o-x-mark class="size-5" />
+            </button>
         </div>
     </div>
 
