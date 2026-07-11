@@ -161,7 +161,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-32">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
             @foreach($contacts as $contact)
                 <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
                     <div class="shrink-0 pl-4 border-l border-neutral-100">

@@ -57,7 +57,7 @@
                 <x-contacts.selection-bar search-placeholder="Buscar contatos pelo nome..." />
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-32">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
                 @foreach($allContacts as $contact)
                     <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" x-show="search === '' || '{{ strtolower(addslashes($contact->name)) }}'.includes(search.toLowerCase())" />
                 @endforeach
