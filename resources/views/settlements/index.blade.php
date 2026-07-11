@@ -1,6 +1,10 @@
 <x-layouts.app>
     <x-page-header title="Acertos">
-
+        <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
+            <x-heroicon-o-clock class="size-4" />
+            <span class="hidden sm:inline">Histórico Global</span>
+            <span class="sm:hidden">Histórico</span>
+        </x-button>
     </x-page-header>
 
     <div class="mb-8 grid grid-cols-3 gap-2 sm:gap-4">

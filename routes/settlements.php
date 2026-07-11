@@ -4,8 +4,9 @@ use App\Http\Controllers\SettlementArchiveController;
 use App\Http\Controllers\SettlementController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('acertos')->name('settlements.')->group(function () {
+Route::prefix('settlements')->name('settlements.')->group(function () {
     Route::get('/', [SettlementController::class, 'index'])->name('index');
+    Route::get('/history', [SettlementController::class, 'history'])->name('history');
     
     // Archive routes
     Route::post('/archive', [SettlementArchiveController::class, 'store'])->name('archive');

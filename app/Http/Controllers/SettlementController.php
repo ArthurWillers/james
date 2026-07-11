@@ -74,6 +74,19 @@ class SettlementController extends Controller
     }
 
     /**
+     * Display a global history of settlements.
+     */
+    public function history()
+    {
+        $settlements = Settlement::with(['contact', 'contact.media'])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(50);
+
+        return view('settlements.history', compact('settlements'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
