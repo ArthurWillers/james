@@ -87,19 +87,45 @@ class SettlementController extends Controller
     }
 
     /**
+     * Display the ledger for a specific contact.
+     */
+    public function showContact(Contact $contact)
+    {
+        // Compute balances for this contact
+        $toReceive = Settlement::where('contact_id', $contact->id)
+            ->whereIn('type', [SettlementType::TheyOwe->value, SettlementType::IPaid->value])
+            ->sum('amount');
+            
+        $toPay = Settlement::where('contact_id', $contact->id)
+            ->whereIn('type', [SettlementType::IOwe->value, SettlementType::TheyPaid->value])
+            ->sum('amount');
+            
+        $netBalance = $toReceive - $toPay;
+
+        $settlements = Settlement::where('contact_id', $contact->id)
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(50);
+
+        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Contact $contact)
     {
-        //
+        return view('settlements.create', compact('contact'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSettlementRequest $request)
+    public function store(Request $request, Contact $contact)
     {
-        //
+        // Fase 1: Não faz nada, apenas redireciona
+        return redirect()->route('settlements.contact.show', $contact)
+            ->with('success', 'Lançamento simulado criado (Fase 2 implementará a lógica).');
     }
 
     /**
@@ -115,15 +141,18 @@ class SettlementController extends Controller
      */
     public function edit(Settlement $settlement)
     {
-        //
+        $contact = $settlement->contact;
+        return view('settlements.edit', compact('settlement', 'contact'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSettlementRequest $request, Settlement $settlement)
+    public function update(Request $request, Settlement $settlement)
     {
-        //
+        // Fase 1: Não faz nada, apenas redireciona
+        return redirect()->route('settlements.contact.show', $settlement->contact_id)
+            ->with('success', 'Lançamento simulado atualizado (Fase 2 implementará a lógica).');
     }
 
     /**
@@ -131,6 +160,8 @@ class SettlementController extends Controller
      */
     public function destroy(Settlement $settlement)
     {
-        //
+        // Fase 1: Não faz nada, apenas redireciona
+        return redirect()->route('settlements.contact.show', $settlement->contact_id)
+            ->with('success', 'Lançamento simulado excluído (Fase 2 implementará a lógica).');
     }
 }

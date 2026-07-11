@@ -169,7 +169,7 @@
             @foreach($contacts as $contact)
                 <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
                     <div class="shrink-0 pl-4 border-l border-neutral-100">
-                        <a href="#" class="flex items-center justify-center w-10 h-10 rounded-full bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 transition-colors" title="Ver Detalhes">
+                        <a href="{{ route('settlements.contact.show', $contact) }}" class="flex items-center justify-center w-10 h-10 rounded-full bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 transition-colors" title="Ver Detalhes">
                             <x-heroicon-o-chevron-right class="size-5" />
                         </a>
                     </div>
