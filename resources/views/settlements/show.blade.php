@@ -6,6 +6,75 @@
         </x-breadcrumbs>
 
         <div class="flex items-center gap-2">
+            <x-modal.trigger name="share-modal-{{ $contact->id }}">
+                <x-button type="button" color="outline">
+                    <x-heroicon-o-share class="size-4" />
+                    <span>Compartilhar</span>
+                </x-button>
+            </x-modal.trigger>
+
+            <x-modal 
+                name="share-modal-{{ $contact->id }}"
+                title="Copiar Mensagem" 
+                confirmVariant="primary"
+                hideFooter="true">
+                <x-slot:content>
+                    <div class="space-y-4" x-data="{
+                        baseText: {{ Js::from($baseMessageText) }},
+                        selectedPixKey: '{{ $pixKeys->first() ?? '' }}',
+                        copied: false,
+                        
+                        get generatedText() {
+                            if (this.selectedPixKey && {{ $netBalance > 0 ? 'true' : 'false' }}) {
+                                return this.baseText + `Chave PIX: *${this.selectedPixKey}*\n`;
+                            }
+                            return this.baseText;
+                        },
+                        
+                        async copyText() {
+                            try {
+                                await navigator.clipboard.writeText(this.generatedText);
+                                this.copied = true;
+                                setTimeout(() => {
+                                    this.copied = false;
+                                    window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal-{{ $contact->id }}' }));
+                                }, 1500);
+                            } catch (e) {
+                                console.error('Failed to copy text', e);
+                            }
+                        }
+                    }">
+                        <div x-show="netBalance > 0">
+                            <x-form-select name="pix_key" label="Chave PIX (Opcional)" x-model="selectedPixKey" class="w-full text-sm">
+                                <option value="">Sem chave PIX</option>
+                                @foreach($pixKeys as $key)
+                                    <option value="{{ $key }}">{{ $key }}</option>
+                                @endforeach
+                            </x-form-select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 mb-1">Mensagem</label>
+                            <textarea :value="generatedText" readonly rows="6" class="w-full rounded-lg border-neutral-300 focus:border-neutral-500 focus:ring-neutral-500 text-sm font-mono bg-neutral-50"></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-2">
+                            <x-button type="button" @click="window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal-{{ $contact->id }}' }))" color="outline" class="w-full sm:w-auto">
+                                Fechar
+                            </x-button>
+                            <x-button type="button" @click="window.open(`https://wa.me/?text=${encodeURIComponent(generatedText)}`, '_blank')" color="outline" class="w-full sm:w-auto">
+                                <x-heroicon-o-chat-bubble-oval-left-ellipsis class="size-4 text-green-600" />
+                                <span>WhatsApp</span>
+                            </x-button>
+                            <x-button type="button" @click="copyText()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto">
+                                <span x-show="!copied" class="flex items-center gap-1.5"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
+                                <span x-show="copied" x-cloak class="flex items-center gap-1.5 text-green-400"><x-heroicon-o-check class="size-4" /> Copiado!</span>
+                            </x-button>
+                        </div>
+                    </div>
+                </x-slot:content>
+            </x-modal>
+
             <x-modal.trigger name="archive-contact-{{ $contact->id }}">
                 <x-button type="button" color="outline" class="bg-white">
                     <x-heroicon-o-archive-box class="size-4" />

@@ -81,8 +81,18 @@ class SettlementController extends Controller
         $hasArchived = \App\Models\ContactSettlementArchive::exists();
         $hasHistory = \App\Models\Settlement::exists();
         $hasGroups = \App\Models\SettlementGroup::exists();
+        
+        // Obter todas as chaves PIX (apenas o valor, ignorando os rótulos) das contas financeiras do usuário
+        $pixKeys = \App\Models\FinancialAccount::whereNotNull('pix_keys')
+            ->get()
+            ->pluck('pix_keys')
+            ->flatten(1)
+            ->pluck('value')
+            ->filter()
+            ->unique()
+            ->values();
 
-        return view('settlements.index', compact('contacts', 'toReceive', 'toPay', 'netBalance', 'showArchived', 'groups', 'hasArchived', 'hasHistory', 'hasGroups'));
+        return view('settlements.index', compact('contacts', 'toReceive', 'toPay', 'netBalance', 'showArchived', 'groups', 'hasArchived', 'hasHistory', 'hasGroups', 'pixKeys'));
     }
 
     /**
@@ -138,7 +148,27 @@ class SettlementController extends Controller
             ]);
         }
 
-        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl'));
+        $pixKeys = \App\Models\FinancialAccount::whereNotNull('pix_keys')
+            ->get()
+            ->pluck('pix_keys')
+            ->flatten(1)
+            ->pluck('value')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $formatted = 'R$' . number_format(abs($netBalance), 2, ',', '.');
+        $baseMessageText = '';
+        
+        if ($netBalance > 0) {
+            $baseMessageText = "Oi! Tô passando pra lembrar que você está me devendo.\n\nValor: *$formatted*\n";
+        } elseif ($netBalance < 0) {
+            $baseMessageText = "Oi! Sei que te devo *$formatted*. Vou acertar o mais breve possível!";
+        } else {
+            $baseMessageText = "Oi! Estamos quites, sem pendências!";
+        }
+
+        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl', 'pixKeys', 'baseMessageText'));
     }
 
     /**

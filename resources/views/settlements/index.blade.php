@@ -53,7 +53,96 @@
         visibleMap: {},
         hasMorePages: false,
         isEmpty: false,
+        userPixKey: '{{ $pixKeys->first() ?? '' }}',
+        selectedPixKey: '{{ $pixKeys->first() ?? '' }}',
+        generatedText: '',
+        copied: false,
         
+        formatCurrencyJS(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        },
+        
+        generateGroupText() {
+            const selectedContacts = this.contacts.filter(c => this.selectedIds.includes(String(c.id)));
+            const meDeve = selectedContacts.filter(item => item.net_balance > 0).sort((a, b) => b.net_balance - a.net_balance);
+            const euDevo = selectedContacts.filter(item => item.net_balance < 0).sort((a, b) => a.net_balance - b.net_balance);
+            const zerados = selectedContacts.filter(item => item.net_balance === 0).sort((a, b) => a.name.localeCompare(b.name));
+
+            const aReceber = [];
+            const aPagar = [];
+            const quites = [];
+
+            meDeve.forEach(item => {
+                const formatted = this.formatCurrencyJS(Math.abs(item.net_balance)).replace(/\s/g, '');
+                aReceber.push(`- ${item.name}: ${formatted}`);
+            });
+
+            euDevo.forEach(item => {
+                const formatted = this.formatCurrencyJS(Math.abs(item.net_balance)).replace(/\s/g, '');
+                aPagar.push(`- ${item.name}: ${formatted}`);
+            });
+
+            zerados.forEach(item => {
+                quites.push(`- ${item.name}`);
+            });
+
+            let parts = [];
+            
+            if (aReceber.length > 0) {
+                parts.push(`*Me Deve:*\n${aReceber.join('\n')}`);
+            }
+            
+            if (aPagar.length > 0) {
+                parts.push(`*Eu Devo:*\n${aPagar.join('\n')}`);
+            }
+            
+            if (quites.length > 0) {
+                parts.push(`*Tudo Certo:*\n${quites.join('\n')}`);
+            }
+
+            let text = parts.join('\n\n');
+
+            if (this.selectedPixKey) {
+                text += `\n\nChave PIX: *${this.selectedPixKey}*`;
+            }
+
+            this.generatedText = text;
+        },
+        
+        openShareModal() {
+            this.generateGroupText();
+            window.dispatchEvent(new CustomEvent('modal-open', { detail: 'share-modal' }));
+        },
+        
+        async executeCopy() {
+            try {
+                await navigator.clipboard.writeText(this.generatedText);
+                this.copied = true;
+                setTimeout(() => {
+                    this.copied = false;
+                    window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal' }));
+                }, 1500);
+            } catch (e) {
+                console.error('Failed to copy text', e);
+            }
+        },
+        
+        init() {
+            this.updateVisibility();
+            this.$watch('search', () => {
+                this.limit = 102;
+                this.updateVisibility();
+            });
+            this.$watch('selectedIds', () => {
+                this.updateVisibility();
+            });
+            this.$watch('limit', () => {
+                this.updateVisibility();
+            });
+            this.$watch('selectedPixKey', () => {
+                this.generateGroupText();
+            });
+        },
         updateVisibility() {
             const map = {};
             let currentLimit = this.limit;
@@ -80,20 +169,6 @@
             this.visibleMap = map;
             this.hasMorePages = filtered.length > currentLimit;
             this.isEmpty = filtered.length === 0;
-        },
-        
-        init() {
-            this.updateVisibility();
-            this.$watch('search', () => {
-                this.limit = 102;
-                this.updateVisibility();
-            });
-            this.$watch('selectedIds', () => {
-                this.updateVisibility();
-            });
-            this.$watch('limit', () => {
-                this.updateVisibility();
-            });
         },
         
         loadMore() {
@@ -239,6 +314,9 @@
                             </x-button>
                         </x-modal.trigger>
                     @else
+                        <x-button type="button" @click="openShareModal()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white transition-all">
+                            <x-heroicon-o-share class="size-4" /> Compartilhar
+                        </x-button>
                         <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
                             <x-heroicon-o-scissors class="size-4" />
                             Dividir Conta
@@ -276,6 +354,44 @@
             <x-button type="button" @click="unarchiveSelected()" class="w-full sm:w-auto">
                 Sim, desarquivar
             </x-button>
+        </x-modal>
+
+        <x-modal 
+            name="share-modal"
+            title="Copiar Mensagem" 
+            confirmVariant="primary"
+            hideFooter="true">
+            <x-slot:content>
+                <div class="space-y-4">
+                    <div>
+                        <x-form-select name="pix_key" label="Chave PIX (Opcional)" x-model="selectedPixKey" class="w-full text-sm">
+                            <option value="">Sem chave PIX</option>
+                            @foreach($pixKeys as $key)
+                                <option value="{{ $key }}">{{ $key }}</option>
+                            @endforeach
+                        </x-form-select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-1">Mensagem</label>
+                        <textarea x-model="generatedText" rows="6" class="w-full rounded-lg border-neutral-300 focus:border-neutral-500 focus:ring-neutral-500 text-sm font-mono"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 pt-2">
+                        <x-button type="button" @click="window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal' }))" color="outline" class="w-full sm:w-auto">
+                            Fechar
+                        </x-button>
+                        <x-button type="button" @click="window.open(`https://wa.me/?text=${encodeURIComponent(generatedText)}`, '_blank')" color="outline" class="w-full sm:w-auto">
+                            <x-heroicon-o-chat-bubble-oval-left-ellipsis class="size-4 text-green-600" />
+                            <span>WhatsApp</span>
+                        </x-button>
+                        <x-button type="button" @click="executeCopy()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto">
+                            <span x-show="!copied" class="flex items-center gap-1.5"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
+                            <span x-show="copied" x-cloak class="flex items-center gap-1.5 text-green-400"><x-heroicon-o-check class="size-4" /> Copiado!</span>
+                        </x-button>
+                    </div>
+                </div>
+            </x-slot:content>
         </x-modal>
     </div>
 
