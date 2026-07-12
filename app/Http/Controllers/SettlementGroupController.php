@@ -1,0 +1,180 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreSettlementGroupRequest;
+use App\Http\Requests\UpdateSettlementGroupRequest;
+use App\Models\Contact;
+use App\Models\FinancialAccount;
+use App\Models\FinancialCreditCard;
+use App\Models\FinancialTag;
+use App\Models\SettlementGroup;
+use App\Services\SettlementGroupService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\View\View;
+
+class SettlementGroupController extends Controller
+{
+    public function __construct(
+        public SettlementGroupService $service
+    ) {}
+
+    /**
+     * Display a listing of settlement groups.
+     */
+    public function index(Request $request): View
+    {
+        $query = SettlementGroup::with(['financialTransaction', 'settlements.contact']);
+
+        if ($request->has('trashed')) {
+            $query->onlyTrashed();
+        }
+
+        $groups = $query->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(50);
+
+        return view('settlements.groups.index', compact('groups'));
+    }
+
+    /**
+     * Show the form for creating a new split bill.
+     */
+    public function create(Request $request): View
+    {
+        $contactIds = array_filter(explode(',', $request->query('contacts', '')));
+
+        abort_if(empty($contactIds), 404);
+
+        $contacts = Contact::with('media')->whereIn('id', $contactIds)->get();
+
+        abort_if($contacts->isEmpty(), 404);
+
+        $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
+        $tags = FinancialTag::orderBy('name')->get()->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'color_hex' => $tag->color_hex,
+                'svg' => Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
+            ];
+        });
+
+        return view('settlements.groups.create', compact('contacts', 'accounts', 'cards', 'tags'));
+    }
+
+    /**
+     * Store a newly created split bill.
+     */
+    public function store(StoreSettlementGroupRequest $request): RedirectResponse
+    {
+        $group = $this->service->storeGroup($request->validated());
+
+        return redirect()->route('settlements.index')
+            ->with('success', 'Divisão de conta registrada com sucesso.');
+    }
+
+    /**
+     * Display the specified split bill.
+     */
+    public function show(SettlementGroup $settlementGroup): View
+    {
+        $settlementGroup->load(['settlements.contact.media', 'financialTransaction.items.tags', 'financialTransaction.tags']);
+
+        return view('settlements.groups.show', compact('settlementGroup'));
+    }
+
+    /**
+     * Show the form for editing the specified split bill.
+     */
+    public function edit(SettlementGroup $settlementGroup): View
+    {
+        $settlementGroup->load(['settlements.contact.media', 'financialTransaction.items.tags', 'financialTransaction.tags']);
+
+        $contacts = $settlementGroup->settlements->map(fn ($s) => $s->contact)->unique('id');
+
+        $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
+        $tags = FinancialTag::orderBy('name')->get()->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'color_hex' => $tag->color_hex,
+                'svg' => Blade::render('<x-dynamic-component :component="$icon" class="size-3.5" />', ['icon' => $tag->icon]),
+            ];
+        });
+
+        return view('settlements.groups.edit', compact('settlementGroup', 'contacts', 'accounts', 'cards', 'tags'));
+    }
+
+    /**
+     * Update the specified split bill.
+     */
+    public function update(UpdateSettlementGroupRequest $request, SettlementGroup $settlementGroup): RedirectResponse
+    {
+        $this->service->updateGroup($settlementGroup, $request->validated());
+
+        return redirect()->route('settlements.index')
+            ->with('success', 'Divisão de conta atualizada com sucesso.');
+    }
+
+    /**
+     * Remove the specified split bill.
+     */
+    public function destroy(SettlementGroup $settlementGroup): RedirectResponse
+    {
+        $this->service->destroyGroup($settlementGroup);
+
+        return redirect()->route('settlements.index')
+            ->with('success', 'Divisão de conta excluída com sucesso.');
+    }
+
+    public function trashed()
+    {
+        $settlementGroups = SettlementGroup::onlyTrashed()
+            ->orderByDesc('deleted_at')
+            ->paginate(50);
+
+        return view('settlements.groups.trashed', compact('settlementGroups'));
+    }
+
+    public function restore($id)
+    {
+        $group = SettlementGroup::onlyTrashed()->findOrFail($id);
+        
+        $group->restore();
+        
+        $group->settlements()->withTrashed()->restore();
+
+        if ($group->financial_transaction_id) {
+            \App\Models\FinancialTransaction::withTrashed()
+                ->where('id', $group->financial_transaction_id)
+                ->restore();
+        }
+
+        return redirect()->route('settlements.groups.trashed')->with('success', 'Divisão de conta restaurada com sucesso.');
+    }
+
+    public function forceDelete($id)
+    {
+        $group = SettlementGroup::onlyTrashed()->findOrFail($id);
+        
+        \Illuminate\Support\Facades\DB::transaction(function () use ($group) {
+            if ($group->financial_transaction_id) {
+                $transaction = \App\Models\FinancialTransaction::withTrashed()->find($group->financial_transaction_id);
+                if ($transaction) {
+                    $transaction->items()->delete();
+                    $transaction->forceDelete();
+                }
+            }
+
+            $group->settlements()->withTrashed()->forceDelete();
+            $group->forceDelete();
+        });
+
+        return redirect()->route('settlements.groups.trashed')->with('success', 'Divisão de conta excluída permanentemente.');
+    }
+}

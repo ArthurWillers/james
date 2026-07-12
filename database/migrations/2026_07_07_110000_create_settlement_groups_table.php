@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('settlements', function (Blueprint $table) {
+        Schema::create('settlement_groups', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contact_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('financial_transaction_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('type');
-            $table->decimal('amount', 10, 2);
             $table->string('description');
+            $table->decimal('total_amount', 10, 2);
             $table->date('date');
-            $table->foreignId('settlement_group_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->string('mode'); // 'equal' or 'exact'
+            $table->foreignId('financial_transaction_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('settlements');
+        Schema::dropIfExists('settlement_groups');
     }
 };
