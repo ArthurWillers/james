@@ -7,10 +7,16 @@
     </div>
 
     <x-page-header title="Histórico Global">
-        <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar aos Acertos
-        </x-button>
+        <div class="flex items-center gap-3">
+            <x-button color="outline" href="{{ route('settlements.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
+                <x-heroicon-o-trash class="size-4" />
+                Ver Excluídos
+            </x-button>
+            <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white">
+                <x-heroicon-o-arrow-left class="size-4" />
+                Voltar aos Acertos
+            </x-button>
+        </div>
     </x-page-header>
 
     <div class="mt-6">
@@ -31,10 +37,10 @@
                         $amountPrefix = $isPositiveForMe ? '+' : '-';
 
                         // Temporary placeholder for contact ledger route
-                        $contactRoute = route('settlements.contact.show', $settlement->contact_id);
+                        $settlementRoute = route('settlements.show_item', $settlement);
                     @endphp
 
-                    <x-ui.table.row href="{{ $contactRoute }}" class="hidden sm:grid grid-cols-5">
+                    <x-ui.table.row href="{{ $settlementRoute }}" class="hidden sm:grid grid-cols-5">
                         <x-ui.table.cell class="text-neutral-500">
                             {{ formatShort($settlement->date) }}
                         </x-ui.table.cell>
@@ -70,6 +76,7 @@
                                             <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                         </x-ui.badge>
                                         <span class="font-medium text-neutral-900 truncate">{{ $settlement->description }}</span>
+
                                     </div>
                                     <div class="flex items-center gap-2 text-sm text-neutral-500">
                                         <span class="truncate">{{ $settlement->contact->name }}</span>

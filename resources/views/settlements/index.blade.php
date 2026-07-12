@@ -1,10 +1,17 @@
 <x-layouts.app>
     <x-page-header title="Acertos">
-        <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
-            <x-heroicon-o-clock class="size-4" />
-            <span class="hidden sm:inline">Histórico Global</span>
-            <span class="sm:hidden">Histórico</span>
-        </x-button>
+        <div class="flex items-center gap-3">
+            <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
+                <x-heroicon-o-users class="size-4" />
+                <span class="hidden sm:inline">Contas Divididas</span>
+                <span class="sm:hidden">Grupos</span>
+            </x-button>
+            <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
+                <x-heroicon-o-clock class="size-4" />
+                <span class="hidden sm:inline">Histórico Global</span>
+                <span class="sm:hidden">Histórico</span>
+            </x-button>
+        </div>
     </x-page-header>
 
     <div class="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
@@ -217,6 +224,10 @@
                             Desarquivar
                         </x-button>
                     @else
+                        <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
+                            <x-heroicon-o-scissors class="size-4" />
+                            Dividir Conta
+                        </x-button>
                         <x-button type="button" @click="archiveSelected()" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
                             <x-heroicon-o-archive-box class="size-4" />
                             Arquivar

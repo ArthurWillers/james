@@ -213,8 +213,10 @@ class FinancialTransactionController extends Controller
     public function show(FinancialTransaction $transaction)
     {
         $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags']);
+        
+        $settlementGroup = \App\Models\SettlementGroup::where('financial_transaction_id', $transaction->id)->first();
 
-        return view('finance.transactions.show', compact('transaction'));
+        return view('finance.transactions.show', compact('transaction', 'settlementGroup'));
     }
 
     public function edit(FinancialTransaction $transaction)

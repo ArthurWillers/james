@@ -9,16 +9,18 @@
 
     <x-page-header title="Editar Lançamento">
         <div class="flex items-center gap-2">
-            <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
-                <x-heroicon-o-arrow-left class="size-4" />
-                Cancelar
-            </x-button>
             <x-modal.trigger name="delete-settlement-{{ $settlement->id }}">
-                <x-button type="button" color="danger">
+                <x-button color="outline" class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" type="button">
                     <x-heroicon-o-trash class="size-4" />
                     Excluir
                 </x-button>
             </x-modal.trigger>
+            <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
+                Cancelar
+            </x-button>
+            <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
+                Salvar
+            </x-button>
         </div>
     </x-page-header>
 
@@ -58,15 +60,6 @@
             @method('PUT')
             
             @include('settlements.partials.form', ['settlement' => $settlement])
-
-            <div class="flex items-center justify-end gap-3 mt-6">
-                <x-button type="button" color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
-                    Cancelar
-                </x-button>
-                <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
-                    Salvar Alterações
-                </x-button>
-            </div>
         </form>
     </div>
 </x-layouts.app>

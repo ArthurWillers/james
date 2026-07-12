@@ -67,10 +67,11 @@
     
     <div class="mb-12">
         <x-ui.table>
-            <x-ui.table.header class="hidden sm:grid grid-cols-4">
+            <x-ui.table.header class="hidden sm:grid grid-cols-5">
                 <x-ui.table.column>Data</x-ui.table.column>
                 <x-ui.table.column>Descrição</x-ui.table.column>
                 <x-ui.table.column>Tipo</x-ui.table.column>
+                <x-ui.table.column>Pagamento</x-ui.table.column>
                 <x-ui.table.column class="text-right">Valor</x-ui.table.column>
             </x-ui.table.header>
 
@@ -82,7 +83,7 @@
                         $amountPrefix = $isPositiveForMe ? '+' : '-';
                     @endphp
 
-                    <x-ui.table.row href="{{ route('settlements.edit', $settlement) }}" class="hidden sm:grid grid-cols-4">
+                    <x-ui.table.row href="{{ $settlement->settlement_group_id ? route('settlements.groups.show', $settlement->settlement_group_id) : route('settlements.show_item', $settlement) }}" class="hidden sm:grid grid-cols-5">
                         <x-ui.table.cell class="text-neutral-500">
                             {{ formatShort($settlement->date) }}
                         </x-ui.table.cell>
@@ -96,6 +97,29 @@
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                 <span>{{ $settlement->type->label() }}</span>
                             </x-ui.badge>
+                        </x-ui.table.cell>
+
+                        <x-ui.table.cell class="text-neutral-500 text-sm">
+                            @if($settlement->financialTransaction)
+                                @if($settlement->financialTransaction->invoice)
+                                    <div class="flex items-center gap-1.5 truncate">
+                                        <x-heroicon-o-credit-card class="size-4 shrink-0 text-orange-500" />
+                                        <span class="truncate">{{ $settlement->financialTransaction->invoice->creditCard->name }}</span>
+                                    </div>
+                                @elseif($settlement->financialTransaction->account)
+                                    <div class="flex items-center gap-1.5 truncate">
+                                        <x-heroicon-o-building-library class="size-4 shrink-0 text-blue-500" />
+                                        <span class="truncate">{{ $settlement->financialTransaction->account->name }}</span>
+                                    </div>
+                                @else
+                                    <div class="flex items-center gap-1.5 truncate">
+                                        <x-heroicon-o-currency-dollar class="size-4 shrink-0 text-neutral-400" />
+                                        <span class="truncate">Transação</span>
+                                    </div>
+                                @endif
+                            @else
+                                <span class="text-neutral-300">-</span>
+                            @endif
                         </x-ui.table.cell>
 
                         <x-ui.table.cell class="text-right font-semibold {{ $amountColor }}">

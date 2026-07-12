@@ -8,16 +8,20 @@
     </div>
 
     <x-page-header title="Novo Lançamento">
-        <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
+        <div class="flex items-center gap-3">
+            <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
+                Cancelar
+            </x-button>
+            <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
+                Salvar
+            </x-button>
+        </div>
     </x-page-header>
 
     <div class="mt-6">
         <form action="{{ route('settlements.store', $contact) }}" method="POST" id="settlement-form" x-data="{
             type: '{{ old('type', 'they_owe') }}',
-            createTransaction: {{ old('create_transaction', 'true') == '1' || old('create_transaction', 'true') === 'true' ? 'true' : 'false' }},
+            createTransaction: {{ old('create_transaction', 'false') == '1' || old('create_transaction', 'false') === 'true' ? 'true' : 'false' }},
             targetType: '{{ old('targetType', 'account') }}',
             description: '{{ old('description', '') }}',
             init() {
@@ -27,23 +31,17 @@
                             this.description = 'Pagamento recebido';
                         } else if (value === 'i_paid') {
                             this.description = 'Pagamento realizado';
+                        } else {
+                            this.description = '';
                         }
                     }
                 });
             }
+
         }">
             @csrf
             
             @include('settlements.partials.form')
-
-            <div class="flex items-center justify-end gap-3 mt-6">
-                <x-button type="button" color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
-                    Cancelar
-                </x-button>
-                <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
-                    Salvar Lançamento
-                </x-button>
-            </div>
         </form>
     </div>
 </x-layouts.app>

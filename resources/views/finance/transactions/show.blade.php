@@ -169,6 +169,26 @@
         </x-card>
     </div>
 
+    @if(isset($settlementGroup) && $settlementGroup)
+        <x-card class="mb-6 p-6 border-indigo-200 bg-indigo-50/50">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-indigo-100 rounded-xl text-indigo-600 shrink-0">
+                        <x-heroicon-o-users class="size-6" />
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-indigo-900">Gerada por Divisão de Conta</h3>
+                        <p class="text-sm text-indigo-700 mt-1">Esta transação foi gerada a partir da divisão de conta "{{ $settlementGroup->description }}".</p>
+                    </div>
+                </div>
+                <x-button href="{{ route('settlements.groups.show', $settlementGroup) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0">
+                    Ver Divisão
+                    <x-heroicon-m-arrow-right class="size-4 ml-1.5" />
+                </x-button>
+            </div>
+        </x-card>
+    @endif
+
     @if($transaction->transfer_pair_id && $transaction->transferPair)
         <x-card class="mb-6 p-6 border-blue-200 bg-blue-50/50">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
