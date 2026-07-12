@@ -17,49 +17,35 @@
         </div>
     </div>
 
-    <!-- Contact Header -->
-    <div class="bg-white border border-neutral-200 rounded-xl p-6 mb-6 flex items-center gap-4 shadow-sm">
-        <x-ui.avatar :model="$contact" size="xl" />
-        <div>
-            <h1 class="text-2xl font-bold text-neutral-900">{{ $contact->name }}</h1>
-            <div class="flex items-center gap-2 text-neutral-500 text-sm mt-1">
-                <span>{{ $contact->relationship_category ?? 'Contato' }}</span>
-                @if($contact->phones && count($contact->phones) > 0)
-                    <x-heroicon-m-minus class="size-3 text-neutral-300" />
-                    <span class="flex items-center gap-1">
-                        <x-heroicon-o-phone class="size-3.5" />
-                        {{ collect($contact->phones)->first()['value'] ?? '' }}
-                    </span>
-                @endif
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <!-- Contact Header -->
+        <a href="{{ route('contacts.show', $contact->id) }}" class="bg-white border border-neutral-200 rounded-xl p-6 flex items-center gap-4 shadow-sm hover:border-neutral-300 hover:shadow-md transition-all h-full">
+            <x-ui.avatar :model="$contact" size="xl" />
+            <div>
+                <h1 class="text-2xl font-bold text-neutral-900">{{ $contact->name }}</h1>
+                <div class="flex items-center gap-2 text-neutral-500 text-sm mt-1">
+                    <span>{{ $contact->relationship_category ?? 'Contato' }}</span>
+                    @if($contact->phones && count($contact->phones) > 0)
+                        <x-heroicon-m-minus class="size-3 text-neutral-300" />
+                        <span class="flex items-center gap-1">
+                            <x-heroicon-o-phone class="size-3.5" />
+                            {{ collect($contact->phones)->first()['value'] ?? '' }}
+                        </span>
+                    @endif
+                </div>
             </div>
-        </div>
-    </div>
+        </a>
 
-    <!-- Balances -->
-    <div class="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
-        <x-finance.kpi-card 
-            title="A Receber" 
-            :value="formatCurrency($toReceive)" 
-            icon="heroicon-o-arrow-trending-up" 
-            color="green" 
-            :hide-icon-on-mobile="true"
-        />
-        
-        <x-finance.kpi-card 
-            title="A Pagar" 
-            :value="formatCurrency($toPay)" 
-            icon="heroicon-o-arrow-trending-down" 
-            color="red" 
-            :hide-icon-on-mobile="true"
-        />
-        
-        <x-finance.kpi-card 
-            title="Líquido" 
-            :value="formatCurrency($netBalance)" 
-            icon="heroicon-o-scale" 
-            :color="$netBalance == 0 ? 'neutral' : ($netBalance > 0 ? 'green' : 'red')" 
-            :hide-icon-on-mobile="true"
-        />
+        <!-- Acertos KPI Card -->
+        <x-finance.kpi-card
+            title="Saldo Líquido"
+            value="{{ formatCurrency(abs($netBalance)) }}"
+            icon="heroicon-o-scale"
+            :color="$netBalance > 0 ? 'green' : ($netBalance < 0 ? 'red' : 'neutral')"
+            class="h-full"
+        >
+            {{ $netBalance > 0 ? 'Você tem a receber' : ($netBalance < 0 ? 'Você tem a pagar' : 'Tudo quitado') }}
+        </x-finance.kpi-card>
     </div>
 
     <!-- Ledger Table -->
