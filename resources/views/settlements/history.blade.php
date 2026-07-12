@@ -8,10 +8,12 @@
 
     <x-page-header title="Histórico Global">
         <div class="flex items-center gap-3">
-            <x-button color="outline" href="{{ route('settlements.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
-                <x-heroicon-o-trash class="size-4" />
-                Ver Excluídos
-            </x-button>
+            @if($hasTrashed)
+                <x-button color="outline" href="{{ route('settlements.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
+                    <x-heroicon-o-trash class="size-4" />
+                    Lixeira
+                </x-button>
+            @endif
             <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white">
                 <x-heroicon-o-arrow-left class="size-4" />
                 Voltar aos Acertos

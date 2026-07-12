@@ -212,11 +212,20 @@ class FinancialTransactionController extends Controller
 
     public function show(FinancialTransaction $transaction)
     {
-        $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags']);
+        $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags', 'settlements']);
         
         $settlementGroup = \App\Models\SettlementGroup::where('financial_transaction_id', $transaction->id)->first();
 
-        return view('finance.transactions.show', compact('transaction', 'settlementGroup'));
+        $isSettlementTransaction = $settlementGroup || $transaction->settlements->isNotEmpty();
+        
+        $editRoute = route('financial.transactions.edit', $transaction->id);
+        if ($settlementGroup) {
+            $editRoute = route('settlements.groups.edit', $settlementGroup);
+        } elseif ($transaction->settlements->isNotEmpty()) {
+            $editRoute = route('settlements.edit', $transaction->settlements->first());
+        }
+
+        return view('finance.transactions.show', compact('transaction', 'settlementGroup', 'isSettlementTransaction', 'editRoute'));
     }
 
     public function edit(FinancialTransaction $transaction)

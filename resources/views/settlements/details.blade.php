@@ -9,6 +9,10 @@
 
     <x-page-header title="{{ $settlement->description ?: 'Acerto' }}">
         <div class="flex items-center gap-2">
+            <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
+                <x-heroicon-o-arrow-left class="size-4" />
+                Voltar
+            </x-button>
             @if(!$settlement->trashed())
                 @if(!$settlement->settlement_group_id)
                     <x-button color="outline" href="{{ route('settlements.edit', $settlement) }}" class="bg-white">
@@ -29,13 +33,13 @@
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Left Column: Items -->
         <div class="lg:col-span-8 flex flex-col gap-6">
-            <x-card class="p-6 sm:p-8 border-neutral-200">
+            <x-card class="p-6 border-neutral-200">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                    <div class="flex items-center gap-5">
-                        <x-ui.avatar :model="$settlement->contact" class="w-20 h-20 sm:w-24 sm:h-24" />
+                    <div class="flex items-center gap-4">
+                        <x-ui.avatar :model="$settlement->contact" size="lg" />
                         <div>
-                            <h2 class="text-2xl font-bold text-neutral-900">{{ $settlement->contact->name }}</h2>
-                            <a href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="text-sm font-medium text-accent hover:text-accent-dark transition-colors inline-flex items-center gap-1 mt-1">
+                            <h2 class="text-lg font-bold text-neutral-900">{{ $settlement->contact->name }}</h2>
+                            <a href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="text-sm font-medium text-accent hover:text-accent-dark transition-colors inline-flex items-center gap-1 mt-0.5">
                                 Ver Extrato <x-heroicon-m-arrow-right class="size-3" />
                             </a>
                         </div>
@@ -47,47 +51,36 @@
                             $amountColor = $isPositiveForMe ? 'text-emerald-600' : 'text-red-600';
                             $amountPrefix = $isPositiveForMe ? '+' : '-';
                         @endphp
-                        <x-ui.badge :color="$settlement->type->color()" class="mb-2 shadow-sm inline-flex">
-                            <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5 mr-1.5" />
-                            {{ $settlement->type->label() }}
-                        </x-ui.badge>
-                        <div class="text-3xl sm:text-4xl font-black {{ $amountColor }} tracking-tight">
+                        <div class="text-2xl font-bold {{ $amountColor }}">
                             {{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}
+                        </div>
+                        <div class="mt-1">
+                            <x-ui.badge :color="$settlement->type->color()" class="shadow-sm inline-flex">
+                                <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5 mr-1.5" />
+                                {{ $settlement->type->label() }}
+                            </x-ui.badge>
                         </div>
                     </div>
                 </div>
-
-                @if($settlement->description && !in_array($settlement->description, ['Acerto', 'Pagamento recebido', 'Pagamento realizado']))
-                <div class="mt-8 pt-6 border-t border-neutral-100">
-                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2">Descrição Adicional</h3>
-                    <p class="text-neutral-800 text-base leading-relaxed">{{ $settlement->description }}</p>
-                </div>
-                @endif
                 
                 @if($settlement->financialTransaction)
                     <div class="mt-8 pt-6 border-t border-neutral-100">
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Meio de Pagamento</h3>
                         <div class="flex items-center gap-4">
                             @if($settlement->financialTransaction->invoice)
-                                <div class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-                                    <x-heroicon-o-credit-card class="size-6" />
-                                </div>
+                                <x-ui.avatar icon="heroicon-o-credit-card" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlement->financialTransaction->invoice->creditCard->name }}</div>
                                     <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ $settlement->financialTransaction->invoice->closing_date->format('m/Y') }}</div>
                                 </div>
                             @elseif($settlement->financialTransaction->account)
-                                <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                                    <x-heroicon-o-building-library class="size-6" />
-                                </div>
+                                <x-ui.avatar icon="heroicon-o-building-library" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlement->financialTransaction->account->name }}</div>
                                     <div class="text-sm text-neutral-500">Conta Corrente</div>
                                 </div>
                             @else
-                                <div class="w-12 h-12 rounded-xl bg-neutral-50 border border-neutral-100 text-neutral-400 flex items-center justify-center shrink-0">
-                                    <x-heroicon-o-currency-dollar class="size-6" />
-                                </div>
+                                <x-ui.avatar icon="heroicon-o-currency-dollar" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">Transação Avulsa</div>
                                     <div class="text-sm text-neutral-500">Sem conta ou cartão vinculado</div>
@@ -141,6 +134,8 @@
                     @endif
                 </div>
             </x-card>
+
+            <x-ui.metadata-card :model="$settlement" />
         </div>
     </div>
 

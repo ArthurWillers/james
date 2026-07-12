@@ -14,28 +14,10 @@
             <x-button type="submit" form="split-form" class="bg-neutral-900 hover:bg-black text-white">
                 Salvar
             </x-button>
-            <x-modal.trigger name="delete-group-{{ $settlementGroup->id }}">
-                <x-button type="button" color="outline" class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
-                    <x-heroicon-o-trash class="size-4" />
-                    Excluir
-                </x-button>
-            </x-modal.trigger>
         </div>
     </x-page-header>
 
-    <x-modal
-        name="delete-group-{{ $settlementGroup->id }}"
-        title="Excluir Divisão de Conta"
-        message="Tem certeza que deseja excluir esta divisão? Todos os acertos gerados e a transação financeira vinculada serão removidos."
-        confirmVariant="danger">
-        <form action="{{ route('settlements.groups.destroy', $settlementGroup) }}" method="POST" class="m-0">
-            @csrf
-            @method('DELETE')
-            <x-button type="submit" color="red" class="w-full sm:w-auto">
-                Sim, excluir
-            </x-button>
-        </form>
-    </x-modal>
+
 
     @php
         $existingTagIds = [];
@@ -74,7 +56,7 @@
             myAmount: '{{ old('my_amount', number_format($existingMyAmount, 2, '.', '')) }}',
             createTransaction: {{ old('create_transaction', $settlementGroup->financial_transaction_id ? 'true' : 'false') == '1' || old('create_transaction', $settlementGroup->financial_transaction_id ? 'true' : 'false') === 'true' ? 'true' : 'false' }},
             targetType: '{{ old('targetType', optional($settlementGroup->financialTransaction)->invoice ? 'card' : 'account') }}',
-            contacts: @json($alpineContacts),
+            contacts: {{ json_encode($alpineContacts) }},
 
             get totalPeople() {
                 return this.contacts.length + 1;
@@ -133,6 +115,7 @@
                 let share = this.sharePerPerson;
                 this.contacts.forEach(c => c.amount = share.toFixed(2));
                 this.myAmount = this.calculatedMyAmount.toFixed(2);
+            }
         }">
             @csrf
             @method('PUT')

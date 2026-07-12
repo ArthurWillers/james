@@ -9,12 +9,6 @@
 
     <x-page-header title="Editar Lançamento">
         <div class="flex items-center gap-2">
-            <x-modal.trigger name="delete-settlement-{{ $settlement->id }}">
-                <x-button color="outline" class="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" type="button">
-                    <x-heroicon-o-trash class="size-4" />
-                    Excluir
-                </x-button>
-            </x-modal.trigger>
             <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
                 Cancelar
             </x-button>
@@ -23,20 +17,6 @@
             </x-button>
         </div>
     </x-page-header>
-
-    <x-modal 
-        name="delete-settlement-{{ $settlement->id }}"
-        title="Excluir Acerto" 
-        message="Tem certeza que deseja excluir este acerto? Caso tenha sido gerada uma transação financeira atrelada, ela também será removida." 
-        confirmVariant="danger">
-        <form action="{{ route('settlements.destroy', $settlement) }}" method="POST" class="m-0">
-            @csrf
-            @method('DELETE')
-            <x-button type="submit" color="red" class="w-full sm:w-auto">
-                Sim, excluir
-            </x-button>
-        </form>
-    </x-modal>
 
     <div class="mt-6">
         <form action="{{ route('settlements.update', $settlement) }}" method="POST" id="settlement-form" x-data="{

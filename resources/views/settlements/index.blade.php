@@ -1,16 +1,20 @@
 <x-layouts.app>
     <x-page-header title="Acertos">
         <div class="flex items-center gap-3">
-            <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
-                <x-heroicon-o-users class="size-4" />
-                <span class="hidden sm:inline">Contas Divididas</span>
-                <span class="sm:hidden">Grupos</span>
-            </x-button>
-            <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
-                <x-heroicon-o-clock class="size-4" />
-                <span class="hidden sm:inline">Histórico Global</span>
-                <span class="sm:hidden">Histórico</span>
-            </x-button>
+            @if($hasGroups)
+                <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
+                    <x-heroicon-o-users class="size-4" />
+                    <span class="hidden sm:inline">Contas Divididas</span>
+                    <span class="sm:hidden">Grupos</span>
+                </x-button>
+            @endif
+            @if($hasHistory)
+                <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
+                    <x-heroicon-o-clock class="size-4" />
+                    <span class="hidden sm:inline">Histórico Global</span>
+                    <span class="sm:hidden">Histórico</span>
+                </x-button>
+            @endif
         </div>
     </x-page-header>
 
@@ -164,10 +168,12 @@
                         Voltar aos Ativos
                     </x-button>
                 @else
-                    <x-button color="outline" href="{{ route('settlements.index', ['archived' => 1]) }}" class="bg-white text-neutral-600">
-                        <x-heroicon-o-archive-box class="size-4" />
-                        Ver Arquivados
-                    </x-button>
+                    @if($hasArchived)
+                        <x-button color="outline" href="{{ route('settlements.index', ['archived' => 1]) }}" class="bg-white text-neutral-600">
+                            <x-heroicon-o-archive-box class="size-4" />
+                            Ver Arquivados
+                        </x-button>
+                    @endif
                 @endif
             </div>
         </div>
@@ -184,12 +190,19 @@
             @endforeach
             
             <div x-show="isEmpty" x-cloak class="col-span-full">
-                <x-ui.empty-state 
-                    icon="heroicon-o-users" 
-                    message="Nenhum contato encontrado."
-                    action-text="Novo Contato"
-                    :action-route="route('contacts.create')"
-                />
+                @if($showArchived)
+                    <x-ui.empty-state 
+                        icon="heroicon-o-users" 
+                        message="Nenhum contato arquivado encontrado."
+                    />
+                @else
+                    <x-ui.empty-state 
+                        icon="heroicon-o-users" 
+                        message="Nenhum contato encontrado."
+                        action-text="Novo Contato"
+                        :action-route="route('contacts.create')"
+                    />
+                @endif
             </div>
             
             <div x-show="hasMorePages" x-cloak class="col-span-full flex justify-center mt-4">
@@ -219,19 +232,23 @@
                 
                 <div class="flex items-center gap-2">
                     @if($showArchived)
-                        <x-button type="button" @click="unarchiveSelected()" color="primary">
-                            <x-heroicon-o-arrow-path class="size-4" />
-                            Desarquivar
-                        </x-button>
+                        <x-modal.trigger name="bulk-unarchive">
+                            <x-button type="button" color="primary">
+                                <x-heroicon-o-arrow-path class="size-4" />
+                                Desarquivar
+                            </x-button>
+                        </x-modal.trigger>
                     @else
                         <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
                             <x-heroicon-o-scissors class="size-4" />
                             Dividir Conta
                         </x-button>
-                        <x-button type="button" @click="archiveSelected()" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
-                            <x-heroicon-o-archive-box class="size-4" />
-                            Arquivar
-                        </x-button>
+                        <x-modal.trigger name="bulk-archive">
+                            <x-button type="button" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
+                                <x-heroicon-o-archive-box class="size-4" />
+                                Arquivar
+                            </x-button>
+                        </x-modal.trigger>
                     @endif
                 </div>
             </div>
@@ -240,6 +257,26 @@
                 <x-heroicon-o-x-mark class="size-5" />
             </button>
         </div>
+
+        <x-modal 
+            name="bulk-archive"
+            title="Arquivar Acertos" 
+            message="Tem certeza que deseja arquivar os acertos dos contatos selecionados? Eles não aparecerão na lista principal até que sejam desarquivados." 
+            confirmVariant="primary">
+            <x-button type="button" @click="archiveSelected()" class="w-full sm:w-auto">
+                Sim, arquivar
+            </x-button>
+        </x-modal>
+
+        <x-modal 
+            name="bulk-unarchive"
+            title="Desarquivar Acertos" 
+            message="Tem certeza que deseja desarquivar os acertos dos contatos selecionados? Eles voltarão a aparecer na lista principal." 
+            confirmVariant="primary">
+            <x-button type="button" @click="unarchiveSelected()" class="w-full sm:w-auto">
+                Sim, desarquivar
+            </x-button>
+        </x-modal>
     </div>
 
     <form id="archive-form" action="{{ route('settlements.archive') }}" method="POST" class="hidden">

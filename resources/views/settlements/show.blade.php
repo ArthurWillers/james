@@ -6,10 +6,26 @@
         </x-breadcrumbs>
 
         <div class="flex items-center gap-2">
-            <x-button color="outline" class="bg-white" onclick="confirm('Tem certeza que deseja arquivar este contato?') || event.preventDefault()">
-                <x-heroicon-o-archive-box class="size-4" />
-                <span class="hidden sm:inline">Arquivar</span>
-            </x-button>
+            <x-modal.trigger name="archive-contact-{{ $contact->id }}">
+                <x-button type="button" color="outline" class="bg-white">
+                    <x-heroicon-o-archive-box class="size-4" />
+                    <span class="hidden sm:inline">Arquivar</span>
+                </x-button>
+            </x-modal.trigger>
+
+            <x-modal 
+                name="archive-contact-{{ $contact->id }}"
+                title="Arquivar Acertos" 
+                message="Tem certeza que deseja arquivar os acertos com este contato? Ele não aparecerá na lista principal até que seja desarquivado." 
+                confirmVariant="primary">
+                <form action="{{ route('settlements.archive') }}" method="POST" class="m-0">
+                    @csrf
+                    <input type="hidden" name="contact_ids[]" value="{{ $contact->id }}">
+                    <x-button type="submit" class="w-full sm:w-auto">
+                        Sim, arquivar
+                    </x-button>
+                </form>
+            </x-modal>
             <x-button href="{{ route('settlements.create', $contact) }}">
                 <x-heroicon-o-plus class="size-4" />
                 <span>Novo Lançamento</span>
@@ -19,7 +35,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <!-- Contact Header -->
-        <a href="{{ route('contacts.show', $contact->id) }}" class="bg-white border border-neutral-200 rounded-xl p-6 flex items-center gap-4 shadow-sm hover:border-neutral-300 hover:shadow-md transition-all h-full">
+        <x-ui.card href="{{ route('contacts.show', $contact->id) }}" class="flex items-center gap-4 h-full">
             <x-ui.avatar :model="$contact" size="xl" />
             <div>
                 <h1 class="text-2xl font-bold text-neutral-900">{{ $contact->name }}</h1>
@@ -34,7 +50,7 @@
                     @endif
                 </div>
             </div>
-        </a>
+        </x-ui.card>
 
         <!-- Acertos KPI Card -->
         <x-finance.kpi-card
@@ -91,18 +107,18 @@
                             @endphp
                             @if($transaction)
                                 @if($transaction->invoice)
-                                    <div class="flex items-center gap-1.5 truncate">
-                                        <x-heroicon-o-credit-card class="size-4 shrink-0 text-orange-500" />
+                                    <div class="flex items-center gap-1.5 truncate text-neutral-600">
+                                        <x-heroicon-o-credit-card class="size-4 shrink-0" />
                                         <span class="truncate">{{ $transaction->invoice->creditCard->name }}</span>
                                     </div>
                                 @elseif($transaction->account)
-                                    <div class="flex items-center gap-1.5 truncate">
-                                        <x-heroicon-o-building-library class="size-4 shrink-0 text-blue-500" />
+                                    <div class="flex items-center gap-1.5 truncate text-neutral-600">
+                                        <x-heroicon-o-building-library class="size-4 shrink-0" />
                                         <span class="truncate">{{ $transaction->account->name }}</span>
                                     </div>
                                 @else
-                                    <div class="flex items-center gap-1.5 truncate">
-                                        <x-heroicon-o-currency-dollar class="size-4 shrink-0 text-neutral-400" />
+                                    <div class="flex items-center gap-1.5 truncate text-neutral-600">
+                                        <x-heroicon-o-currency-dollar class="size-4 shrink-0" />
                                         <span class="truncate">Transação</span>
                                     </div>
                                 @endif

@@ -73,6 +73,27 @@
                     <span class="text-sm font-medium text-neutral-500">Total</span>
                     <span class="text-lg font-bold text-neutral-900">{{ formatCurrency($settlementGroup->total_amount) }}</span>
                 </div>
+
+                @if($settlementGroup->financialTransaction)
+                    <div class="mt-8 pt-6 border-t border-neutral-100">
+                        <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Meio de Pagamento</h3>
+                        <div class="flex items-center gap-4">
+                            @if($settlementGroup->financialTransaction->invoice)
+                                <x-ui.avatar icon="heroicon-o-credit-card" size="lg" />
+                                <div>
+                                    <div class="font-medium text-neutral-900">{{ $settlementGroup->financialTransaction->invoice->creditCard->name }}</div>
+                                    <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ $settlementGroup->financialTransaction->invoice->closing_date->format('m/Y') }}</div>
+                                </div>
+                            @elseif($settlementGroup->financialTransaction->account)
+                                <x-ui.avatar icon="heroicon-o-building-library" size="lg" />
+                                <div>
+                                    <div class="font-medium text-neutral-900">{{ $settlementGroup->financialTransaction->account->name }}</div>
+                                    <div class="text-sm text-neutral-500">Conta Corrente</div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </x-card>
         </div>
 
@@ -110,6 +131,8 @@
                     @endif
                 </div>
             </x-card>
+
+            <x-ui.metadata-card :model="$settlementGroup" />
         </div>
     </div>
 

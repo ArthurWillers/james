@@ -78,7 +78,11 @@ class SettlementController extends Controller
 
         $groups = ContactGroup::orderBy('name')->get();
 
-        return view('settlements.index', compact('contacts', 'toReceive', 'toPay', 'netBalance', 'showArchived', 'groups'));
+        $hasArchived = \App\Models\ContactSettlementArchive::exists();
+        $hasHistory = \App\Models\Settlement::exists();
+        $hasGroups = \App\Models\SettlementGroup::exists();
+
+        return view('settlements.index', compact('contacts', 'toReceive', 'toPay', 'netBalance', 'showArchived', 'groups', 'hasArchived', 'hasHistory', 'hasGroups'));
     }
 
     /**
@@ -92,7 +96,9 @@ class SettlementController extends Controller
             ->orderByDesc('id')
             ->paginate(50);
 
-        return view('settlements.history', compact('settlements'));
+        $hasTrashed = Settlement::onlyTrashed()->exists();
+
+        return view('settlements.history', compact('settlements', 'hasTrashed'));
     }
 
     /**

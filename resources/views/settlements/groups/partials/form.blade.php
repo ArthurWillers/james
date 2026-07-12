@@ -1,17 +1,5 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-    @if ($errors->any())
-        <div class="col-span-full mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
-            <h4 class="font-bold mb-2 flex items-center gap-2">
-                <x-heroicon-m-exclamation-triangle class="size-5" />
-                Por favor, corrija os seguintes erros:
-            </h4>
-            <ul class="list-disc list-inside text-sm space-y-1">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+
 
     <!-- Left Column: Main Data -->
     <div class="lg:col-span-8 flex flex-col gap-6">

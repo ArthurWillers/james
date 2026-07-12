@@ -34,7 +34,7 @@
             myAmount: '{{ old('my_amount', '') }}',
             createTransaction: {{ old('create_transaction', 'true') == '1' || old('create_transaction', 'true') === 'true' ? 'true' : 'false' }},
             targetType: '{{ old('targetType', 'account') }}',
-            contacts: @json($alpineContacts),
+            contacts: {{ json_encode($alpineContacts) }},
 
             get totalPeople() {
                 return this.contacts.length + 1;

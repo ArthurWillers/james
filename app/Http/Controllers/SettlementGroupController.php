@@ -26,7 +26,7 @@ class SettlementGroupController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = SettlementGroup::with(['financialTransaction', 'settlements.contact']);
+        $query = SettlementGroup::with(['financialTransaction.account', 'financialTransaction.invoice.creditCard', 'settlements.contact']);
 
         if ($request->has('trashed')) {
             $query->onlyTrashed();
@@ -36,7 +36,9 @@ class SettlementGroupController extends Controller
             ->orderByDesc('id')
             ->paginate(50);
 
-        return view('settlements.groups.index', compact('groups'));
+        $hasTrashed = SettlementGroup::onlyTrashed()->exists();
+
+        return view('settlements.groups.index', compact('groups', 'hasTrashed'));
     }
 
     /**

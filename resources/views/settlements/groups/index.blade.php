@@ -8,25 +8,28 @@
 
     <x-page-header title="Contas Divididas">
         <div class="flex items-center gap-3">
-            <x-button color="outline" href="{{ route('settlements.groups.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
-                <x-heroicon-o-trash class="size-4" />
-                Ver Excluídos
-            </x-button>
+            @if($hasTrashed)
+                <x-button color="outline" href="{{ route('settlements.groups.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
+                    <x-heroicon-o-trash class="size-4" />
+                    Lixeira
+                </x-button>
+            @endif
         </div>
     </x-page-header>
 
     <div class="mt-6">
         <x-ui.table>
-            <x-ui.table.header class="hidden sm:grid grid-cols-5">
+            <x-ui.table.header class="hidden sm:grid grid-cols-6">
                 <x-ui.table.column>Data</x-ui.table.column>
                 <x-ui.table.column class="col-span-2">Descrição</x-ui.table.column>
                 <x-ui.table.column>Divisão</x-ui.table.column>
+                <x-ui.table.column>Pagamento</x-ui.table.column>
                 <x-ui.table.column class="text-right">Total</x-ui.table.column>
             </x-ui.table.header>
 
             <x-ui.table.body>
                 @forelse($groups as $group)
-                    <x-ui.table.row href="{{ route('settlements.groups.show', $group) }}" class="hidden sm:grid grid-cols-5">
+                    <x-ui.table.row href="{{ route('settlements.groups.show', $group) }}" class="hidden sm:grid grid-cols-6">
                         <x-ui.table.cell class="text-neutral-500">
                             {{ formatShort($group->date) }}
                         </x-ui.table.cell>
@@ -39,9 +42,30 @@
                         </x-ui.table.cell>
 
                         <x-ui.table.cell>
-                            <x-ui.badge color="gray">
+                            <x-ui.badge color="accent" class="w-fit">
                                 {{ $group->mode === 'equal' ? 'Partes Iguais' : 'Valores Exatos' }}
                             </x-ui.badge>
+                        </x-ui.table.cell>
+
+                        <x-ui.table.cell>
+                            @php
+                                $transaction = $group->financialTransaction;
+                            @endphp
+                            @if($transaction)
+                                @if($transaction->invoice)
+                                    <div class="flex items-center gap-1.5 truncate text-neutral-600">
+                                        <x-heroicon-o-credit-card class="size-4 shrink-0" />
+                                        <span class="truncate">{{ $transaction->invoice->creditCard->name }}</span>
+                                    </div>
+                                @elseif($transaction->account)
+                                    <div class="flex items-center gap-1.5 truncate text-neutral-600">
+                                        <x-heroicon-o-building-library class="size-4 shrink-0" />
+                                        <span class="truncate">{{ $transaction->account->name }}</span>
+                                    </div>
+                                @endif
+                            @else
+                                <span class="text-neutral-400">-</span>
+                            @endif
                         </x-ui.table.cell>
 
                         <x-ui.table.cell class="text-right font-semibold text-neutral-900">
