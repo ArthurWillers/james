@@ -12,18 +12,44 @@ class StoreSettlementRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('amount') && is_string($this->amount)) {
+            $this->merge(['amount' => str_replace(',', '.', $this->amount)]);
+        }
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            //
+            'type' => ['required', 'string', \Illuminate\Validation\Rule::enum(\App\Enums\SettlementType::class)],
+            'description' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'date' => ['required', 'date'],
+            'create_transaction' => ['boolean'],
+            'targetType' => ['exclude_if:create_transaction,0', 'exclude_if:create_transaction,false', 'required', 'in:account,card'],
+            'financial_account_id' => ['exclude_if:create_transaction,0', 'exclude_if:create_transaction,false', 'nullable', 'required_if:targetType,account', 'exists:financial_accounts,id'],
+            'financial_credit_card_id' => ['exclude_if:create_transaction,0', 'exclude_if:create_transaction,false', 'nullable', 'required_if:targetType,card', 'exists:financial_credit_cards,id'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'description.required' => 'A descrição é obrigatória.',
+            'amount.required' => 'O valor é obrigatório.',
+            'amount.min' => 'O valor deve ser maior que zero.',
+            'date.required' => 'A data é obrigatória.',
+            'financial_account_id.required_if' => 'Selecione uma conta bancária para a transação financeira.',
+            'financial_credit_card_id.required_if' => 'Selecione um cartão de crédito para a transação financeira.',
         ];
     }
 }

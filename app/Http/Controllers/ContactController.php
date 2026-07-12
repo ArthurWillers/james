@@ -75,8 +75,18 @@ class ContactController extends Controller
     public function show(Contact $contact): View
     {
         $allGroups = ContactGroup::orderBy('name')->get();
+        
+        $debtTheyOweMe = \App\Models\Settlement::where('contact_id', $contact->id)->where('type', \App\Enums\SettlementType::TheyOwe->value)->sum('amount');
+        $paymentsTheyMade = \App\Models\Settlement::where('contact_id', $contact->id)->where('type', \App\Enums\SettlementType::TheyPaid->value)->sum('amount');
+        $toReceive = max(0, $debtTheyOweMe - $paymentsTheyMade);
 
-        return view('contacts.show', compact('contact', 'allGroups'));
+        $debtIOweThem = \App\Models\Settlement::where('contact_id', $contact->id)->where('type', \App\Enums\SettlementType::IOwe->value)->sum('amount');
+        $paymentsIMade = \App\Models\Settlement::where('contact_id', $contact->id)->where('type', \App\Enums\SettlementType::IPaid->value)->sum('amount');
+        $toPay = max(0, $debtIOweThem - $paymentsIMade);
+            
+        $netBalance = $toReceive - $toPay;
+
+        return view('contacts.show', compact('contact', 'allGroups', 'netBalance'));
     }
 
     /**

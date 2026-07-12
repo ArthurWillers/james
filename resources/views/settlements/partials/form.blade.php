@@ -1,18 +1,80 @@
-<div class="space-y-6">
-    <!-- Placeholder para o futuro formulário -->
-    <div class="py-8 text-center border-2 border-dashed border-neutral-200 rounded-lg">
-        <x-heroicon-o-wrench-screwdriver class="mx-auto h-8 w-8 text-neutral-400" />
-        <h3 class="mt-2 text-sm font-semibold text-neutral-900">Formulário em construção</h3>
-        <p class="mt-1 text-sm text-neutral-500">O formulário será implementado posteriormente com as integrações financeiras.</p>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- Left Column: Main Data -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+        <x-card class="p-6">
+            <div class="flex flex-col gap-6">
+                <x-form-input label="Descrição" name="description" x-model="description" placeholder="Descrição" autofocus />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div>
+                        <x-form-input label="Valor (R$)" name="amount" :currency="true" placeholder="0,00" value="{{ old('amount', isset($settlement) ? number_format(abs($settlement->amount), 2, '.', '') : '') }}" />
+                    </div>
+                    <div>
+                        <x-form-input label="Data" name="date" type="date" value="{{ old('date', isset($settlement) ? $settlement->date->format('Y-m-d') : \Carbon\Carbon::today()->format('Y-m-d')) }}" />
+                    </div>
+                </div>
+            </div>
+        </x-card>
     </div>
 
-    <!-- Botões -->
-    <div class="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100">
-        <x-button type="button" color="outline" href="{{ route('settlements.contact.show', $contact) }}">
-            Cancelar
-        </x-button>
-        <x-button type="submit" disabled>
-            {{ isset($settlement) ? 'Salvar Alterações' : 'Salvar Lançamento' }}
-        </x-button>
+    <!-- Right Column: Configurações -->
+    <div class="lg:col-span-4 flex flex-col">
+        <x-card class="p-6 space-y-6">
+            <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Configurações</h3>
+
+            {{-- Tipo de Acerto --}}
+            <x-radio-block-group legend="Tipo do Acerto">
+                @foreach(\App\Enums\SettlementType::cases() as $stype)
+                    @php
+                        $activeColor = $stype->color() === 'green' ? 'peer-checked:text-emerald-600' : 'peer-checked:text-red-600';
+                        $inactiveColor = $stype->color() === 'green' ? 'text-emerald-600 hover:text-emerald-700' : 'text-red-600 hover:text-red-700';
+                    @endphp
+                    <x-radio-block 
+                        name="type" 
+                        x-model="type" 
+                        value="{{ $stype->value }}" 
+                        icon="{{ $stype->icon() }}" 
+                        label="{{ $stype->label() }}" 
+                        activeClass="{{ $activeColor }}" 
+                        inactiveClass="{{ $inactiveColor }}" 
+                    />
+                @endforeach
+            </x-radio-block-group>
+
+            {{-- Transação Financeira (Hide on 'Eu Devo' - i_owe) --}}
+            <div x-show="type !== 'i_owe'" x-transition class="space-y-4 pt-4 border-t border-neutral-100">
+                <input type="hidden" name="create_transaction" value="0">
+                <x-switch name="create_transaction" x-model="createTransaction" label="Criar Transação?" value="1" />
+                
+                <div x-show="createTransaction" x-transition class="space-y-4 pt-2">
+                    <x-radio-block-group legend="Onde">
+                        <x-radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
+                        <x-radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
+                    </x-radio-block-group>
+
+                    <input type="hidden" name="targetType" :value="targetType">
+                    
+                    <div>
+                        <div x-show="targetType === 'account'">
+                            <x-form-select name="financial_account_id">
+                                <option value="">Selecione uma conta...</option>
+                                @foreach($accounts as $account)
+                                    <option value="{{ $account->id }}" {{ old('financial_account_id', isset($settlement) && $settlement->financialTransaction ? $settlement->financialTransaction->financial_account_id : '') == $account->id ? 'selected' : '' }}>{{ $account->name }}</option>
+                                @endforeach
+                            </x-form-select>
+                        </div>
+                        <div x-show="targetType === 'card'" style="display: none;">
+                            <x-form-select name="financial_credit_card_id">
+                                <option value="">Selecione um cartão...</option>
+                                @foreach($cards as $card)
+                                    <option value="{{ $card->id }}" {{ old('financial_credit_card_id', isset($settlement) && $settlement->financialTransaction ? optional($settlement->financialTransaction->invoice)->financial_credit_card_id : '') == $card->id ? 'selected' : '' }}>{{ $card->name }}</option>
+                                @endforeach
+                            </x-form-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </x-card>
     </div>
 </div>

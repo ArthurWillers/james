@@ -13,18 +13,60 @@
                 <x-heroicon-o-arrow-left class="size-4" />
                 Cancelar
             </x-button>
-            <x-button color="danger" onclick="alert('Exclusão simulada com sucesso! (Fase 2)')">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
+            <x-modal.trigger name="delete-settlement-{{ $settlement->id }}">
+                <x-button type="button" color="danger">
+                    <x-heroicon-o-trash class="size-4" />
+                    Excluir
+                </x-button>
+            </x-modal.trigger>
         </div>
     </x-page-header>
 
-    <div class="mt-6 max-w-2xl bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
-        <form action="{{ route('settlements.update', $settlement) }}" method="POST">
+    <x-modal 
+        name="delete-settlement-{{ $settlement->id }}"
+        title="Excluir Acerto" 
+        message="Tem certeza que deseja excluir este acerto? Caso tenha sido gerada uma transação financeira atrelada, ela também será removida." 
+        confirmVariant="danger">
+        <form action="{{ route('settlements.destroy', $settlement) }}" method="POST" class="m-0">
+            @csrf
+            @method('DELETE')
+            <x-button type="submit" color="red" class="w-full sm:w-auto">
+                Sim, excluir
+            </x-button>
+        </form>
+    </x-modal>
+
+    <div class="mt-6">
+        <form action="{{ route('settlements.update', $settlement) }}" method="POST" id="settlement-form" x-data="{
+            type: '{{ old('type', $settlement->type->value) }}',
+            createTransaction: {{ old('create_transaction', $settlement->financial_transaction_id ? 'true' : 'false') == '1' || old('create_transaction', $settlement->financial_transaction_id ? 'true' : 'false') === 'true' ? 'true' : 'false' }},
+            targetType: '{{ old('targetType', optional($settlement->financialTransaction ?? null)->invoice ? 'card' : 'account') }}',
+            description: '{{ old('description', $settlement->description) }}',
+            init() {
+                this.$watch('type', (value) => {
+                    if (!this.description || this.description === 'Pagamento recebido' || this.description === 'Pagamento realizado') {
+                        if (value === 'they_paid') {
+                            this.description = 'Pagamento recebido';
+                        } else if (value === 'i_paid') {
+                            this.description = 'Pagamento realizado';
+                        }
+                    }
+                });
+            }
+        }">
             @csrf
             @method('PUT')
+            
             @include('settlements.partials.form', ['settlement' => $settlement])
+
+            <div class="flex items-center justify-end gap-3 mt-6">
+                <x-button type="button" color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
+                    Cancelar
+                </x-button>
+                <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
+                    Salvar Alterações
+                </x-button>
+            </div>
         </form>
     </div>
 </x-layouts.app>
