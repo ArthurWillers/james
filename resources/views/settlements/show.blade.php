@@ -26,6 +26,14 @@
                     </x-button>
                 </form>
             </x-modal>
+            
+            @if($settleUrl)
+                <x-button href="{{ $settleUrl }}" color="outline" class="bg-white">
+                    <x-heroicon-o-check-circle class="size-4" />
+                    <span>Quitar Dívida</span>
+                </x-button>
+            @endif
+
             <x-button href="{{ route('settlements.create', $contact) }}">
                 <x-heroicon-o-plus class="size-4" />
                 <span>Novo Lançamento</span>

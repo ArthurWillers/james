@@ -130,18 +130,49 @@ class SettlementController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(50);
 
-        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance'));
+        $settleUrl = null;
+        if (abs($netBalance) > 0) {
+            $settleUrl = route('settlements.create', [
+                'contact' => $contact->id,
+                'settle' => 1
+            ]);
+        }
+
+        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Contact $contact)
+    public function create(Request $request, Contact $contact)
     {
         $accounts = \App\Models\FinancialAccount::all();
         $cards = \App\Models\FinancialCreditCard::all();
         
-        return view('settlements.create', compact('contact', 'accounts', 'cards'));
+        $settlement = null;
+        $isSettling = $request->boolean('settle');
+        
+        if ($isSettling) {
+            $debtTheyOweMe = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyOwe->value)->sum('amount');
+            $paymentsTheyMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyPaid->value)->sum('amount');
+            $toReceive = max(0, $debtTheyOweMe - $paymentsTheyMade);
+
+            $debtIOweThem = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IOwe->value)->sum('amount');
+            $paymentsIMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IPaid->value)->sum('amount');
+            $toPay = max(0, $debtIOweThem - $paymentsIMade);
+                
+            $netBalance = $toReceive - $toPay;
+            
+            if (abs($netBalance) > 0) {
+                $settlement = new Settlement();
+                $settlement->type = $netBalance > 0 ? SettlementType::TheyPaid : SettlementType::IPaid;
+                $settlement->amount = abs($netBalance);
+                $settlement->description = 'Quitação de saldo';
+                $settlement->date = \Illuminate\Support\Carbon::today();
+            }
+        }
+
+        return view('settlements.create', compact('contact', 'accounts', 'cards', 'settlement', 'isSettling'));
     }
 
     /**

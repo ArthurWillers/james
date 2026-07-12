@@ -20,10 +20,10 @@
 
     <div class="mt-6">
         <form action="{{ route('settlements.store', $contact) }}" method="POST" id="settlement-form" x-data="{
-            type: '{{ old('type', 'they_owe') }}',
-            createTransaction: {{ old('create_transaction', 'false') == '1' || old('create_transaction', 'false') === 'true' ? 'true' : 'false' }},
+            type: '{{ old('type', isset($settlement) ? $settlement->type->value : 'they_owe') }}',
+            createTransaction: {{ old('create_transaction', isset($isSettling) && $isSettling ? 'true' : 'false') == '1' || old('create_transaction', isset($isSettling) && $isSettling ? 'true' : 'false') === 'true' ? 'true' : 'false' }},
             targetType: '{{ old('targetType', 'account') }}',
-            description: '{{ old('description', '') }}',
+            description: '{{ old('description', isset($settlement) ? $settlement->description : '') }}',
             init() {
                 this.$watch('type', (value) => {
                     if (!this.description || this.description === 'Pagamento recebido' || this.description === 'Pagamento realizado') {
@@ -41,7 +41,7 @@
         }">
             @csrf
             
-            @include('settlements.partials.form')
+            @include('settlements.partials.form', ['settlement' => $settlement ?? null])
         </form>
     </div>
 </x-layouts.app>
