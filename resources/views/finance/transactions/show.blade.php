@@ -194,6 +194,30 @@
         </x-card>
     @endif
 
+    @if($transaction->settlements->isNotEmpty())
+        @php
+            $settlement = $transaction->settlements->first();
+        @endphp
+        <x-card class="mb-6 p-6 border-purple-200 bg-purple-50/50">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-purple-100 rounded-xl text-purple-600 shrink-0">
+                        <x-heroicon-o-user-group class="size-6" />
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-purple-900">Acerto Vinculado</h3>
+                        <p class="text-sm text-purple-700 mt-0.5">
+                            Esta transação foi gerada a partir de um acerto com <strong>{{ $settlement->contact->name }}</strong>.
+                        </p>
+                    </div>
+                </div>
+                <x-button href="{{ route('settlements.contact.show', $settlement->contact_id) }}" color="outline" class="bg-white border-purple-200 text-purple-700 hover:bg-purple-100 shrink-0">
+                    Acessar Acertos
+                </x-button>
+            </div>
+        </x-card>
+    @endif
+
     @if($transaction->items->isNotEmpty())
         <div class="flex justify-between items-center mb-4 mt-8">
             <h3 class="text-lg font-bold text-neutral-900">Itens da Transação</h3>

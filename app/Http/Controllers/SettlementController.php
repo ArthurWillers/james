@@ -145,7 +145,7 @@ class SettlementController extends Controller
         
         // Transaction logic
         if (!empty($validated['create_transaction'])) {
-            $transaction = $this->createOrUpdateTransaction(null, $validated);
+            $transaction = $this->createOrUpdateTransaction(null, $validated, $contact);
             if ($transaction) {
                 $settlement->financial_transaction_id = $transaction->id;
             }
@@ -191,7 +191,7 @@ class SettlementController extends Controller
         
         // Transaction logic
         if (!empty($validated['create_transaction'])) {
-            $transaction = $this->createOrUpdateTransaction($settlement->financialTransaction, $validated);
+            $transaction = $this->createOrUpdateTransaction($settlement->financialTransaction, $validated, $settlement->contact);
             $settlement->financial_transaction_id = $transaction->id;
         } else {
             if ($settlement->financial_transaction_id) {
@@ -225,7 +225,7 @@ class SettlementController extends Controller
     /**
      * Create or update the associated financial transaction.
      */
-    private function createOrUpdateTransaction(?\App\Models\FinancialTransaction $transaction, array $validated): ?\App\Models\FinancialTransaction
+    private function createOrUpdateTransaction(?\App\Models\FinancialTransaction $transaction, array $validated, Contact $contact): ?\App\Models\FinancialTransaction
     {
         // Type translation
         // TheyOwe (I paid) -> expense, IPaid (I paid) -> expense
@@ -237,10 +237,16 @@ class SettlementController extends Controller
         
         $date = \Illuminate\Support\Carbon::parse($validated['date']);
         
+        $description = $validated['description'];
+        $suffix = ' - ' . $contact->name;
+        if (!\Illuminate\Support\Str::endsWith($description, $suffix)) {
+            $description .= $suffix;
+        }
+        
         $data = [
             'type' => $type,
             'amount' => $validated['amount'],
-            'description' => $validated['description'],
+            'description' => $description,
             'date' => $date,
             'is_posted' => true,
             'financial_account_id' => null,
