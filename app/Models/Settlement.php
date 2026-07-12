@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'contact_id',
     'financial_transaction_id',
+    'settlement_group_id',
     'type',
     'amount',
     'description',
@@ -39,4 +40,10 @@ class Settlement extends Model
     {
         return $this->belongsTo(Contact::class);
     }
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(SettlementGroup::class, 'settlement_group_id');
+    }
 }
+

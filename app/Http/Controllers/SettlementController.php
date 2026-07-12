@@ -84,10 +84,11 @@ class SettlementController extends Controller
     /**
      * Display a global history of settlements.
      */
-    public function history()
+    public function history(Request $request)
     {
-        $settlements = Settlement::with(['contact', 'contact.media'])
-            ->orderByDesc('date')
+        $query = Settlement::with(['contact', 'contact.media']);
+
+        $settlements = $query->orderByDesc('date')
             ->orderByDesc('id')
             ->paginate(50);
 
@@ -110,9 +111,11 @@ class SettlementController extends Controller
             
         $netBalance = $toReceive - $toPay;
 
+        // Get settlements history for this contact (paginated)
         $settlements = Settlement::where('contact_id', $contact->id)
-            ->orderByDesc('date')
-            ->orderByDesc('id')
+            ->with(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard'])
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate(50);
 
         return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance'));
@@ -157,19 +160,15 @@ class SettlementController extends Controller
             ->with('success', 'Lançamento registrado com sucesso.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Settlement $settlement)
-    {
-        //
-    }
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Settlement $settlement)
     {
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
+
         $contact = $settlement->contact;
         $accounts = \App\Models\FinancialAccount::all();
         $cards = \App\Models\FinancialCreditCard::all();
@@ -182,6 +181,8 @@ class SettlementController extends Controller
      */
     public function update(UpdateSettlementRequest $request, Settlement $settlement)
     {
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
+
         $validated = $request->validated();
         
         $settlement->type = $validated['type'];
@@ -211,6 +212,8 @@ class SettlementController extends Controller
      */
     public function destroy(Settlement $settlement)
     {
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
+
         if ($settlement->financialTransaction) {
             $settlement->financialTransaction()->delete();
         }
@@ -273,5 +276,57 @@ class SettlementController extends Controller
         ]);
 
         return $transaction;
+    }
+
+    public function trashed()
+    {
+        $settlements = Settlement::onlyTrashed()
+            ->with(['contact', 'contact.media'])
+            ->orderByDesc('deleted_at')
+            ->paginate(50);
+
+        return view('settlements.trashed', compact('settlements'));
+    }
+
+    public function restore($id)
+    {
+        $settlement = Settlement::onlyTrashed()->findOrFail($id);
+        
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser restaurado individualmente.');
+        
+        $settlement->restore();
+        
+        if ($settlement->financial_transaction_id) {
+            \App\Models\FinancialTransaction::withTrashed()
+                ->where('id', $settlement->financial_transaction_id)
+                ->restore();
+        }
+
+        return redirect()->route('settlements.trashed')->with('success', 'Acerto restaurado com sucesso.');
+    }
+
+    public function forceDelete($id)
+    {
+        $settlement = Settlement::onlyTrashed()->findOrFail($id);
+        
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
+        
+        if ($settlement->financial_transaction_id) {
+            $transaction = \App\Models\FinancialTransaction::withTrashed()->find($settlement->financial_transaction_id);
+            if ($transaction) {
+                $transaction->items()->delete();
+                $transaction->forceDelete();
+            }
+        }
+        
+        $settlement->forceDelete();
+
+        return redirect()->route('settlements.trashed')->with('success', 'Acerto excluído permanentemente.');
+    }
+
+    public function show(Settlement $settlement)
+    {
+        $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard']);
+        return view('settlements.details', compact('settlement'));
     }
 }
