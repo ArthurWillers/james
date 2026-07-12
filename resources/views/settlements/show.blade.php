@@ -86,16 +86,19 @@
                         </x-ui.table.cell>
 
                         <x-ui.table.cell class="text-neutral-500 text-sm">
-                            @if($settlement->financialTransaction)
-                                @if($settlement->financialTransaction->invoice)
+                            @php
+                                $transaction = $settlement->financialTransaction ?? $settlement->group?->financialTransaction;
+                            @endphp
+                            @if($transaction)
+                                @if($transaction->invoice)
                                     <div class="flex items-center gap-1.5 truncate">
                                         <x-heroicon-o-credit-card class="size-4 shrink-0 text-orange-500" />
-                                        <span class="truncate">{{ $settlement->financialTransaction->invoice->creditCard->name }}</span>
+                                        <span class="truncate">{{ $transaction->invoice->creditCard->name }}</span>
                                     </div>
-                                @elseif($settlement->financialTransaction->account)
+                                @elseif($transaction->account)
                                     <div class="flex items-center gap-1.5 truncate">
                                         <x-heroicon-o-building-library class="size-4 shrink-0 text-blue-500" />
-                                        <span class="truncate">{{ $settlement->financialTransaction->account->name }}</span>
+                                        <span class="truncate">{{ $transaction->account->name }}</span>
                                     </div>
                                 @else
                                     <div class="flex items-center gap-1.5 truncate">

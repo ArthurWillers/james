@@ -113,7 +113,13 @@ class SettlementController extends Controller
 
         // Get settlements history for this contact (paginated)
         $settlements = Settlement::where('contact_id', $contact->id)
-            ->with(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard'])
+            ->with([
+                'contact', 
+                'financialTransaction.account', 
+                'financialTransaction.invoice.creditCard',
+                'group.financialTransaction.account',
+                'group.financialTransaction.invoice.creditCard'
+            ])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(50);
