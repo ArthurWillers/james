@@ -76,7 +76,7 @@
                             <div class="overflow-hidden">
                                 <div class="font-medium text-neutral-900 truncate">{{ $transaction->description }}</div>
                                 <div class="mt-1 flex items-center gap-2">
-                                    <span class="text-xs text-neutral-500">{{ $transaction->date->format('d/m/Y') }}</span>
+                                    <span class="text-xs text-neutral-500">{{ formatShort($transaction->date) }}</span>
                                     @if($transaction->invoice)
                                         <x-badge color="neutral" size="sm"><x-heroicon-o-credit-card class="size-3 mr-1 inline"/> {{ $transaction->invoice->creditCard->name }}</x-badge>
                                     @elseif($transaction->account)

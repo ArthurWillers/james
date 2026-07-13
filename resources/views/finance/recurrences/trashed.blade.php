@@ -93,7 +93,7 @@
 
                             <x-table.cell>
                                 <span class="text-sm text-neutral-600">
-                                    {{ $recurrence->deleted_at->format('d/m/Y H:i') }}
+                                    {{ formatDateTime($recurrence->deleted_at) }}
                                 </span>
                             </x-table.cell>
 
@@ -129,7 +129,7 @@
                                                 <div class="truncate text-xs font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                                     {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                                                 </div>
-                                                <span class="text-xs">Excluída: {{ $recurrence->deleted_at->format('d/m/Y') }}</span>
+                                                <span class="text-xs">Excluída: {{ formatShort($recurrence->deleted_at) }}</span>
                                             </div>
                                         </div>
                                     </div>

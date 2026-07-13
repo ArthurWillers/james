@@ -95,7 +95,7 @@
                         <tr class="hover:bg-neutral-50/50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-neutral-900">
-                                    {{ Str::title(Carbon\Carbon::parse($invoice->reference_month)->isoFormat('MMMM YYYY')) }}
+                                    {{ formatMonthYearFull($invoice->reference_month) }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
@@ -152,7 +152,7 @@
     </x-card>
 
     <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2 mt-4">
-        <p>Criado em: {{ $card->created_at->format('d/m/Y H:i') }}</p>
-        <p>Última atualização: {{ $card->updated_at->format('d/m/Y H:i') }}</p>
+        <p>Criado em: {{ formatDateTime($card->created_at) }}</p>
+        <p>Última atualização: {{ formatDateTime($card->updated_at) }}</p>
     </div>
 </x-layouts.financial>

@@ -3,7 +3,7 @@
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('financial.cards.index') }}">Cartões</x-breadcrumbs.item>
             <x-breadcrumbs.item href="{{ route('financial.cards.show', $card) }}">{{ $card->name }}</x-breadcrumbs.item>
-            <x-breadcrumbs.item>Fatura {{ Str::title(Carbon\Carbon::parse($invoice->reference_month)->isoFormat('MMM/YY')) }}</x-breadcrumbs.item>
+            <x-breadcrumbs.item>Fatura {{ formatMonthYear($invoice->reference_month) }}</x-breadcrumbs.item>
         </x-breadcrumbs>
     </div>
 
@@ -30,7 +30,7 @@
         $remaining = max(0, $total - $invoice->amount_paid);
     @endphp
 
-    <x-page-header title="Fatura de {{ Str::title(Carbon\Carbon::parse($invoice->reference_month)->isoFormat('MMMM YYYY')) }}">
+    <x-page-header title="Fatura de {{ formatMonthYearFull($invoice->reference_month) }}">
         <x-slot:subtitle>
             <div class="flex items-center gap-2 mt-2">
                 <x-badge :color="$badgeColor">

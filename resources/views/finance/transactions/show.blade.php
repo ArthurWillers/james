@@ -54,7 +54,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                     <x-badge color="neutral" size="sm">
                         <x-heroicon-o-calendar class="size-3 mr-1 inline" />
-                        {{ $transaction->date->format('d/m/Y') }}
+                        {{ formatShort($transaction->date) }}
                     </x-badge>
                     
                     @if($transaction->is_posted)
@@ -80,7 +80,7 @@
                     <x-ui.avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->invoice->creditCard->name }}</p>
-                        <p class="text-xs text-neutral-500">Fatura de {{ $transaction->invoice->closing_date->format('M/Y') }}</p>
+                        <p class="text-xs text-neutral-500">Fatura de {{ formatMonthYear($transaction->invoice->closing_date) }}</p>
                     </div>
                 </div>
             @elseif($transaction->account)

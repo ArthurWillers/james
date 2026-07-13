@@ -80,7 +80,7 @@
 
                         <x-table.cell>
                             <span class="text-sm text-neutral-600">
-                                {{ $recurrence->next_processing_date ? $recurrence->next_processing_date->format('d/m/Y') : 'N/A' }}
+                                {{ $recurrence->next_processing_date ? formatShort($recurrence->next_processing_date) : 'N/A' }}
                             </span>
                         </x-table.cell>
 
@@ -119,7 +119,7 @@
                                             <div class="truncate text-xs font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                                 {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                                             </div>
-                                            <span class="text-xs">Próx: {{ $recurrence->next_processing_date ? $recurrence->next_processing_date->format('d/m/Y') : 'N/A' }}</span>
+                                            <span class="text-xs">Próx: {{ $recurrence->next_processing_date ? formatShort($recurrence->next_processing_date) : 'N/A' }}</span>
                                         </div>
                                     </div>
                                 </div>

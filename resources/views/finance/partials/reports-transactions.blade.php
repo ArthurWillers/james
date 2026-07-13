@@ -32,7 +32,7 @@
                      x-show="typeof selectedTagId === 'undefined' || selectedTagId === null || tags.includes(selectedTagId) || (selectedTagId === 0 && tags.length === 0)">
                     <x-table.row class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] opacity-60">
                     <x-table.cell>
-                        <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
+                        <span class="font-medium text-neutral-900">{{ formatShort($transaction->date) }}</span>
                     </x-table.cell>
 
                     <x-table.cell>
@@ -104,7 +104,7 @@
                                     {{ $transaction->description }}
                                     <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Projeção</span>
                                 </h3>
-                                <span class="text-sm text-neutral-500">{{ $transaction->date->format('d/m/Y') }}</span>
+                                <span class="text-sm text-neutral-500">{{ formatShort($transaction->date) }}</span>
                             </div>
                             <div class="shrink-0 text-right">
                                 <div class="font-bold tracking-tight text-base {{ $transaction->type === 'expense' ? 'text-red-600' : 'text-green-600' }}">

@@ -31,7 +31,7 @@
                  x-show="typeof selectedTagId === 'undefined' || selectedTagId === null || tags.includes(selectedTagId) || (selectedTagId === 0 && tags.length === 0)">
                 <x-table.row href="{{ $href }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
                     <x-table.cell>
-                        <span class="font-medium text-neutral-900">{{ $transaction->date->format('d/m/Y') }}</span>
+                        <span class="font-medium text-neutral-900">{{ formatShort($transaction->date) }}</span>
                     </x-table.cell>
 
                 <x-table.cell>
@@ -133,7 +133,7 @@
                                 @endif
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-neutral-500">
-                                <span>{{ $transaction->date->format('d/m/Y') }}</span>
+                                <span>{{ formatShort($transaction->date) }}</span>
                                 <span>&bull;</span>
                                 @if($transaction->invoice)
                                     <span class="truncate flex items-center gap-1"><x-heroicon-o-credit-card class="size-3" /> {{ $transaction->invoice->creditCard->name }}</span>

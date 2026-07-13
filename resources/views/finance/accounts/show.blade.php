@@ -141,7 +141,7 @@
     @endif
 
     <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2">
-        <p>Criado em: {{ $account->created_at->format('d/m/Y H:i') }}</p>
-        <p>Última atualização: {{ $account->updated_at->format('d/m/Y H:i') }}</p>
+        <p>Criado em: {{ formatDateTime($account->created_at) }}</p>
+        <p>Última atualização: {{ formatDateTime($account->updated_at) }}</p>
     </div>
 </x-layouts.financial>

@@ -67,7 +67,7 @@
                                 <x-ui.avatar icon="heroicon-o-credit-card" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlement->financialTransaction->invoice->creditCard->name }}</div>
-                                    <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ $settlement->financialTransaction->invoice->closing_date->format('m/Y') }}</div>
+                                    <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ formatMonthYear($settlement->financialTransaction->invoice->closing_date) }}</div>
                                 </div>
                             @elseif($settlement->financialTransaction->account)
                                 <x-ui.avatar icon="heroicon-o-building-library" size="lg" />
