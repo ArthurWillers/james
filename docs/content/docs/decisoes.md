@@ -279,3 +279,13 @@ Com o crescimento e a adição de novos módulos, notou-se uma divergência visu
 
 **Decisão:**
 Foi estabelecida uma política de padronização estrita de layout. Modais de ação destrutiva (excluir/restaurar) deverão usar textos e layouts idênticos através de componentes genéricos centralizados. O layout de formulários e a posição dos botões de ação (Salvar, Cancelar, Voltar) devem seguir um padrão único em todo o sistema. Para atingir esse objetivo, devemos criar e extrair ativamente componentes Blade (`x-ui.*`, `x-form.*`, etc.) e partials genéricos, eliminando código HTML duplicado e garantindo uniformidade visual.
+
+## 020 — Breadcrumbs como Título da Página
+
+**Data:** 13 de Julho de 2026
+
+**Contexto:**
+Havia uma redundância visual nas views: no topo da tela, os *breadcrumbs* indicavam a localização atual (ex: `Contatos / Grupos / Novo Grupo`) e, logo abaixo, o `<x-page-header>` exibia um título grande, geralmente repetindo o último item do breadcrumb (`Novo Grupo`). Isso poluía o cabeçalho e ocupava espaço vertical desnecessário.
+
+**Decisão:**
+O padrão de interface para títulos de página passa a ser o uso dos próprios *breadcrumbs* como título principal no `<x-page-header>`, eliminando o título de texto estático redundante abaixo dele. Esse é um padrão de design moderno (adotado por plataformas como Vercel e Linear) que simplifica a interface, limpa o topo da tela e foca a atenção diretamente na ação ou conteúdo da página. Onde não houver necessidade de *breadcrumbs* (nível raiz), usa-se apenas o título simples.
