@@ -99,19 +99,24 @@
                                     $isImage = in_array($media->mime_type, ['image/jpeg', 'image/png', 'image/jpg']);
                                     $fileUrl = route('settlements.attachment', [$settlement, $media, $media->file_name]);
                                 @endphp
-                                <a href="{{ $fileUrl }}" 
-                                   @if($isImage) @click.prevent="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')" @else target="_blank" @endif
-                                   class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
-                                    @if($isImage)
+                                @if($isImage)
+                                    <button type="button" class="flex items-center text-left gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group w-full cursor-pointer" @click="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')">
                                         <x-ui.avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
-                                    @else
+                                        <div class="truncate text-sm text-neutral-700">
+                                            <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
+                                            <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
+                                        </div>
+                                    </button>
+                                @else
+                                    <a href="{{ $fileUrl }}" target="_blank"
+                                       class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
                                         <x-ui.avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
-                                    @endif
-                                    <div class="truncate text-sm text-neutral-700">
-                                        <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
-                                        <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
-                                    </div>
-                                </a>
+                                        <div class="truncate text-sm text-neutral-700">
+                                            <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
+                                            <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
+                                        </div>
+                                    </a>
+                                @endif
                             @endforeach
                         </div>
                     </x-ui.lightbox>
