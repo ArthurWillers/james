@@ -58,7 +58,7 @@
                         <div class="w-full h-full flex items-center justify-center">
                             @foreach($suggestedIcons as $icon)
                                 <div x-show="selectedIcon === '{{ $icon }}'">
-                                    <x-avatar :icon="$icon" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
+                                    <x-avatar :icon="$icon" size="xl" class="border-transparent! text-white! shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
                                 </div>
                             @endforeach
                         </div>
@@ -71,7 +71,7 @@
                             </div>
                         </template>
                         <template x-if="!customIconHtml">
-                            <x-avatar icon="heroicon-o-question-mark-circle" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
+                            <x-avatar icon="heroicon-o-question-mark-circle" size="xl" class="border-transparent! text-white! shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
                         </template>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                         <button type="button" 
                             @click="selectedIcon = '{{ $icon }}'"
                             class="p-3 rounded-xl flex items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-neutral-100 hover:text-neutral-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105"
-                            :class="selectedIcon === '{{ $icon }}' ? '!bg-accent/10 !text-accent ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
+                            :class="selectedIcon === '{{ $icon }}' ? 'bg-accent/10! text-accent! ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
                             <x-dynamic-component :component="$icon" class="size-6" />
                         </button>
                     @endforeach

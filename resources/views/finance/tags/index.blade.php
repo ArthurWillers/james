@@ -34,7 +34,7 @@
                 <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr] group transition-all" style="--tag-color: {{ $tag->color_hex }};">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
-                            <x-avatar :icon="$tag->icon" class="!border-transparent !text-white w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
+                            <x-avatar :icon="$tag->icon" class="border-transparent! text-white! w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
                             <div class="flex items-center gap-2 overflow-hidden">
                                 <div class="font-semibold text-neutral-900 truncate">{{ $tag->name }}</div>
                                 @if($tag->is_protected)
@@ -74,7 +74,7 @@
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 min-w-0 flex items-center gap-3">
-                                <x-avatar :icon="$tag->icon" class="!border-transparent !text-white w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
+                                <x-avatar :icon="$tag->icon" class="border-transparent! text-white! w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
                                 <div class="overflow-hidden">
                                     <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 flex items-center gap-2 truncate">
                                         {{ $tag->name }}
@@ -152,7 +152,7 @@
                 </template>
             </x-slot>
             <template x-if="selectedTagUsageCount == 0">
-                <form :action="'{{ route('financial.tags.destroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTagId)" method="POST" class="m-0 w-full sm:w-auto">
+                <form :action="'{{ route('financial.tags.destroy', 0) }}'.replace('/0', '/' + selectedTagId)" method="POST" class="m-0 w-full sm:w-auto">
                     @csrf
                     @method('DELETE')
                     <x-button type="submit" color="red" class="w-full sm:w-auto">

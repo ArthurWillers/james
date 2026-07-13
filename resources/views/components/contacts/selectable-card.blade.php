@@ -5,7 +5,7 @@
      x-bind:class="{'ring-2 ring-accent border-transparent': {{ $selectedModel }}.includes(String({{ $contact->id }})) || {{ $selectedModel }}.includes({{ $contact->id }}) }">
     
     <div class="shrink-0 flex items-center">
-        <x-form.form-checkbox name="contact_ids[]" value="{{ $contact->id }}" id="chk_contact_{{ $contact->id }}" x-model="{{ $selectedModel }}" class="!m-0" />
+        <x-form.form-checkbox name="contact_ids[]" value="{{ $contact->id }}" id="chk_contact_{{ $contact->id }}" x-model="{{ $selectedModel }}" class="m-0!" />
     </div>
 
     <div class="flex items-center gap-4 flex-1 min-w-0">
