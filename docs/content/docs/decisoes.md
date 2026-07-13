@@ -249,3 +249,33 @@ Na tela principal (Dashboard), no gráfico "Top Despesas (30 Dias)", as compras 
 
 **Decisão:**
 Adotamos explicitamente o **Regime de Competência** para a visualização de gastos em dashboards de análise. Foi alterada a consulta para abranger despesas efetivadas ou qualquer compra pertencente a um cartão de crédito (`financial_credit_card_invoice_id IS NOT NULL`). Dessa forma, compras em crédito refletem na inteligência de gastos do usuário na exata data em que foram realizadas, garantindo maior fidelidade ao hábito de consumo do período atual, sem a defasagem temporal de se aguardar o pagamento da fatura.
+
+## 017 — Escopo da Interface Mobile
+
+**Data:** 13 de Julho de 2026
+
+**Contexto:**
+O sistema possui dashboards, relatórios e visualizações complexas que são difíceis de operar em telas pequenas. Para garantir a melhor experiência de uso em dispositivos móveis, é necessário focar no que realmente importa quando o usuário está em movimento.
+
+**Decisão:**
+A versão mobile do sistema (telas pequenas) terá o escopo reduzido para priorizar o **cadastro/edição de dados** e **visualizações simples**. A interface deve se adequar a esse cenário, ocultando proativamente painéis complexos, relatórios densos ou tabelas muito largas que prejudiquem a usabilidade no celular. A prioridade no mobile é a agilidade na entrada de dados e a leitura rápida de informações essenciais.
+
+## 018 — Comportamento de Botões de Voltar/Cancelar
+
+**Data:** 13 de Julho de 2026
+
+**Contexto:**
+Com o sistema crescendo, é comum acessar uma mesma tela de detalhes ou formulário a partir de diferentes origens (ex: acessar os detalhes de uma transação a partir do Dashboard, do Fluxo de Caixa ou da tela do Contato). Fixar uma rota estática de "voltar" nos botões causava perda de contexto na navegação.
+
+**Decisão:**
+Os botões de "Voltar" e "Cancelar" devem ter um comportamento relativo à tela anterior, levando o usuário de volta de onde ele veio (preservando o fluxo natural da navegação). No entanto, é obrigatório implementar uma lógica de segurança (fallback) para evitar que o usuário fique "preso" na mesma tela caso o referer (página anterior) seja a própria página atual (o que pode ocorrer após validações de formulário, reloads ou acesso direto via URL). Nesses casos, o botão deve redirecionar para a rota base/index do módulo correspondente.
+
+## 019 — Padronização Estrita de Interface e Componentização
+
+**Data:** 13 de Julho de 2026
+
+**Contexto:**
+Com o crescimento e a adição de novos módulos, notou-se uma divergência visual e estrutural em formulários, disposição de botões de ação e, principalmente, nos modais de confirmação (como exclusão e restauração de registros). Isso prejudica a experiência do usuário, que precisa reaprender os padrões a cada nova tela, e aumenta a dificuldade de manutenção.
+
+**Decisão:**
+Foi estabelecida uma política de padronização estrita de layout. Modais de ação destrutiva (excluir/restaurar) deverão usar textos e layouts idênticos através de componentes genéricos centralizados. O layout de formulários e a posição dos botões de ação (Salvar, Cancelar, Voltar) devem seguir um padrão único em todo o sistema. Para atingir esse objetivo, devemos criar e extrair ativamente componentes Blade (`x-ui.*`, `x-form.*`, etc.) e partials genéricos, eliminando código HTML duplicado e garantindo uniformidade visual.
