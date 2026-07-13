@@ -21,21 +21,21 @@ Funcionalidades planejadas por projeto. Atualizado conforme o desenvolvimento av
 - [x] Entidades puramente passivas sem acesso ao sistema
 
 ### Fase 3: Módulo Financeiro
-- [ ] Múltiplas contas (dinheiro físico, conta corrente, investimentos)
-- [ ] Correção manual de saldo mensal com registro de variação
-- [ ] Cartão de crédito com fatura, data de fechamento e vencimento
-- [ ] Compras parceladas com geração automática de parcelas futuras
-- [ ] Transações recorrentes via Laravel Scheduler (salário, aluguel, assinaturas)
-- [ ] Transferências entre contas
-- [ ] Sistema de tags (no lugar de categorias, polimórfico, múltiplas por transação)
-- [ ] Leitura de QR Code de cupom fiscal (NFC-e)
+- [x] Múltiplas contas (dinheiro físico, conta corrente, investimentos)
+- [x] Correção manual de saldo mensal com registro de variação
+- [x] Cartão de crédito com fatura, data de fechamento e vencimento
+- [x] Compras parceladas com geração automática de parcelas futuras
+- [x] Transações recorrentes via Laravel Scheduler (salário, aluguel, assinaturas)
+- [x] Transferências entre contas
+- [x] Sistema de tags (no lugar de categorias, polimórfico, múltiplas por transação)
+- [x] Leitura de QR Code de cupom fiscal (NFC-e)
 
 ### Fase 4: Módulo de Acertos
-- [ ] Gestão de "Eu Devo" e "Me Devem" (Regime de Competência)
-- [ ] Histórico de despesas compartilhadas
-- [ ] Grupos de divisões frequentes
-- [ ] Vinculação obrigatória com os contatos do CRM
-- [ ] Integração de liquidação com o Módulo Financeiro
+- [x] Gestão de "Eu Devo" e "Me Devem" (Regime de Competência)
+- [x] Histórico de despesas compartilhadas
+- [x] Grupos de divisões frequentes
+- [x] Vinculação obrigatória com os contatos do CRM
+- [x] Integração de liquidação com o Módulo Financeiro
 
 ## Próximas Fases (Futuro)
 

@@ -13,8 +13,8 @@ Os ícones do projeto são provenientes do [Heroicons](https://heroicons.com/).
 
 - [x] **Fundação & Autenticação** (Setup inicial, segurança e layout base)
 - [x] **Contatos (CRM Pessoal)** (Gerenciamento de rede, soft deletes, avatares dinâmicos)
-- [ ] **Finanças** (inspirado no [Aurum2.0](https://github.com/ArthurWillers/Aurum2.0))
-- [ ] **Acertos** (Gestão de "Eu Devo" e "Me Devem")
+- [x] **Finanças** (inspirado no [Aurum2.0](https://github.com/ArthurWillers/Aurum2.0))
+- [x] **Acertos** (Gestão de "Eu Devo" e "Me Deve", inspirado no [BalanceFlow](https://github.com/ArthurWillers/BalanceFlow))
 - [ ] **Imposto de Renda & Patrimônio**
 - [ ] **Documentos**
 - [ ] **Tarefas / Projetos**
