@@ -6,13 +6,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Tag">
-        <x-back-button fallback="{{ route('financial.tags.index') }}" text="Cancelar" />
-
-        <x-button type="submit" form="edit-tag-form">
-            <x-heroicon-o-check class="size-4" />
-            Atualizar
-        </x-button>
+    <x-page-header title="Editar Tag" mobileBottom>
+        <x-form-actions fallback="{{ route('financial.tags.index') }}" form="edit-tag-form" submitText="Atualizar" />
     </x-page-header>
 
     <form id="edit-tag-form" action="{{ route('financial.tags.update', $financialTag) }}" method="POST">
@@ -20,6 +15,8 @@
         @method('PUT')
         <div class="mt-6">
             @include('finance.tags.partials.form', ['tag' => $financialTag])
+
+            <x-form-actions fallback="{{ route('financial.tags.index') }}" form="edit-tag-form" submitText="Atualizar" mobile />
         </div>
     </form>
 </x-layouts.financial>

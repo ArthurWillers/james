@@ -8,13 +8,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Grupo: {{ $group->name }}">
-        <x-back-button fallback="{{ route('contacts.groups.index') }}" text="Cancelar" />
-
-        <x-button type="submit" form="edit-group-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Editar Grupo: {{ $group->name }}" mobileBottom>
+        <x-form-actions fallback="{{ route('contacts.groups.index') }}" form="edit-group-form" />
     </x-page-header>
 
     <form id="edit-group-form" action="{{ route('contacts.groups.update', $group) }}" method="POST">
@@ -68,4 +63,6 @@
             </div>
         </div>
     </form>
+
+    <x-form-actions fallback="{{ route('contacts.groups.index') }}" form="edit-group-form" mobile />
 </x-layouts.app>

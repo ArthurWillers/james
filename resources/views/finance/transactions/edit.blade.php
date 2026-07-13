@@ -53,15 +53,12 @@
             </x-breadcrumbs>
         </div>
 
-        <x-page-header title="Editar Transação">
-            <x-back-button fallback="{{ route('financial.transactions.show', $transaction->id) }}" text="Cancelar" />
-
-            <x-button type="submit" form="transaction-form">
-                <x-heroicon-o-check class="size-4" />
-                Salvar Alterações
-            </x-button>
+        <x-page-header title="Editar Transação" mobileBottom>
+            <x-form-actions fallback="{{ route('financial.transactions.show', $transaction->id) }}" form="transaction-form" submitText="Salvar Alterações" />
         </x-page-header>
 
         @include('finance.transactions.partials.form', ['transaction' => $transaction])
+
+        <x-form-actions fallback="{{ route('financial.transactions.show', $transaction->id) }}" form="transaction-form" submitText="Salvar Alterações" mobile />
     </form>
 </x-layouts.financial>

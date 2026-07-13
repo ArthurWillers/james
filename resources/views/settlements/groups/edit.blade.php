@@ -6,13 +6,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Divisão de Conta">
-        <x-back-button fallback="{{ route('settlements.index') }}" text="Cancelar" />
-
-        <x-button type="submit" form="split-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Editar Divisão de Conta" mobileBottom>
+        <x-form-actions fallback="{{ route('settlements.index') }}" form="split-form" />
     </x-page-header>
 
 
@@ -120,4 +115,6 @@
             @include('settlements.groups.partials.form')
         </form>
     </div>
+
+    <x-form-actions fallback="{{ route('settlements.index') }}" form="split-form" mobile />
 </x-layouts.app>

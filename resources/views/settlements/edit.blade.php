@@ -7,13 +7,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Lançamento">
-        <x-back-button fallback="{{ route('settlements.contact.show', $contact) }}" text="Cancelar" />
-
-        <x-button type="submit" form="settlement-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Editar Lançamento" mobileBottom>
+        <x-form-actions fallback="{{ route('settlements.contact.show', $contact) }}" form="settlement-form" />
     </x-page-header>
 
     <div class="mt-6">
@@ -40,4 +35,6 @@
             @include('settlements.partials.form', ['settlement' => $settlement])
         </form>
     </div>
+
+    <x-form-actions fallback="{{ route('settlements.contact.show', $contact) }}" form="settlement-form" mobile />
 </x-layouts.app>

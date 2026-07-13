@@ -14,15 +14,12 @@
             </x-breadcrumbs>
         </div>
 
-        <x-page-header title="Editar Recorrência">
-            <x-back-button fallback="{{ route('financial.recurrences.index') }}" text="Cancelar" />
-
-            <x-button type="submit" form="recurrence-form">
-                <x-heroicon-o-check class="size-4" />
-                Salvar
-            </x-button>
+        <x-page-header title="Editar Recorrência" mobileBottom>
+            <x-form-actions fallback="{{ route('financial.recurrences.index') }}" form="recurrence-form" />
         </x-page-header>
 
         @include('finance.recurrences.partials.form', ['recurrence' => $recurrence])
+
+        <x-form-actions fallback="{{ route('financial.recurrences.index') }}" form="recurrence-form" mobile />
     </form>
 </x-layouts.financial>

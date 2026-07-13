@@ -7,13 +7,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Conta">
-        <x-back-button fallback="{{ route('financial.accounts.show', $financialAccount) }}" text="Cancelar" />
-
-        <x-button type="submit" form="edit-account-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Editar Conta" mobileBottom>
+        <x-form-actions fallback="{{ route('financial.accounts.show', $financialAccount) }}" form="edit-account-form" />
     </x-page-header>
 
     <form id="edit-account-form" action="{{ route('financial.accounts.update', $financialAccount) }}" method="POST">
@@ -21,5 +16,7 @@
         @method('PUT')
 
         @include('finance.accounts.partials.form', ['account' => $financialAccount])
+
+        <x-form-actions fallback="{{ route('financial.accounts.show', $financialAccount) }}" form="edit-account-form" mobile />
     </form>
 </x-layouts.financial>

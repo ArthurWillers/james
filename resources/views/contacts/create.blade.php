@@ -7,13 +7,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Novo Contato">
-        <x-back-button fallback="{{ route('contacts.index') }}" text="Cancelar" />
-
-        <x-button type="submit" form="create-contact-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Novo Contato" mobileBottom>
+        <x-form-actions fallback="{{ route('contacts.index') }}" form="create-contact-form" />
     </x-page-header>
 
     <form id="create-contact-form" action="{{ route('contacts.store') }}" method="POST" enctype="multipart/form-data">
@@ -73,4 +68,6 @@
             :value="old('notes')"
         />
     </form>
+
+    <x-form-actions fallback="{{ route('contacts.index') }}" form="create-contact-form" mobile />
 </x-layouts.app>

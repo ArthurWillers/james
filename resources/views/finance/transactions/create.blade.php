@@ -36,15 +36,12 @@
             </x-breadcrumbs>
         </div>
 
-        <x-page-header title="Nova Transação">
-            <x-back-button fallback="{{ route('financial.transactions.index') }}" text="Cancelar" />
-
-            <x-button type="submit" form="transaction-form">
-                <x-heroicon-o-check class="size-4" />
-                Salvar
-            </x-button>
+        <x-page-header title="Nova Transação" mobileBottom>
+            <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" />
         </x-page-header>
 
         @include('finance.transactions.partials.form')
+
+        <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" mobile />
     </form>
 </x-layouts.financial>

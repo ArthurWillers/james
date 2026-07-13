@@ -1,4 +1,4 @@
-@props(['title', 'description' => null, 'action' => null, 'actionText' => null, 'icon' => null])
+@props(['title', 'description' => null, 'action' => null, 'actionText' => null, 'icon' => null, 'mobileBottom' => false])
 
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
     <div>
@@ -9,7 +9,7 @@
     </div>
 
     @if($slot->isNotEmpty() || $action)
-        <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="{{ $mobileBottom ? 'hidden md:flex' : 'flex' }} items-center gap-3 w-full sm:w-auto">
             {{ $slot }}
             
             @if ($action)

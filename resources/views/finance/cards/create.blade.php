@@ -7,18 +7,15 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Novo Cartão">
-        <x-back-button fallback="{{ route('financial.cards.index') }}" text="Cancelar" />
-
-        <x-button type="submit" form="create-card-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Novo Cartão" mobileBottom>
+        <x-form-actions fallback="{{ route('financial.cards.index') }}" form="create-card-form" />
     </x-page-header>
 
     <form id="create-card-form" action="{{ route('financial.cards.store') }}" method="POST">
         @csrf
         
         @include('finance.cards.partials.form')
+
+        <x-form-actions fallback="{{ route('financial.cards.index') }}" form="create-card-form" mobile />
     </form>
 </x-layouts.financial>

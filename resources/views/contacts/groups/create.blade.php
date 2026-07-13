@@ -7,13 +7,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Novo Grupo">
-        <x-back-button fallback="{{ route('contacts.groups.index') }}" text="Cancelar" />
-
-        <x-button type="submit" form="create-group-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Novo Grupo" mobileBottom>
+        <x-form-actions fallback="{{ route('contacts.groups.index') }}" form="create-group-form" />
     </x-page-header>
 
     <form id="create-group-form" action="{{ route('contacts.groups.store') }}" method="POST">
@@ -65,4 +60,6 @@
             </div>
         </div>
     </form>
+
+    <x-form-actions fallback="{{ route('contacts.groups.index') }}" form="create-group-form" mobile />
 </x-layouts.app>
