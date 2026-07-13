@@ -155,9 +155,7 @@
                 <x-empty-state 
                     icon="heroicon-o-arrow-path" 
                     title="Nenhuma recorrência cadastrada" 
-                    description="Cadastre suas assinaturas (ex: Netflix, Spotify) ou contas fixas para que o sistema gere as transações automaticamente." 
-                    :actionRoute="route('financial.recurrences.create')"
-                    actionText="Cadastrar Primeira Recorrência"
+                    description="Cadastre suas assinaturas ou contas fixas para que o sistema gere as transações automaticamente." 
                 />
             </div>
         @endif

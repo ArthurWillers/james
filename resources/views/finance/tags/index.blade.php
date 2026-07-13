@@ -118,13 +118,7 @@
                     icon="heroicon-o-tag" 
                     title="Nenhuma tag encontrada" 
                     description="Crie uma nova tag para começar a organizar suas transações."
-                >
-                    <x-slot name="actions">
-                        <x-button href="{{ route('financial.tags.create') }}">
-                            Criar Nova Tag
-                        </x-button>
-                    </x-slot>
-                </x-empty-state>
+                />
             @endforelse
         </x-table.body>
 

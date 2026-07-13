@@ -156,13 +156,7 @@
                 icon="heroicon-o-banknotes" 
                 title="Nenhuma transação encontrada" 
                 description="Não há transações disponíveis no momento."
-            >
-                <x-slot name="actions">
-                    <x-button href="{{ route('financial.transactions.create') }}">
-                        Nova Transação
-                    </x-button>
-                </x-slot>
-            </x-empty-state>
+            />
         @endforelse
     </x-table.body>
 </x-table>

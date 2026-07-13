@@ -59,8 +59,6 @@
                 <x-empty-state 
                     icon="heroicon-o-users" 
                     message="Nenhum contato encontrado." 
-                    actionText="Novo Contato" 
-                    :actionRoute="route('contacts.create')" 
                 />
             </div>
         @endforelse
