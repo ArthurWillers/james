@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\SettlementType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSettlementRequest extends FormRequest
 {
@@ -25,12 +27,12 @@ class StoreSettlementRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'type' => ['required', 'string', \Illuminate\Validation\Rule::enum(\App\Enums\SettlementType::class)],
+            'type' => ['required', 'string', Rule::enum(SettlementType::class)],
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'date' => ['required', 'date'],

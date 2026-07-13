@@ -10,6 +10,7 @@ use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
+use App\Models\SettlementGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
@@ -213,11 +214,11 @@ class FinancialTransactionController extends Controller
     public function show(FinancialTransaction $transaction)
     {
         $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags', 'settlements']);
-        
-        $settlementGroup = \App\Models\SettlementGroup::where('financial_transaction_id', $transaction->id)->first();
+
+        $settlementGroup = SettlementGroup::where('financial_transaction_id', $transaction->id)->first();
 
         $isSettlementTransaction = $settlementGroup || $transaction->settlements->isNotEmpty();
-        
+
         $editRoute = route('financial.transactions.edit', $transaction->id);
         if ($settlementGroup) {
             $editRoute = route('settlements.groups.edit', $settlementGroup);

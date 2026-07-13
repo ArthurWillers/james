@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
 use App\Models\ContactSettlementArchive;
 use Illuminate\Http\Request;
 

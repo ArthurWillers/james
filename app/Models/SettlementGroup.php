@@ -20,7 +20,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 ])]
 class SettlementGroup extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected function casts(): array
     {

@@ -40,7 +40,7 @@ class SettlementGroupService
             $financialTransactionId = null;
 
             // 1. Create FinancialTransaction if requested
-            if (!empty($validated['create_transaction'])) {
+            if (! empty($validated['create_transaction'])) {
                 $transaction = $this->createTransaction($validated, $date);
                 $financialTransactionId = $transaction->id;
             }
@@ -63,7 +63,7 @@ class SettlementGroupService
                     'settlement_group_id' => $group->id,
                     'type' => SettlementType::TheyOwe->value,
                     'amount' => $contactData['amount'],
-                    'description' => $validated['description'] . ' - ' . $contact->name,
+                    'description' => $validated['description'].' - '.$contact->name,
                     'date' => $date,
                 ]);
             }
@@ -88,7 +88,7 @@ class SettlementGroupService
             $date = Carbon::parse($validated['date']);
 
             // 1. Manage FinancialTransaction
-            if (!empty($validated['create_transaction'])) {
+            if (! empty($validated['create_transaction'])) {
                 $existingTransaction = $group->financialTransaction;
 
                 if ($existingTransaction) {
@@ -129,17 +129,17 @@ class SettlementGroupService
                     'settlement_group_id' => $group->id,
                     'type' => SettlementType::TheyOwe->value,
                     'amount' => $contactData['amount'],
-                    'description' => $validated['description'] . ' - ' . $contact->name,
+                    'description' => $validated['description'].' - '.$contact->name,
                     'date' => $date,
                 ]);
             }
 
             // 5. Handle media attachments
-            if (!empty($validated['delete_attachments'])) {
+            if (! empty($validated['delete_attachments'])) {
                 $group->media()->whereIn('id', $validated['delete_attachments'])->delete();
             }
 
-            if (!empty($validated['attachments'])) {
+            if (! empty($validated['attachments'])) {
                 foreach ($validated['attachments'] as $file) {
                     $group->addMedia($file)->toMediaCollection('attachments');
                 }
@@ -174,7 +174,7 @@ class SettlementGroupService
         $data = [
             'type' => 'expense',
             'amount' => $validated['total_amount'],
-            'description' => $validated['description'] . ' (Conta Dividida)',
+            'description' => $validated['description'].' (Conta Dividida)',
             'date' => $date,
             'is_posted' => true,
             'financial_account_id' => null,
@@ -201,11 +201,11 @@ class SettlementGroupService
         ]);
 
         // Attach user-selected tags to "Minha Parte"
-        if (!empty($validated['tags'])) {
+        if (! empty($validated['tags'])) {
             $tagSync = [];
             foreach ($validated['tags'] as $tagId) {
-                $isPrimary = !empty($validated['primary_tag_id']) 
-                    ? (int)$tagId === (int)$validated['primary_tag_id'] 
+                $isPrimary = ! empty($validated['primary_tag_id'])
+                    ? (int) $tagId === (int) $validated['primary_tag_id']
                     : false;
                 $tagSync[$tagId] = ['is_primary' => $isPrimary];
             }
@@ -229,7 +229,7 @@ class SettlementGroupService
 
         // Tag the transaction itself with all selected tags + Reembolso (none primary)
         $transactionTags = [];
-        if (!empty($validated['tags'])) {
+        if (! empty($validated['tags'])) {
             foreach ($validated['tags'] as $tagId) {
                 $transactionTags[$tagId] = ['is_primary' => false];
             }

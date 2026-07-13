@@ -2,13 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\SettlementType;
 use App\Http\Requests\StoreSettlementRequest;
 use App\Http\Requests\UpdateSettlementRequest;
-use App\Models\Settlement;
 use App\Models\Contact;
 use App\Models\ContactGroup;
-use App\Enums\SettlementType;
+use App\Models\ContactSettlementArchive;
+use App\Models\FinancialAccount;
+use App\Models\FinancialCreditCard;
+use App\Models\FinancialCreditCardInvoice;
+use App\Models\FinancialTag;
+use App\Models\FinancialTransaction;
+use App\Models\Settlement;
+use App\Models\SettlementGroup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class SettlementController extends Controller
 {
@@ -19,17 +28,17 @@ class SettlementController extends Controller
     {
         $showArchived = $request->boolean('archived');
 
-        $theyOweSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '" . SettlementType::TheyOwe->value . "' AND deleted_at IS NULL)";
-        $theyPaidSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '" . SettlementType::TheyPaid->value . "' AND deleted_at IS NULL)";
-        
-        $iOweSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '" . SettlementType::IOwe->value . "' AND deleted_at IS NULL)";
-        $iPaidSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '" . SettlementType::IPaid->value . "' AND deleted_at IS NULL)";
+        $theyOweSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::TheyOwe->value."' AND deleted_at IS NULL)";
+        $theyPaidSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::TheyPaid->value."' AND deleted_at IS NULL)";
+
+        $iOweSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::IOwe->value."' AND deleted_at IS NULL)";
+        $iPaidSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::IPaid->value."' AND deleted_at IS NULL)";
 
         $toReceiveSql = "GREATEST(0, $theyOweSql - $theyPaidSql)";
         $toPaySql = "GREATEST(0, $iOweSql - $iPaidSql)";
-        
+
         $netBalanceSql = "($toReceiveSql - $toPaySql)";
-        $settlementsCountSql = "(SELECT COUNT(*) FROM settlements WHERE contact_id = contacts.id AND deleted_at IS NULL)";
+        $settlementsCountSql = '(SELECT COUNT(*) FROM settlements WHERE contact_id = contacts.id AND deleted_at IS NULL)';
 
         $contacts = Contact::with(['groups', 'media'])
             ->when($showArchived, function ($query) {
@@ -61,13 +70,14 @@ class SettlementController extends Controller
             ->map(function ($contact) {
                 $toReceive = max(0, ($contact->they_owe ?? 0) - ($contact->they_paid ?? 0));
                 $toPay = max(0, ($contact->i_owe ?? 0) - ($contact->i_paid ?? 0));
-                
+
                 $contact->to_receive = $toReceive;
                 $contact->to_pay = $toPay;
                 $contact->net_balance = $toReceive - $toPay;
                 $contact->avatar_url = $contact->avatar;
                 // Add group_ids for filtering in Alpine
                 $contact->group_ids = $contact->groups->pluck('id')->toArray();
+
                 return $contact;
             })
             ->values();
@@ -78,12 +88,12 @@ class SettlementController extends Controller
 
         $groups = ContactGroup::orderBy('name')->get();
 
-        $hasArchived = \App\Models\ContactSettlementArchive::exists();
-        $hasHistory = \App\Models\Settlement::exists();
-        $hasGroups = \App\Models\SettlementGroup::exists();
-        
+        $hasArchived = ContactSettlementArchive::exists();
+        $hasHistory = Settlement::exists();
+        $hasGroups = SettlementGroup::exists();
+
         // Obter todas as chaves PIX (apenas o valor, ignorando os rótulos) das contas financeiras do usuário
-        $pixKeys = \App\Models\FinancialAccount::whereNotNull('pix_keys')
+        $pixKeys = FinancialAccount::whereNotNull('pix_keys')
             ->get()
             ->pluck('pix_keys')
             ->flatten(1)
@@ -124,19 +134,19 @@ class SettlementController extends Controller
         $debtIOweThem = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IOwe->value)->sum('amount');
         $paymentsIMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IPaid->value)->sum('amount');
         $toPay = max(0, $debtIOweThem - $paymentsIMade);
-            
+
         $netBalance = $toReceive - $toPay;
 
         // Get settlements history for this contact (paginated)
         $settlements = Settlement::where('contact_id', $contact->id)
             ->with([
-                'contact', 
-                'financialTransaction.account', 
+                'contact',
+                'financialTransaction.account',
                 'financialTransaction.invoice.creditCard',
                 'group.financialTransaction.account',
                 'group.financialTransaction.invoice.creditCard',
                 'media',
-                'group.media'
+                'group.media',
             ])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
@@ -146,11 +156,11 @@ class SettlementController extends Controller
         if (abs($netBalance) > 0) {
             $settleUrl = route('settlements.create', [
                 'contact' => $contact->id,
-                'settle' => 1
+                'settle' => 1,
             ]);
         }
 
-        $pixKeys = \App\Models\FinancialAccount::whereNotNull('pix_keys')
+        $pixKeys = FinancialAccount::whereNotNull('pix_keys')
             ->get()
             ->pluck('pix_keys')
             ->flatten(1)
@@ -159,15 +169,15 @@ class SettlementController extends Controller
             ->unique()
             ->values();
 
-        $formatted = 'R$' . number_format(abs($netBalance), 2, ',', '.');
+        $formatted = 'R$'.number_format(abs($netBalance), 2, ',', '.');
         $baseMessageText = '';
-        
+
         if ($netBalance > 0) {
             $baseMessageText = "Oi! Tô passando pra lembrar que você está me devendo.\n\nValor: *$formatted*\n";
         } elseif ($netBalance < 0) {
             $baseMessageText = "Oi! Sei que te devo *$formatted*. Vou acertar o mais breve possível!";
         } else {
-            $baseMessageText = "Oi! Estamos quites, sem pendências!";
+            $baseMessageText = 'Oi! Estamos quites, sem pendências!';
         }
 
         return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl', 'pixKeys', 'baseMessageText'));
@@ -178,12 +188,12 @@ class SettlementController extends Controller
      */
     public function create(Request $request, Contact $contact)
     {
-        $accounts = \App\Models\FinancialAccount::all();
-        $cards = \App\Models\FinancialCreditCard::all();
-        
+        $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
+
         $settlement = null;
         $isSettling = $request->boolean('settle');
-        
+
         if ($isSettling) {
             $debtTheyOweMe = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyOwe->value)->sum('amount');
             $paymentsTheyMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyPaid->value)->sum('amount');
@@ -192,15 +202,15 @@ class SettlementController extends Controller
             $debtIOweThem = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IOwe->value)->sum('amount');
             $paymentsIMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IPaid->value)->sum('amount');
             $toPay = max(0, $debtIOweThem - $paymentsIMade);
-                
+
             $netBalance = $toReceive - $toPay;
-            
+
             if (abs($netBalance) > 0) {
-                $settlement = new Settlement();
+                $settlement = new Settlement;
                 $settlement->type = $netBalance > 0 ? SettlementType::TheyPaid : SettlementType::IPaid;
                 $settlement->amount = abs($netBalance);
                 $settlement->description = 'Quitação de saldo';
-                $settlement->date = \Illuminate\Support\Carbon::today();
+                $settlement->date = Carbon::today();
             }
         }
 
@@ -213,22 +223,22 @@ class SettlementController extends Controller
     public function store(StoreSettlementRequest $request, Contact $contact)
     {
         $validated = $request->validated();
-        
-        $settlement = new Settlement();
+
+        $settlement = new Settlement;
         $settlement->contact_id = $contact->id;
         $settlement->type = $validated['type'];
         $settlement->amount = $validated['amount'];
         $settlement->description = $validated['description'];
-        $settlement->date = \Illuminate\Support\Carbon::parse($validated['date']);
-        
+        $settlement->date = Carbon::parse($validated['date']);
+
         // Transaction logic
-        if (!empty($validated['create_transaction'])) {
+        if (! empty($validated['create_transaction'])) {
             $transaction = $this->createOrUpdateTransaction(null, $validated, $contact);
             if ($transaction) {
                 $settlement->financial_transaction_id = $transaction->id;
             }
         }
-        
+
         $settlement->save();
 
         if ($request->hasFile('attachments')) {
@@ -241,8 +251,6 @@ class SettlementController extends Controller
             ->with('success', 'Lançamento registrado com sucesso.');
     }
 
-
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -252,9 +260,9 @@ class SettlementController extends Controller
 
         $settlement->load('media');
         $contact = $settlement->contact;
-        $accounts = \App\Models\FinancialAccount::all();
-        $cards = \App\Models\FinancialCreditCard::all();
-        
+        $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
+
         return view('settlements.edit', compact('settlement', 'contact', 'accounts', 'cards'));
     }
 
@@ -266,14 +274,14 @@ class SettlementController extends Controller
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
 
         $validated = $request->validated();
-        
+
         $settlement->type = $validated['type'];
         $settlement->amount = $validated['amount'];
         $settlement->description = $validated['description'];
-        $settlement->date = \Illuminate\Support\Carbon::parse($validated['date']);
-        
+        $settlement->date = Carbon::parse($validated['date']);
+
         // Transaction logic
-        if (!empty($validated['create_transaction'])) {
+        if (! empty($validated['create_transaction'])) {
             $transaction = $this->createOrUpdateTransaction($settlement->financialTransaction, $validated, $settlement->contact);
             $settlement->financial_transaction_id = $transaction->id;
         } else {
@@ -282,10 +290,10 @@ class SettlementController extends Controller
                 $settlement->financial_transaction_id = null;
             }
         }
-        
+
         $settlement->save();
 
-        if (!empty($validated['delete_attachments'])) {
+        if (! empty($validated['delete_attachments'])) {
             $settlement->getMedia('attachments')
                 ->whereIn('id', $validated['delete_attachments'])
                 ->each(fn ($media) => $media->delete());
@@ -311,35 +319,35 @@ class SettlementController extends Controller
         if ($settlement->financialTransaction) {
             $settlement->financialTransaction()->delete();
         }
-        
+
         $contactId = $settlement->contact_id;
         $settlement->delete();
-        
+
         return redirect()->route('settlements.contact.show', $contactId)
             ->with('success', 'Lançamento excluído com sucesso.');
     }
-    
+
     /**
      * Create or update the associated financial transaction.
      */
-    private function createOrUpdateTransaction(?\App\Models\FinancialTransaction $transaction, array $validated, Contact $contact): ?\App\Models\FinancialTransaction
+    private function createOrUpdateTransaction(?FinancialTransaction $transaction, array $validated, Contact $contact): ?FinancialTransaction
     {
         // Type translation
         // TheyOwe (I paid) -> expense, IPaid (I paid) -> expense
         // TheyPaid (They paid me) -> income
         $type = 'expense';
-        if ($validated['type'] === \App\Enums\SettlementType::TheyPaid->value) {
+        if ($validated['type'] === SettlementType::TheyPaid->value) {
             $type = 'income';
         }
-        
-        $date = \Illuminate\Support\Carbon::parse($validated['date']);
-        
+
+        $date = Carbon::parse($validated['date']);
+
         $description = $validated['description'];
-        $suffix = ' - ' . $contact->name;
-        if (!\Illuminate\Support\Str::endsWith($description, $suffix)) {
+        $suffix = ' - '.$contact->name;
+        if (! Str::endsWith($description, $suffix)) {
             $description .= $suffix;
         }
-        
+
         $data = [
             'type' => $type,
             'amount' => $validated['amount'],
@@ -351,8 +359,8 @@ class SettlementController extends Controller
         ];
 
         if ($validated['targetType'] === 'card') {
-            $card = \App\Models\FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-            $invoice = \App\Models\FinancialCreditCardInvoice::resolveForDate($card, $date);
+            $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
             $data['financial_credit_card_invoice_id'] = $invoice->id;
         } else {
             $data['financial_account_id'] = $validated['financial_account_id'];
@@ -361,12 +369,12 @@ class SettlementController extends Controller
         if ($transaction) {
             $transaction->update($data);
         } else {
-            $transaction = \App\Models\FinancialTransaction::create($data);
+            $transaction = FinancialTransaction::create($data);
         }
 
         // Sincroniza a tag "Reembolso" (is_primary = true)
         $transaction->tags()->sync([
-            \App\Models\FinancialTag::REEMBOLSO_ID => ['is_primary' => true]
+            FinancialTag::REEMBOLSO_ID => ['is_primary' => true],
         ]);
 
         return $transaction;
@@ -385,13 +393,13 @@ class SettlementController extends Controller
     public function restore($id)
     {
         $settlement = Settlement::onlyTrashed()->findOrFail($id);
-        
+
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser restaurado individualmente.');
-        
+
         $settlement->restore();
-        
+
         if ($settlement->financial_transaction_id) {
-            \App\Models\FinancialTransaction::withTrashed()
+            FinancialTransaction::withTrashed()
                 ->where('id', $settlement->financial_transaction_id)
                 ->restore();
         }
@@ -402,17 +410,17 @@ class SettlementController extends Controller
     public function forceDelete($id)
     {
         $settlement = Settlement::onlyTrashed()->findOrFail($id);
-        
+
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
-        
+
         if ($settlement->financial_transaction_id) {
-            $transaction = \App\Models\FinancialTransaction::withTrashed()->find($settlement->financial_transaction_id);
+            $transaction = FinancialTransaction::withTrashed()->find($settlement->financial_transaction_id);
             if ($transaction) {
                 $transaction->items()->delete();
                 $transaction->forceDelete();
             }
         }
-        
+
         $settlement->forceDelete();
 
         return redirect()->route('settlements.trashed')->with('success', 'Acerto excluído permanentemente.');
@@ -421,6 +429,7 @@ class SettlementController extends Controller
     public function show(Settlement $settlement)
     {
         $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard', 'media']);
+
         return view('settlements.details', compact('settlement'));
     }
 
@@ -436,7 +445,7 @@ class SettlementController extends Controller
         }
 
         return response()->file($media->getPath(), [
-            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+            'Content-Disposition' => 'inline; filename="'.$media->file_name.'"',
         ]);
     }
 }

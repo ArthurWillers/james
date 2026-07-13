@@ -7,21 +7,21 @@ use App\Models\FinancialTag;
 use App\Models\SettlementGroup;
 use App\Models\User;
 use App\Services\SettlementGroupService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
-    $this->service = new SettlementGroupService();
-    \Illuminate\Database\Eloquent\Model::unguard();
+    $this->service = new SettlementGroupService;
+    Model::unguard();
     FinancialTag::firstOrCreate(
         ['id' => FinancialTag::REEMBOLSO_ID],
         ['name' => 'Reembolso', 'color_hex' => '#000000', 'icon' => 'heroicon-o-tag']
     );
-    \Illuminate\Database\Eloquent\Model::reguard();
+    Model::reguard();
 });
 
 it('creates a settlement group and children correctly without financial transaction', function () {
@@ -58,7 +58,7 @@ it('creates a settlement group and children correctly without financial transact
 it('creates a settlement group with a financial transaction and tags', function () {
     $contact = Contact::factory()->create();
     $account = FinancialAccount::factory()->create();
-    
+
     // Explicitly set ID to avoid PostgreSQL sequence conflicts with ID 1
     $tag = FinancialTag::factory()->create(['id' => 10]);
 
@@ -81,7 +81,7 @@ it('creates a settlement group with a financial transaction and tags', function 
     $group = $this->service->storeGroup($validated);
 
     expect($group->financial_transaction_id)->not->toBeNull();
-    
+
     $transaction = $group->financialTransaction;
     $transaction->load('items.tags');
     expect($transaction->amount)->toEqual(100.0)
@@ -156,7 +156,7 @@ it('destroys a settlement group and its transaction', function () {
 
     $group = $this->service->storeGroup($validated);
     $transactionId = $group->financial_transaction_id;
-    
+
     $this->service->destroyGroup($group);
 
     $this->assertSoftDeleted('settlement_groups', ['id' => $group->id]);

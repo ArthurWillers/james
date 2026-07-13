@@ -27,18 +27,18 @@ Route::prefix('settlements')->name('settlements.')->group(function () {
     Route::get('/trashed', [SettlementController::class, 'trashed'])->name('trashed');
     Route::post('/{id}/restore', [SettlementController::class, 'restore'])->name('restore');
     Route::delete('/{id}/force-delete', [SettlementController::class, 'forceDelete'])->name('force-delete');
-    
+
     // Ledger and Forms (Phase 1 Scaffold)
     Route::get('/contact/{contact}', [SettlementController::class, 'showContact'])->name('contact.show');
     Route::get('/contact/{contact}/create', [SettlementController::class, 'create'])->name('create');
     Route::post('/contact/{contact}', [SettlementController::class, 'store'])->name('store');
-    
+
     Route::get('/{settlement}', [SettlementController::class, 'show'])->name('show_item');
     Route::get('/{settlement}/edit', [SettlementController::class, 'edit'])->name('edit');
     Route::put('/{settlement}', [SettlementController::class, 'update'])->name('update');
     Route::delete('/{settlement}', [SettlementController::class, 'destroy'])->name('destroy');
     Route::get('/{settlement}/attachments/{media}/{filename?}', [SettlementController::class, 'attachment'])->name('attachment');
-    
+
     // Archive routes
     Route::post('/archive', [SettlementArchiveController::class, 'store'])->name('archive');
     Route::post('/unarchive', [SettlementArchiveController::class, 'destroy'])->name('unarchive');

@@ -8,12 +8,15 @@ use App\Models\Contact;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialTag;
+use App\Models\FinancialTransaction;
 use App\Models\SettlementGroup;
 use App\Services\SettlementGroupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class SettlementGroupController extends Controller
 {
@@ -146,13 +149,13 @@ class SettlementGroupController extends Controller
     public function restore($id)
     {
         $group = SettlementGroup::onlyTrashed()->findOrFail($id);
-        
+
         $group->restore();
-        
+
         $group->settlements()->withTrashed()->restore();
 
         if ($group->financial_transaction_id) {
-            \App\Models\FinancialTransaction::withTrashed()
+            FinancialTransaction::withTrashed()
                 ->where('id', $group->financial_transaction_id)
                 ->restore();
         }
@@ -160,22 +163,22 @@ class SettlementGroupController extends Controller
         return redirect()->route('settlements.groups.trashed')->with('success', 'Divisão de conta restaurada com sucesso.');
     }
 
-    public function attachment(SettlementGroup $settlementGroup, \Spatie\MediaLibrary\MediaCollections\Models\Media $media, $filename = null)
+    public function attachment(SettlementGroup $settlementGroup, Media $media, $filename = null)
     {
         abort_if($media->model_type !== SettlementGroup::class || $media->model_id !== $settlementGroup->id, 404);
-        
+
         return response()->file($media->getPath(), [
-            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+            'Content-Disposition' => 'inline; filename="'.$media->file_name.'"',
         ]);
     }
 
     public function forceDelete($id)
     {
         $group = SettlementGroup::onlyTrashed()->findOrFail($id);
-        
-        \Illuminate\Support\Facades\DB::transaction(function () use ($group) {
+
+        DB::transaction(function () use ($group) {
             if ($group->financial_transaction_id) {
-                $transaction = \App\Models\FinancialTransaction::withTrashed()->find($group->financial_transaction_id);
+                $transaction = FinancialTransaction::withTrashed()->find($group->financial_transaction_id);
                 if ($transaction) {
                     $transaction->items()->delete();
                     $transaction->forceDelete();

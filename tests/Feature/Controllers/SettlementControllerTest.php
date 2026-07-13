@@ -5,7 +5,6 @@ use App\Models\Contact;
 use App\Models\Settlement;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 
@@ -34,7 +33,7 @@ it('can view settlement details', function () {
         'type' => SettlementType::TheyOwe->value,
         'amount' => 100,
         'description' => 'Test',
-        'date' => '2023-01-01'
+        'date' => '2023-01-01',
     ]);
 
     $this->get(route('settlements.show_item', $settlement))->assertSuccessful();
@@ -47,7 +46,7 @@ it('can view creation screen', function () {
 
 it('can store a settlement', function () {
     $contact = Contact::factory()->create();
-    
+
     $payload = [
         'type' => SettlementType::TheyOwe->value,
         'amount' => 150,
@@ -73,7 +72,7 @@ it('can update a settlement', function () {
         'type' => SettlementType::TheyOwe->value,
         'amount' => 100,
         'description' => 'Test',
-        'date' => '2023-01-01'
+        'date' => '2023-01-01',
     ]);
 
     $payload = [
@@ -101,7 +100,7 @@ it('can soft delete a settlement', function () {
         'type' => SettlementType::TheyOwe->value,
         'amount' => 100,
         'description' => 'Test',
-        'date' => '2023-01-01'
+        'date' => '2023-01-01',
     ]);
 
     $this->delete(route('settlements.destroy', $settlement))

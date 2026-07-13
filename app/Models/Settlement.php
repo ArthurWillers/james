@@ -22,7 +22,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 ])]
 class Settlement extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected function casts(): array
     {
@@ -53,7 +53,4 @@ class Settlement extends Model implements HasMedia
     {
         return $this->belongsTo(SettlementGroup::class, 'settlement_group_id');
     }
-
-
 }
-

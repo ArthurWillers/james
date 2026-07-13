@@ -26,7 +26,7 @@ it('can view group details', function () {
         'description' => 'Test',
         'total_amount' => 100,
         'date' => '2023-01-01',
-        'mode' => 'equal'
+        'mode' => 'equal',
     ]);
 
     $this->get(route('settlements.groups.show', $group))->assertSuccessful();
@@ -44,7 +44,7 @@ it('can store a settlement group', function () {
         'create_transaction' => false,
         'contacts' => [
             ['id' => $contact->id, 'amount' => 50],
-        ]
+        ],
     ];
 
     $this->post(route('settlements.groups.store'), $payload)
@@ -61,7 +61,7 @@ it('can view edit screen', function () {
         'description' => 'Test',
         'total_amount' => 100,
         'date' => '2023-01-01',
-        'mode' => 'equal'
+        'mode' => 'equal',
     ]);
 
     $this->get(route('settlements.groups.edit', $group))->assertSuccessful();
@@ -73,7 +73,7 @@ it('can update a settlement group', function () {
         'description' => 'Test',
         'total_amount' => 100,
         'date' => '2023-01-01',
-        'mode' => 'equal'
+        'mode' => 'equal',
     ]);
 
     $payload = [
@@ -85,7 +85,7 @@ it('can update a settlement group', function () {
         'create_transaction' => false,
         'contacts' => [
             ['id' => $contact->id, 'amount' => 100],
-        ]
+        ],
     ];
 
     $this->put(route('settlements.groups.update', $group), $payload)
@@ -103,7 +103,7 @@ it('can soft delete a settlement group', function () {
         'description' => 'To Delete',
         'total_amount' => 100,
         'date' => '2023-01-01',
-        'mode' => 'equal'
+        'mode' => 'equal',
     ]);
 
     $this->delete(route('settlements.groups.destroy', $group))
