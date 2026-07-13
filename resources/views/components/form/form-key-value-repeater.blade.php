@@ -50,7 +50,7 @@
                     </x-button>
                 </div>
             </template>
-            <p x-show="items.length === 0" class="text-sm text-neutral-400 italic">{{ $emptyMessage }}</p>
+            <p class="text-sm text-neutral-400 italic" x-show="items.length === 0">{{ $emptyMessage }}</p>
         </div>
     </div>
 </x-card>

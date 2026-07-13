@@ -331,7 +331,7 @@
                 </div>
             </div>
 
-            <button type="button" @click="selectedIds = []" class="p-2 -mr-2 rounded-xl text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção">
+            <button type="button" class="p-2 -mr-2 rounded-xl text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção" @click="selectedIds = []">
                 <x-heroicon-o-x-mark class="size-5" />
             </button>
         </div>
@@ -341,7 +341,7 @@
             title="Arquivar Acertos" 
             message="Tem certeza que deseja arquivar os acertos dos contatos selecionados? Eles não aparecerão na lista principal até que sejam desarquivados." 
             confirmVariant="primary">
-            <x-button type="button" @click="archiveSelected()" class="w-full sm:w-auto">
+            <x-button type="button" class="w-full sm:w-auto" @click="archiveSelected()">
                 Sim, arquivar
             </x-button>
         </x-modal>
@@ -351,7 +351,7 @@
             title="Desarquivar Acertos" 
             message="Tem certeza que deseja desarquivar os acertos dos contatos selecionados? Eles voltarão a aparecer na lista principal." 
             confirmVariant="primary">
-            <x-button type="button" @click="unarchiveSelected()" class="w-full sm:w-auto">
+            <x-button type="button" class="w-full sm:w-auto" @click="unarchiveSelected()">
                 Sim, desarquivar
             </x-button>
         </x-modal>
@@ -386,7 +386,7 @@
                             <span>WhatsApp</span>
                         </x-button>
                         <x-button type="button" @click="executeCopy()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto">
-                            <span x-show="!copied" class="flex items-center gap-1.5"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
+                            <span class="flex items-center gap-1.5" x-show="!copied"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
                             <span x-show="copied" x-cloak class="flex items-center gap-1.5 text-green-400"><x-heroicon-o-check class="size-4" /> Copiado!</span>
                         </x-button>
                     </div>

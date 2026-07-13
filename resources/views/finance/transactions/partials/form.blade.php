@@ -11,7 +11,7 @@
                     <div>
                         <x-form-input label="Valor (R$)" name="amount" x-model="amount" :currency="true" placeholder="0,00" ::readonly="items.length > 0" ::class="items.length > 0 ? 'bg-neutral-100 text-neutral-500! font-medium' : ''" />
                         <div class="h-5 mt-1">
-                            <p x-show="items.length > 0" class="text-xs text-primary-600 flex items-center gap-1 font-medium m-0"><x-heroicon-o-calculator class="size-3.5"/> Calculado via itens</p>
+                            <p class="text-xs text-primary-600 flex items-center gap-1 font-medium m-0" x-show="items.length > 0"><x-heroicon-o-calculator class="size-3.5"/> Calculado via itens</p>
                         </div>
                     </div>
                     <div>

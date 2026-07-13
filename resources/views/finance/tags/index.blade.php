@@ -29,7 +29,7 @@
 
         <x-table.body>
             @forelse($tags as $tag)
-                <x-table.row @click="window.location.href = '{{ route('financial.transactions.index', ['tag_id' => $tag->id]) }}'" class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr] group transition-all cursor-pointer hover:bg-neutral-50" style="--tag-color: {{ $tag->color_hex }};">
+                <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr] group transition-all cursor-pointer hover:bg-neutral-50" style="--tag-color: {{ $tag->color_hex }};" @click="window.location.href = '{{ route('financial.transactions.index', ['tag_id' => $tag->id]) }}'">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
                             <x-avatar :icon="$tag->icon" class="border-transparent! text-white! w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
@@ -54,13 +54,13 @@
                     <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
                             @if(!$tag->is_protected)
-                                <x-button type="button" @click.stop color="outline" href="{{ route('financial.tags.edit', $tag) }}" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300 relative z-10">
+                                <x-button type="button" color="outline" href="{{ route('financial.tags.edit', $tag) }}" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300 relative z-10" @click.stop>
                                     <x-heroicon-o-pencil-square class="size-4" />
                                     Editar
                                 </x-button>
 
                                 @if($usageCount == 0)
-                                    <x-button type="button" @click.stop="openDelete({{ $tag->id }}, '{{ addslashes($tag->name) }}')" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200 relative z-10">
+                                    <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200 relative z-10" @click.stop="openDelete({{ $tag->id }}, '{{ addslashes($tag->name) }}')">
                                         <x-heroicon-o-trash class="size-4" />
                                         Excluir
                                     </x-button>
@@ -91,19 +91,19 @@
                                 <div class="shrink-0">
                                     <x-dropdown position="bottom-end" accent>
                                         <x-slot name="trigger">
-                                            <button type="button" @click.stop class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100 relative z-10">
+                                            <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100 relative z-10" @click.stop>
                                                 <x-heroicon-o-ellipsis-horizontal class="size-5" />
                                             </button>
                                         </x-slot>
 
                                         <x-slot name="content">
-                                            <a href="{{ route('financial.tags.edit', $tag) }}" @click.stop class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                            <a href="{{ route('financial.tags.edit', $tag) }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click.stop>
                                                 <x-heroicon-o-pencil-square class="size-5" />
                                                 Editar
                                             </a>
 
                                             @if($usageCount == 0)
-                                                <button type="button" @click.stop="openDelete({{ $tag->id }}, '{{ addslashes($tag->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
+                                                <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click.stop="openDelete({{ $tag->id }}, '{{ addslashes($tag->name) }}')">
                                                     <x-heroicon-o-trash class="size-5" />
                                                     Excluir
                                                 </button>

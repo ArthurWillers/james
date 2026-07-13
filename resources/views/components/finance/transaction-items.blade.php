@@ -39,7 +39,7 @@
                         <x-slot:trigger>
                             <button type="button" class="cursor-pointer p-1.5 text-neutral-400 hover:text-accent hover:bg-neutral-100 rounded-lg transition-colors relative" title="Gerenciar Tags">
                                 <x-heroicon-o-tag class="size-4" />
-                                <span x-show="selectedIds.length > 0" class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm ring-2 ring-white" x-text="selectedIds.length"></span>
+                                <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm ring-2 ring-white" x-text="selectedIds.length" x-show="selectedIds.length > 0"></span>
                             </button>
                         </x-slot:trigger>
                     </x-tags-selector>
@@ -50,6 +50,6 @@
                 </div>
             </div>
         </template>
-        <p x-show="items.length === 0" class="text-sm text-neutral-400 italic mb-2">Nenhum item adicionado nesta transação.</p>
+        <p class="text-sm text-neutral-400 italic mb-2" x-show="items.length === 0">Nenhum item adicionado nesta transação.</p>
     </div>
 </x-card>

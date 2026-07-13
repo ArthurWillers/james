@@ -83,10 +83,10 @@
             <button type="button" x-on:click="show = !show" tabindex="-1"
                 class="relative items-center font-medium justify-center gap-2 whitespace-nowrap disabled:opacity-75 disabled:cursor-default disabled:pointer-events-none h-8 text-sm rounded-md w-8 inline-flex -ms-1.5 -me-1.5 bg-transparent hover:bg-neutral-800/5 text-neutral-500 hover:text-neutral-800 transition-colors duration-300 cursor-pointer">
                 {{-- Ícone de "escondido" (olho cortado) --}}
-                <x-heroicon-o-eye-slash x-show="!show" class="size-4" />
+                <x-heroicon-o-eye-slash class="size-4" x-show="!show" />
 
                 {{-- Ícone de "visível" (olho aberto) --}}
-                <x-heroicon-o-eye x-show="show" class="size-4" style="display: none;" />
+                <x-heroicon-o-eye class="size-4" style="display: none;" x-show="show" />
             </button>
         </div>
     @endif

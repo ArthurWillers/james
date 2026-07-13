@@ -61,10 +61,10 @@
 
     </aside>
 
-    <div x-show="open" @click="open = false" class="fixed inset-0 bg-black/10 z-30 lg:hidden" x-cloak></div>
+    <div class="fixed inset-0 bg-black/10 z-30 lg:hidden" x-cloak x-show="open" @click="open = false"></div>
 
     <header class="flex items-center px-6 w-full min-h-14 lg:hidden">
-        <button @click="open = !open" class="cursor-pointer rounded-lg p-1 hover:bg-neutral-200">
+        <button class="cursor-pointer rounded-lg p-1 hover:bg-neutral-200" @click="open = !open">
             <x-heroicon-o-bars-3 class="w-6 h-6" />
         </button>
 

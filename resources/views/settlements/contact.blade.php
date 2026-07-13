@@ -69,7 +69,7 @@
                                 <span>WhatsApp</span>
                             </x-button>
                             <x-button type="button" @click="copyText()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto">
-                                <span x-show="!copied" class="flex items-center gap-1.5"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
+                                <span class="flex items-center gap-1.5" x-show="!copied"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
                                 <span x-show="copied" x-cloak class="flex items-center gap-1.5 text-green-400"><x-heroicon-o-check class="size-4" /> Copiado!</span>
                             </x-button>
                         </div>
