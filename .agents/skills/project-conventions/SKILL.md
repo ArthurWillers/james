@@ -21,7 +21,7 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
 
 8. **Consistência Visual:** Qualquer nova interface deve obrigatoriamente seguir a identidade visual do restante do sistema. Analise o design de telas similares antes de criar algo novo.
 9. **Reutilização de Componentes:** Sempre priorize o uso de componentes Blade já existentes no projeto (`<x-card>`, `<x-button>`, `<x-page-header>`). Evite criar HTML estrutural do zero.
-10. **Responsividade (Desktop-First):** O foco principal é **Desktop-First**. A versão mobile deve existir como uma adaptação simplificada e limpa para quebrar um galho (regras mais rígidas virão no futuro).
+10. **Responsividade (Desktop-First):** O foco principal é **Desktop-First**. A versão mobile foca em cadastro e visualizações simples. **Obrigatório:** Consulte as regras detalhadas de mobile no arquivo `references/mobile-ui.md`.
 11. **Feedback Visual:** Interações que envolvam processos assíncronos DEVEM possuir *loading states* e desabilitar os botões temporariamente para evitar cliques duplos.
 
 ## Backend e Arquitetura
