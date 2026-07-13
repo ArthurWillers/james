@@ -50,7 +50,7 @@
     @endphp
 
     <div class="mt-6">
-        <form action="{{ route('settlements.groups.update', $settlementGroup) }}" method="POST" id="split-form" x-data="{
+        <form action="{{ route('settlements.groups.update', $settlementGroup) }}" method="POST" enctype="multipart/form-data" id="split-form" x-data="{
             mode: '{{ old('mode', $settlementGroup->mode) }}',
             totalAmount: '{{ old('total_amount', number_format($settlementGroup->total_amount, 2, '.', '')) }}',
             myAmount: '{{ old('my_amount', number_format($existingMyAmount, 2, '.', '')) }}',

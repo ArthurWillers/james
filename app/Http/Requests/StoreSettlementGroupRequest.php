@@ -54,6 +54,8 @@ class StoreSettlementGroupRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:financial_tags,id'],
             'primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
+            'attachments' => ['nullable', 'array', 'max:5'],
+            'attachments.*' => ['file', 'mimes:jpeg,png,jpg,pdf', 'max:10240'], // 10MB max per file
         ];
     }
 
@@ -70,6 +72,8 @@ class StoreSettlementGroupRequest extends FormRequest
             'contacts.*.amount.min' => 'O valor de cada participante deve ser maior que zero.',
             'financial_account_id.required_if' => 'Selecione uma conta bancária.',
             'financial_credit_card_id.required_if' => 'Selecione um cartão de crédito.',
+            'attachments.*.mimes' => 'Os anexos devem ser imagens (JPEG, PNG) ou PDFs.',
+            'attachments.*.max' => 'Cada anexo não pode ultrapassar 10MB.',
         ];
     }
 }

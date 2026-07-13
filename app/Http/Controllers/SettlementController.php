@@ -135,7 +135,8 @@ class SettlementController extends Controller
                 'financialTransaction.invoice.creditCard',
                 'group.financialTransaction.account',
                 'group.financialTransaction.invoice.creditCard',
-                'media'
+                'media',
+                'group.media'
             ])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')

@@ -170,10 +170,16 @@
                         <x-ui.table.cell>
                             <div class="flex items-center gap-2">
                                 <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
-                                @if($settlement->hasMedia('attachments'))
-                                    <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0" title="{{ $settlement->getMedia('attachments')->count() }} anexos">
+                                @php
+                                    $mediaCount = $settlement->getMedia('attachments')->count();
+                                    if ($settlement->group) {
+                                        $mediaCount += $settlement->group->getMedia('attachments')->count();
+                                    }
+                                @endphp
+                                @if($mediaCount > 0)
+                                    <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0" title="{{ $mediaCount }} anexos">
                                         <x-heroicon-o-paper-clip class="size-3" />
-                                        <span>{{ $settlement->getMedia('attachments')->count() }}</span>
+                                        <span>{{ $mediaCount }}</span>
                                     </div>
                                 @endif
                             </div>
@@ -225,10 +231,16 @@
                                             <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                         </x-ui.badge>
                                         <span class="font-medium text-neutral-900 truncate">{{ $settlement->description }}</span>
-                                        @if($settlement->hasMedia('attachments'))
+                                        @php
+                                            $mediaCount = $settlement->getMedia('attachments')->count();
+                                            if ($settlement->group) {
+                                                $mediaCount += $settlement->group->getMedia('attachments')->count();
+                                            }
+                                        @endphp
+                                        @if($mediaCount > 0)
                                             <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0">
                                                 <x-heroicon-o-paper-clip class="size-3" />
-                                                <span>{{ $settlement->getMedia('attachments')->count() }}</span>
+                                                <span>{{ $mediaCount }}</span>
                                             </div>
                                         @endif
                                     </div>

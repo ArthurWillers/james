@@ -26,7 +26,7 @@ class SettlementGroupController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = SettlementGroup::with(['financialTransaction.account', 'financialTransaction.invoice.creditCard', 'settlements.contact']);
+        $query = SettlementGroup::with(['media', 'financialTransaction.account', 'financialTransaction.invoice.creditCard', 'settlements.contact']);
 
         if ($request->has('trashed')) {
             $query->onlyTrashed();
@@ -84,7 +84,7 @@ class SettlementGroupController extends Controller
      */
     public function show(SettlementGroup $settlementGroup): View
     {
-        $settlementGroup->load(['settlements.contact.media', 'financialTransaction.items.tags', 'financialTransaction.tags']);
+        $settlementGroup->load(['media', 'settlements.contact.media', 'financialTransaction.items.tags', 'financialTransaction.tags']);
 
         return view('settlements.groups.show', compact('settlementGroup'));
     }
@@ -94,7 +94,7 @@ class SettlementGroupController extends Controller
      */
     public function edit(SettlementGroup $settlementGroup): View
     {
-        $settlementGroup->load(['settlements.contact.media', 'financialTransaction.items.tags', 'financialTransaction.tags']);
+        $settlementGroup->load(['media', 'settlements.contact.media', 'financialTransaction.items.tags', 'financialTransaction.tags']);
 
         $contacts = $settlementGroup->settlements->map(fn ($s) => $s->contact)->unique('id');
 
@@ -158,6 +158,15 @@ class SettlementGroupController extends Controller
         }
 
         return redirect()->route('settlements.groups.trashed')->with('success', 'Divisão de conta restaurada com sucesso.');
+    }
+
+    public function attachment(SettlementGroup $settlementGroup, \Spatie\MediaLibrary\MediaCollections\Models\Media $media, $filename = null)
+    {
+        abort_if($media->model_type !== SettlementGroup::class || $media->model_id !== $settlementGroup->id, 404);
+        
+        return response()->file($media->getPath(), [
+            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+        ]);
     }
 
     public function forceDelete($id)

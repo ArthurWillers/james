@@ -28,7 +28,7 @@
     @endphp
 
     <div class="mt-6">
-        <form action="{{ route('settlements.groups.store') }}" method="POST" id="split-form" x-data="{
+        <form action="{{ route('settlements.groups.store') }}" method="POST" enctype="multipart/form-data" id="split-form" x-data="{
             mode: '{{ old('mode', 'equal') }}',
             totalAmount: '{{ old('total_amount', '') }}',
             myAmount: '{{ old('my_amount', '') }}',

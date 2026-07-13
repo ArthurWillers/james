@@ -68,6 +68,13 @@ class SettlementGroupService
                 ]);
             }
 
+            // 4. Attach media if provided
+            if (isset($validated['attachments'])) {
+                foreach ($validated['attachments'] as $file) {
+                    $group->addMedia($file)->toMediaCollection('attachments');
+                }
+            }
+
             return $group;
         });
     }
@@ -125,6 +132,17 @@ class SettlementGroupService
                     'description' => $validated['description'] . ' - ' . $contact->name,
                     'date' => $date,
                 ]);
+            }
+
+            // 5. Handle media attachments
+            if (!empty($validated['delete_attachments'])) {
+                $group->media()->whereIn('id', $validated['delete_attachments'])->delete();
+            }
+
+            if (!empty($validated['attachments'])) {
+                foreach ($validated['attachments'] as $file) {
+                    $group->addMedia($file)->toMediaCollection('attachments');
+                }
             }
 
             return $group->fresh();
