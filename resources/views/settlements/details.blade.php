@@ -55,7 +55,7 @@
                             {{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}
                         </div>
                         <div class="mt-1">
-                            <x-ui.badge :color="$settlement->type->color()" class="shadow-sm inline-flex">
+                            <x-ui.badge :color="$settlement->type->color()" class="inline-flex">
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5 mr-1.5" />
                                 {{ $settlement->type->label() }}
                             </x-ui.badge>
