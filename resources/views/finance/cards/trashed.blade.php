@@ -131,29 +131,27 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-card"
-            title="Restaurar Cartão" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar o cartão <span class="font-medium text-neutral-900" x-text="selectedCardName"></span>? Ele voltará a aparecer nos seus saldos e faturamentos.
-            </x-slot>
-            <form :action="'{{ route('financial.cards.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-card"
+            item-name="o cartão"
+            dynamic-item-name="selectedCardName"
+            alpine-action="'{{ route('financial.cards.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)"
+        >
+            <x-slot:content>
+                Tem certeza que deseja restaurar o cartão "<span class="font-medium text-neutral-900" x-text="selectedCardName"></span>"? Ele voltará a aparecer nos seus saldos e faturamentos.
+            </x-slot:content>
+        </x-ui.restore-modal>
 
-        <x-modal 
-            name="force-delete-card"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir o cartão <span class="font-medium text-neutral-900" x-text="selectedCardName"></span> permanentemente? Esta ação é irreversível e todos os dados serão perdidos.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
+        <x-ui.delete-modal 
+            modal-name="force-delete-card"
+            item-name="o cartão"
+            dynamic-item-name="selectedCardName"
+            permanent="true"
+            alpine-action="'{{ route('financial.cards.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)"
+        >
+            <x-slot:content>
+                <p class="mb-3">Tem certeza que deseja excluir o cartão "<span class="font-medium text-neutral-900" x-text="selectedCardName"></span>" permanentemente? Esta ação é irreversível e todos os dados serão perdidos.</p>
+                <div class="rounded-md bg-amber-50 p-3 border border-amber-200 text-left">
                     <div class="flex">
                         <div class="shrink-0">
                             <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
@@ -166,15 +164,8 @@
                         </div>
                     </div>
                 </div>
-            </x-slot>
-            <form :action="'{{ route('financial.cards.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+            </x-slot:content>
+        </x-ui.delete-modal>
     </x-table>
 
     @if($cards->hasPages())

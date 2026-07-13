@@ -15,26 +15,12 @@
             Editar
         </x-button>
 
-        <x-modal.trigger name="delete-card-{{ $card->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-card-{{ $card->id }}"
-            title="Excluir Cartão" 
-            message="Tem certeza que deseja excluir este cartão? A ação o moverá para a lixeira." 
-            confirmVariant="danger">
-            <form action="{{ route('financial.cards.destroy', $card) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Cartão
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            action="{{ route('financial.cards.destroy', $card) }}"
+            item-name="o cartão"
+            item-desc="{{ $card->name }}"
+            title="Excluir Cartão"
+        />
     </x-page-header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

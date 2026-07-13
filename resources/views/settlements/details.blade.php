@@ -16,12 +16,11 @@
                         <x-heroicon-o-pencil class="size-4" />
                         Editar
                     </x-button>
-                    <x-modal.trigger name="delete-settlement-{{ $settlement->id }}">
-                        <x-button color="danger-outline">
-                            <x-heroicon-o-trash class="size-4" />
-                            Excluir
-                        </x-button>
-                    </x-modal.trigger>
+                    <x-ui.delete-modal
+                        item-name="este acerto"
+                        description="Caso tenha sido gerada uma transação financeira atrelada, ela também será movida para a lixeira."
+                        action="{{ route('settlements.destroy', $settlement) }}"
+                    />
                 @endif
             @endif
         </div>
@@ -168,19 +167,4 @@
         </div>
     </div>
 
-    @if(!$settlement->trashed() && !$settlement->settlement_group_id)
-        <x-modal 
-            name="delete-settlement-{{ $settlement->id }}"
-            title="Excluir Acerto" 
-            message="Tem certeza que deseja excluir este acerto? Caso tenha sido gerada uma transação financeira atrelada, ela também será movida para a lixeira." 
-            confirmVariant="danger">
-            <form action="{{ route('settlements.destroy', $settlement) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Sim, excluir
-                </x-button>
-            </form>
-        </x-modal>
-    @endif
 </x-layouts.app>

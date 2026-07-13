@@ -131,29 +131,27 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-account"
-            title="Restaurar Conta" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar a conta <span class="font-medium text-neutral-900" x-text="selectedAccountName"></span>? Ela voltará a aparecer nos seus saldos e faturamentos.
-            </x-slot>
-            <form :action="'{{ route('financial.accounts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedAccountId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-account"
+            item-name="a conta"
+            dynamic-item-name="selectedAccountName"
+            alpine-action="'{{ route('financial.accounts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedAccountId)"
+        >
+            <x-slot:content>
+                Tem certeza que deseja restaurar a conta "<span class="font-medium text-neutral-900" x-text="selectedAccountName"></span>"? Ela voltará a aparecer nos seus saldos e faturamentos.
+            </x-slot:content>
+        </x-ui.restore-modal>
 
-        <x-modal 
-            name="force-delete-account"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir a conta <span class="font-medium text-neutral-900" x-text="selectedAccountName"></span> permanentemente? Esta ação é irreversível e todos os dados serão perdidos.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
+        <x-ui.delete-modal 
+            modal-name="force-delete-account"
+            item-name="a conta"
+            dynamic-item-name="selectedAccountName"
+            permanent="true"
+            alpine-action="'{{ route('financial.accounts.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedAccountId)"
+        >
+            <x-slot:content>
+                <p class="mb-3">Tem certeza que deseja excluir a conta "<span class="font-medium text-neutral-900" x-text="selectedAccountName"></span>" permanentemente? Esta ação é irreversível e todos os dados serão perdidos.</p>
+                <div class="rounded-md bg-amber-50 p-3 border border-amber-200 text-left">
                     <div class="flex">
                         <div class="shrink-0">
                             <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
@@ -166,15 +164,8 @@
                         </div>
                     </div>
                 </div>
-            </x-slot>
-            <form :action="'{{ route('financial.accounts.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedAccountId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+            </x-slot:content>
+        </x-ui.delete-modal>
     </x-table>
 
     @if($accounts->hasPages())

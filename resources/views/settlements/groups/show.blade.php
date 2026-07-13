@@ -16,12 +16,13 @@
                     <x-heroicon-o-pencil class="size-4" />
                     Editar
                 </x-button>
-                <x-modal.trigger name="delete-group-{{ $settlementGroup->id }}">
-                    <x-button color="danger-outline">
-                        <x-heroicon-o-trash class="size-4" />
-                        Excluir
-                    </x-button>
-                </x-modal.trigger>
+                <x-ui.delete-modal 
+                    action="{{ route('settlements.groups.destroy', $settlementGroup) }}"
+                    item-name="a divisão de conta"
+                    item-desc="{{ $settlementGroup->description }}"
+                    title="Excluir Divisão de Conta"
+                    description="Isso removerá todos os acertos vinculados a ela."
+                />
             @endif
         </div>
     </x-page-header>
@@ -171,17 +172,5 @@
         </div>
     </div>
 
-    <x-modal
-        name="delete-group-{{ $settlementGroup->id }}"
-        title="Excluir Divisão de Conta"
-        message="Tem certeza que deseja excluir esta divisão de conta? Isso removerá todos os acertos vinculados a ela."
-        confirmVariant="danger">
-        <form action="{{ route('settlements.groups.destroy', $settlementGroup) }}" method="POST" class="m-0">
-            @csrf
-            @method('DELETE')
-            <x-button type="submit" color="red" class="w-full sm:w-auto">
-                Sim, excluir
-            </x-button>
-        </form>
-    </x-modal>
+
 </x-layouts.app>

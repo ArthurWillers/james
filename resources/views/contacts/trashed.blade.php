@@ -141,37 +141,20 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-contact"
-            title="Restaurar Contato" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar o contato de <span class="font-medium text-neutral-900" x-text="selectedContactName"></span>? Ele voltará para a sua lista de contatos ativos.
-            </x-slot>
-            <form :action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-contact"
+            item-name="o contato"
+            dynamic-item-name="selectedContactName"
+            alpine-action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)"
+        />
 
-        <x-modal 
-            name="force-delete-contact"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                Tem certeza que deseja excluir o contato de <span class="font-medium text-neutral-900" x-text="selectedContactName"></span> permanentemente? Esta ação é irreversível e todos os dados serão perdidos.
-            </x-slot>
-            <form :action="'{{ route('contacts.force', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            modal-name="force-delete-contact"
+            item-name="o contato"
+            dynamic-item-name="selectedContactName"
+            permanent="true"
+            alpine-action="'{{ route('contacts.force', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)"
+        />
     </x-table>
 
     @if($contacts->hasPages())

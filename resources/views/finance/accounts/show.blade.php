@@ -49,26 +49,12 @@
             Editar
         </x-button>
 
-        <x-modal.trigger name="delete-account-{{ $account->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-account-{{ $account->id }}"
-            title="Excluir Conta" 
-            message="Tem certeza que deseja mover esta conta para a lixeira? Você poderá restaurá-la depois se precisar." 
-            confirmVariant="danger">
-            <form action="{{ route('financial.accounts.destroy', $account) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Mover para Lixeira
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            action="{{ route('financial.accounts.destroy', $account) }}"
+            item-name="a conta"
+            item-desc="{{ $account->name }}"
+            title="Excluir Conta"
+        />
     </x-page-header>
 
     <x-card class="mb-6 p-6">

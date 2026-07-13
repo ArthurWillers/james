@@ -154,36 +154,22 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-settlement"
-            title="Restaurar Acerto" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar o acerto "<span class="font-medium text-neutral-900" x-text="selectedSettlementDesc"></span>"? Ele voltará para o seu histórico global e reativará a transação vinculada, caso exista.
-            </x-slot>
-            <form :action="'{{ route('settlements.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)" method="POST" class="m-0">
-                @csrf
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-settlement"
+            item-name="o acerto"
+            dynamic-item-name="selectedSettlementDesc"
+            description="Ele voltará para o seu histórico global e reativará a transação vinculada, caso exista."
+            alpine-action="'{{ route('settlements.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)"
+        />
 
-        <x-modal 
-            name="force-delete-settlement"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                Tem certeza que deseja excluir este acerto permanentemente? Esta ação é irreversível e removerá também a transação financeira vinculada.
-            </x-slot>
-            <form :action="'{{ route('settlements.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            modal-name="force-delete-settlement"
+            item-name="o acerto"
+            dynamic-item-name="selectedSettlementDesc"
+            permanent="true"
+            warning="Esta ação é irreversível e removerá também a transação financeira vinculada."
+            alpine-action="'{{ route('settlements.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)"
+        />
     </x-table>
 
     @if($settlements->hasPages())

@@ -151,29 +151,27 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-transaction"
-            title="Restaurar Transação" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar a transação <span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>? Ela voltará a impactar os saldos da sua conta ou fatura.
-            </x-slot>
-            <form :action="'{{ route('financial.transactions.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-transaction"
+            item-name="a transação"
+            dynamic-item-name="selectedTransactionName"
+            alpine-action="'{{ route('financial.transactions.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)"
+        >
+            <x-slot:content>
+                Tem certeza que deseja restaurar a transação "<span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>"? Ela voltará a impactar os saldos da sua conta ou fatura.
+            </x-slot:content>
+        </x-ui.restore-modal>
 
-        <x-modal 
-            name="force-delete-transaction"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir a transação <span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span> permanentemente? Esta ação é irreversível.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
+        <x-ui.delete-modal 
+            modal-name="force-delete-transaction"
+            item-name="a transação"
+            dynamic-item-name="selectedTransactionName"
+            permanent="true"
+            alpine-action="'{{ route('financial.transactions.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)"
+        >
+            <x-slot:content>
+                <p class="mb-3">Tem certeza que deseja excluir a transação "<span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>" permanentemente? Esta ação é irreversível.</p>
+                <div class="rounded-md bg-amber-50 p-3 border border-amber-200 text-left">
                     <div class="flex">
                         <div class="shrink-0">
                             <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
@@ -186,15 +184,8 @@
                         </div>
                     </div>
                 </div>
-            </x-slot>
-            <form :action="'{{ route('financial.transactions.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+            </x-slot:content>
+        </x-ui.delete-modal>
     </x-table>
 
     @if($transactions->hasPages())

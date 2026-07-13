@@ -15,26 +15,12 @@
         </x-button>
 
         @if(!$isSettlementTransaction)
-            <x-modal.trigger name="delete-transaction-{{ $transaction->id }}">
-                <x-button type="button" color="danger-outline">
-                    <x-heroicon-o-trash class="size-4" />
-                    Excluir
-                </x-button>
-            </x-modal.trigger>
-
-            <x-modal 
-                name="delete-transaction-{{ $transaction->id }}"
-                title="Excluir Transação" 
-                message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita." 
-                confirmVariant="danger">
-                <form action="{{ route('financial.transactions.destroy', $transaction->id) }}" method="POST" class="m-0">
-                    @csrf
-                    @method('DELETE')
-                    <x-button type="submit" color="red" class="w-full sm:w-auto">
-                        Excluir
-                    </x-button>
-                </form>
-            </x-modal>
+            <x-ui.delete-modal 
+                action="{{ route('financial.transactions.destroy', $transaction->id) }}"
+                item-name="a transação"
+                item-desc="{{ $transaction->description }}"
+                title="Excluir Transação"
+            />
         @endif
     </x-page-header>
 

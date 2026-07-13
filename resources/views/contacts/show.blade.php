@@ -14,26 +14,12 @@
             Editar
         </x-button>
 
-        <x-modal.trigger name="delete-contact-{{ $contact->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-contact-{{ $contact->id }}"
-            title="Excluir Contato" 
-            message="Tem certeza que deseja mover este contato para a lixeira? Você poderá restaurá-lo depois se precisar." 
-            confirmVariant="danger">
-            <form action="{{ route('contacts.destroy', $contact) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Mover para Lixeira
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            action="{{ route('contacts.destroy', $contact) }}"
+            item-name="o contato"
+            item-desc="{{ $contact->name }}"
+            title="Excluir Contato"
+        />
     </x-page-header>
 
     <x-card class="mb-4 p-6">

@@ -117,36 +117,22 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-group"
-            title="Restaurar Divisão de Conta" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar "<span class="font-medium text-neutral-900" x-text="selectedGroupDesc"></span>"? Isso reativará todos os acertos individuais associados a ela e a transação financeira, se houver.
-            </x-slot>
-            <form :action="'{{ route('settlements.groups.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)" method="POST" class="m-0">
-                @csrf
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-group"
+            item-name="a divisão"
+            dynamic-item-name="selectedGroupDesc"
+            description="Isso reativará todos os acertos individuais associados a ela e a transação financeira, se houver."
+            alpine-action="'{{ route('settlements.groups.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)"
+        />
 
-        <x-modal 
-            name="force-delete-group"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                Tem certeza que deseja excluir esta divisão de contas permanentemente? Esta ação removerá definitivamente todos os acertos vinculados e a transação financeira relacionada, sendo irreversível.
-            </x-slot>
-            <form :action="'{{ route('settlements.groups.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            modal-name="force-delete-group"
+            item-name="a divisão de conta"
+            dynamic-item-name="selectedGroupDesc"
+            permanent="true"
+            warning="Esta ação removerá definitivamente todos os acertos vinculados e a transação financeira relacionada, sendo irreversível."
+            alpine-action="'{{ route('settlements.groups.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)"
+        />
     </x-table>
 
     @if($settlementGroups->hasPages())

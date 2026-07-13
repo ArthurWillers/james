@@ -170,50 +170,21 @@
             </div>
         @endif
 
-        <x-modal 
-            name="restore-recurrence"
-            title="Restaurar Recorrência" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar a recorrência <span class="font-medium text-neutral-900" x-text="selectedRecurrenceTitle"></span>? Ela voltará a gerar transações ativamente.
-            </x-slot>
-            <form :action="'{{ route('financial.recurrences.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.restore-modal
+            modal-name="restore-recurrence"
+            item-name="a recorrência"
+            dynamic-item-name="selectedRecurrenceTitle"
+            alpine-action="'{{ route('financial.recurrences.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)"
+        />
 
-        <x-modal 
-            name="force-delete-recurrence"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir a recorrência <span class="font-medium text-neutral-900" x-text="selectedRecurrenceTitle"></span> permanentemente? Esta ação é irreversível.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
-                    <div class="flex">
-                        <div class="shrink-0">
-                            <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-amber-800">Cuidado</h3>
-                            <div class="mt-1 text-sm text-amber-700">
-                                <p>Isso não excluirá as transações geradas por esta recorrência, mas o vínculo se perderá para sempre.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </x-slot>
-            <form :action="'{{ route('financial.recurrences.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-ui.delete-modal 
+            modal-name="force-delete-recurrence"
+            item-name="a recorrência"
+            dynamic-item-name="selectedRecurrenceTitle"
+            permanent="true"
+            warning="Isso não excluirá as transações geradas por esta recorrência, mas o vínculo se perderá para sempre."
+            alpine-action="'{{ route('financial.recurrences.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)"
+        />
         
         @if($recurrences->hasPages())
             <div class="px-6 py-4 border-t border-neutral-200">
