@@ -4,6 +4,7 @@
     'icon' => null,
     'color' => 'neutral',
     'href' => null,
+    'hideIconOnMobile' => false,
 ])
 
 @php
@@ -61,7 +62,7 @@
             @endif
         </div>
         @if($icon)
-            <div class="w-10 h-10 sm:w-12 sm:h-12 {{ $theme['iconBg'] }} rounded-lg flex items-center justify-center flex-shrink-0 {{ $href ? $theme['iconHoverBg'] . ' transition-colors' : '' }}">
+            <div class="{{ $hideIconOnMobile ? 'hidden sm:flex' : 'flex' }} w-10 h-10 sm:w-12 sm:h-12 {{ $theme['iconBg'] }} rounded-lg items-center justify-center flex-shrink-0 {{ $href ? $theme['iconHoverBg'] . ' transition-colors' : '' }}">
                 <x-dynamic-component :component="$icon" class="w-5 h-5 sm:w-6 sm:h-6 {{ $theme['iconText'] }} {{ $href ? 'group-hover:scale-110 transition-transform' : '' }}" />
             </div>
         @endif

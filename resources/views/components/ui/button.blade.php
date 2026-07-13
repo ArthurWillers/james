@@ -12,7 +12,7 @@
     $colorClasses = match ($color) {
         'red' => 'bg-red-500 hover:bg-red-700 text-white border-transparent',
         'accent' => 'bg-accent hover:bg-[color-mix(in_srgb,var(--color-accent),#000_10%)] text-white border-transparent',
-        'outline' => 'border border-neutral-300 hover:bg-neutral-100 text-neutral-500 hover:text-neutral-900',
+        'outline' => 'bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50',
         'danger-outline' => 'bg-white text-red-500 hover:text-red-600 border border-red-200 hover:border-red-300 hover:bg-red-50',
         'ghost' => 'bg-transparent text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 border-transparent',
         'danger-ghost' => 'bg-transparent text-red-400 hover:text-red-600 hover:bg-red-50 border-transparent',

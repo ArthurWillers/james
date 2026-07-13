@@ -13,4 +13,5 @@ Route::middleware('auth')->group(function () {
 
     require __DIR__.'/contacts.php';
     require __DIR__.'/financial.php';
+    require __DIR__.'/settlements.php';
 });

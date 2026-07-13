@@ -12,31 +12,33 @@
             Voltar
         </x-button>
 
-        <x-button color="outline" href="{{ route('financial.transactions.edit', $transaction->id) }}" class="bg-white">
+        <x-button color="outline" href="{{ $editRoute }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
             Editar
         </x-button>
 
-        <x-modal.trigger name="delete-transaction-{{ $transaction->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-transaction-{{ $transaction->id }}"
-            title="Excluir Transação" 
-            message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita." 
-            confirmVariant="danger">
-            <form action="{{ route('financial.transactions.destroy', $transaction->id) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
+        @if(!$isSettlementTransaction)
+            <x-modal.trigger name="delete-transaction-{{ $transaction->id }}">
+                <x-button type="button" color="danger-outline">
+                    <x-heroicon-o-trash class="size-4" />
                     Excluir
                 </x-button>
-            </form>
-        </x-modal>
+            </x-modal.trigger>
+
+            <x-modal 
+                name="delete-transaction-{{ $transaction->id }}"
+                title="Excluir Transação" 
+                message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita." 
+                confirmVariant="danger">
+                <form action="{{ route('financial.transactions.destroy', $transaction->id) }}" method="POST" class="m-0">
+                    @csrf
+                    @method('DELETE')
+                    <x-button type="submit" color="red" class="w-full sm:w-auto">
+                        Excluir
+                    </x-button>
+                </form>
+            </x-modal>
+        @endif
     </x-page-header>
 
     <x-card class="mb-6 p-6">
@@ -92,9 +94,7 @@
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Conta / Origem</h3>
             @if($transaction->invoice)
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-neutral-100 rounded-lg text-neutral-600">
-                        <x-heroicon-o-credit-card class="size-5" />
-                    </div>
+                    <x-ui.avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->invoice->creditCard->name }}</p>
                         <p class="text-xs text-neutral-500">Fatura de {{ $transaction->invoice->closing_date->format('M/Y') }}</p>
@@ -102,9 +102,7 @@
                 </div>
             @elseif($transaction->account)
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-neutral-100 rounded-lg text-neutral-600">
-                        <x-heroicon-o-building-library class="size-5" />
-                    </div>
+                    <x-ui.avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->account->name }}</p>
                         <p class="text-xs text-neutral-500">Conta Corrente</p>
@@ -150,48 +148,43 @@
         </x-card>
 
         <!-- Info -->
-        <x-card class="p-6">
-            <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Metadados</h3>
-            <div class="space-y-3">
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-neutral-500">Criado em:</span>
-                    <span class="font-medium text-neutral-900">{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
-                </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-neutral-500">Atualizado:</span>
-                    <span class="font-medium text-neutral-900">{{ $transaction->updated_at->format('d/m/Y H:i') }}</span>
-                </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-neutral-500">ID Interno:</span>
-                    <span class="font-mono text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded text-xs">#{{ $transaction->id }}</span>
-                </div>
-            </div>
-        </x-card>
+        <x-ui.metadata-card :model="$transaction" />
     </div>
 
+    @if(isset($settlementGroup) && $settlementGroup)
+        <x-ui.related-resource 
+            class="mb-6"
+            icon="heroicon-o-user-group"
+            title="Gerada por Divisão de Conta"
+            description="Esta transação foi gerada a partir da divisão de conta '{{ $settlementGroup->description }}'."
+            :url="route('settlements.groups.show', $settlementGroup)"
+            buttonText="Ver Divisão"
+        />
+    @endif
+
     @if($transaction->transfer_pair_id && $transaction->transferPair)
-        <x-card class="mb-6 p-6 border-blue-200 bg-blue-50/50">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="p-3 bg-blue-100 rounded-xl text-blue-600 shrink-0">
-                        <x-heroicon-o-arrows-right-left class="size-6" />
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-blue-900">Transferência Vinculada</h3>
-                        <p class="text-sm text-blue-700 mt-0.5">
-                            @if($transaction->type === 'expense')
-                                Esta transação é a saída. O destino é a conta <strong>{{ $transaction->transferPair->account->name }}</strong>.
-                            @else
-                                Esta transação é a entrada. A origem é a conta <strong>{{ $transaction->transferPair->account->name }}</strong>.
-                            @endif
-                        </p>
-                    </div>
-                </div>
-                <x-button href="{{ route('financial.transactions.show', $transaction->transferPair->id) }}" color="outline" class="bg-white border-blue-200 text-blue-700 hover:bg-blue-100 shrink-0">
-                    Acessar Contrapartida
-                </x-button>
-            </div>
-        </x-card>
+        <x-ui.related-resource 
+            class="mb-6"
+            icon="heroicon-o-arrows-right-left"
+            title="Transferência Vinculada"
+            :description="$transaction->type === 'expense' ? 'Esta transação é a saída. O destino é a conta ' . $transaction->transferPair->account->name . '.' : 'Esta transação é a entrada. A origem é a conta ' . $transaction->transferPair->account->name . '.'"
+            :url="route('financial.transactions.show', $transaction->transferPair->id)"
+            buttonText="Acessar Contrapartida"
+        />
+    @endif
+
+    @if($transaction->settlements->isNotEmpty())
+        @php
+            $settlement = $transaction->settlements->first();
+        @endphp
+        <x-ui.related-resource 
+            class="mb-6"
+            icon="heroicon-o-user"
+            title="Acerto Vinculado"
+            :description="'Esta transação foi gerada a partir de um acerto com ' . $settlement->contact->name . '.'"
+            :url="route('settlements.contact.show', $settlement->contact_id)"
+            buttonText="Acessar Acertos"
+        />
     @endif
 
     @if($transaction->items->isNotEmpty())

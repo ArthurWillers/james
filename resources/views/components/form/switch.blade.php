@@ -5,13 +5,20 @@
     'label' => '',
 ])
 
-<div x-data="{ checked: {{ $checked ? 'true' : 'false' }} }" class="flex items-center gap-3">
+<div x-data="{ 
+    checked: {{ $attributes->has('x-model') ? $attributes->get('x-model') : ($checked ? 'true' : 'false') }},
+    init() {
+        if (this.$el.hasAttribute('x-model')) {
+            this.$watch('checked', value => this.$dispatch('input', value));
+        }
+    }
+}" class="flex items-center gap-3" {{ $attributes->whereStartsWith('x-model') }}>
     <button
         type="button"
         role="switch"
         :aria-checked="checked"
         @click="checked = !checked"
-        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 {{ $checked ? 'bg-accent' : 'bg-neutral-200' }}"
+        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
         :class="{ 'bg-accent': checked, 'bg-neutral-200': !checked }"
         {{ $attributes }}
     >

@@ -1,0 +1,451 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\SettlementType;
+use App\Http\Requests\StoreSettlementRequest;
+use App\Http\Requests\UpdateSettlementRequest;
+use App\Models\Contact;
+use App\Models\ContactGroup;
+use App\Models\ContactSettlementArchive;
+use App\Models\FinancialAccount;
+use App\Models\FinancialCreditCard;
+use App\Models\FinancialCreditCardInvoice;
+use App\Models\FinancialTag;
+use App\Models\FinancialTransaction;
+use App\Models\Settlement;
+use App\Models\SettlementGroup;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+
+class SettlementController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $showArchived = $request->boolean('archived');
+
+        $theyOweSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::TheyOwe->value."' AND deleted_at IS NULL)";
+        $theyPaidSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::TheyPaid->value."' AND deleted_at IS NULL)";
+
+        $iOweSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::IOwe->value."' AND deleted_at IS NULL)";
+        $iPaidSql = "(SELECT COALESCE(SUM(amount), 0) FROM settlements WHERE contact_id = contacts.id AND type = '".SettlementType::IPaid->value."' AND deleted_at IS NULL)";
+
+        $toReceiveSql = "GREATEST(0, $theyOweSql - $theyPaidSql)";
+        $toPaySql = "GREATEST(0, $iOweSql - $iPaidSql)";
+
+        $netBalanceSql = "($toReceiveSql - $toPaySql)";
+        $settlementsCountSql = '(SELECT COUNT(*) FROM settlements WHERE contact_id = contacts.id AND deleted_at IS NULL)';
+
+        $contacts = Contact::with(['groups', 'media'])
+            ->when($showArchived, function ($query) {
+                $query->whereHas('settlementArchive');
+            }, function ($query) {
+                $query->notSettlementArchived();
+            })
+            ->withSum(['settlements as they_owe' => fn ($q) => $q->where('type', SettlementType::TheyOwe->value)], 'amount')
+            ->withSum(['settlements as they_paid' => fn ($q) => $q->where('type', SettlementType::TheyPaid->value)], 'amount')
+            ->withSum(['settlements as i_owe' => fn ($q) => $q->where('type', SettlementType::IOwe->value)], 'amount')
+            ->withSum(['settlements as i_paid' => fn ($q) => $q->where('type', SettlementType::IPaid->value)], 'amount')
+            ->withCount('settlements')
+            ->orderByRaw("
+                CASE 
+                    WHEN $netBalanceSql > 0 THEN 3
+                    WHEN $netBalanceSql < 0 THEN 2
+                    WHEN $settlementsCountSql > 0 THEN 1
+                    ELSE 0
+                END DESC
+            ")
+            ->orderByRaw("
+                CASE 
+                    WHEN $netBalanceSql > 0 THEN $netBalanceSql
+                    WHEN $netBalanceSql < 0 THEN ABS($netBalanceSql)
+                    ELSE 0
+                END DESC
+            ")
+            ->get()
+            ->map(function ($contact) {
+                $toReceive = max(0, ($contact->they_owe ?? 0) - ($contact->they_paid ?? 0));
+                $toPay = max(0, ($contact->i_owe ?? 0) - ($contact->i_paid ?? 0));
+
+                $contact->to_receive = $toReceive;
+                $contact->to_pay = $toPay;
+                $contact->net_balance = $toReceive - $toPay;
+                $contact->avatar_url = $contact->avatar;
+                // Add group_ids for filtering in Alpine
+                $contact->group_ids = $contact->groups->pluck('id')->toArray();
+
+                return $contact;
+            })
+            ->values();
+
+        $toReceive = $contacts->sum('to_receive') ?? 0;
+        $toPay = $contacts->sum('to_pay') ?? 0;
+        $netBalance = $toReceive - $toPay;
+
+        $groups = ContactGroup::orderBy('name')->get();
+
+        $hasArchived = ContactSettlementArchive::exists();
+        $hasHistory = Settlement::exists();
+        $hasGroups = SettlementGroup::exists();
+
+        // Obter todas as chaves PIX (apenas o valor, ignorando os rótulos) das contas financeiras do usuário
+        $pixKeys = FinancialAccount::whereNotNull('pix_keys')
+            ->get()
+            ->pluck('pix_keys')
+            ->flatten(1)
+            ->pluck('value')
+            ->filter()
+            ->unique()
+            ->values();
+
+        return view('settlements.index', compact('contacts', 'toReceive', 'toPay', 'netBalance', 'showArchived', 'groups', 'hasArchived', 'hasHistory', 'hasGroups', 'pixKeys'));
+    }
+
+    /**
+     * Display a global history of settlements.
+     */
+    public function history(Request $request)
+    {
+        $query = Settlement::with(['contact', 'contact.media']);
+
+        $settlements = $query->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(50);
+
+        $hasTrashed = Settlement::onlyTrashed()->exists();
+
+        return view('settlements.history', compact('settlements', 'hasTrashed'));
+    }
+
+    /**
+     * Display the ledger for a specific contact.
+     */
+    public function showContact(Contact $contact)
+    {
+        // Compute balances for this contact using the max(0, debt - payment) rule
+        $debtTheyOweMe = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyOwe->value)->sum('amount');
+        $paymentsTheyMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyPaid->value)->sum('amount');
+        $toReceive = max(0, $debtTheyOweMe - $paymentsTheyMade);
+
+        $debtIOweThem = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IOwe->value)->sum('amount');
+        $paymentsIMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IPaid->value)->sum('amount');
+        $toPay = max(0, $debtIOweThem - $paymentsIMade);
+
+        $netBalance = $toReceive - $toPay;
+
+        // Get settlements history for this contact (paginated)
+        $settlements = Settlement::where('contact_id', $contact->id)
+            ->with([
+                'contact',
+                'financialTransaction.account',
+                'financialTransaction.invoice.creditCard',
+                'group.financialTransaction.account',
+                'group.financialTransaction.invoice.creditCard',
+                'media',
+                'group.media',
+            ])
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(50);
+
+        $settleUrl = null;
+        if (abs($netBalance) > 0) {
+            $settleUrl = route('settlements.create', [
+                'contact' => $contact->id,
+                'settle' => 1,
+            ]);
+        }
+
+        $pixKeys = FinancialAccount::whereNotNull('pix_keys')
+            ->get()
+            ->pluck('pix_keys')
+            ->flatten(1)
+            ->pluck('value')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $formatted = 'R$'.number_format(abs($netBalance), 2, ',', '.');
+        $baseMessageText = '';
+
+        if ($netBalance > 0) {
+            $baseMessageText = "Oi! Tô passando pra lembrar que você está me devendo.\n\nValor: *$formatted*\n";
+        } elseif ($netBalance < 0) {
+            $baseMessageText = "Oi! Sei que te devo *$formatted*. Vou acertar o mais breve possível!";
+        } else {
+            $baseMessageText = 'Oi! Estamos quites, sem pendências!';
+        }
+
+        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl', 'pixKeys', 'baseMessageText'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request, Contact $contact)
+    {
+        $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
+
+        $settlement = null;
+        $isSettling = $request->boolean('settle');
+
+        if ($isSettling) {
+            $debtTheyOweMe = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyOwe->value)->sum('amount');
+            $paymentsTheyMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyPaid->value)->sum('amount');
+            $toReceive = max(0, $debtTheyOweMe - $paymentsTheyMade);
+
+            $debtIOweThem = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IOwe->value)->sum('amount');
+            $paymentsIMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IPaid->value)->sum('amount');
+            $toPay = max(0, $debtIOweThem - $paymentsIMade);
+
+            $netBalance = $toReceive - $toPay;
+
+            if (abs($netBalance) > 0) {
+                $settlement = new Settlement;
+                $settlement->type = $netBalance > 0 ? SettlementType::TheyPaid : SettlementType::IPaid;
+                $settlement->amount = abs($netBalance);
+                $settlement->description = 'Quitação de saldo';
+                $settlement->date = Carbon::today();
+            }
+        }
+
+        return view('settlements.create', compact('contact', 'accounts', 'cards', 'settlement', 'isSettling'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreSettlementRequest $request, Contact $contact)
+    {
+        $validated = $request->validated();
+
+        $settlement = new Settlement;
+        $settlement->contact_id = $contact->id;
+        $settlement->type = $validated['type'];
+        $settlement->amount = $validated['amount'];
+        $settlement->description = $validated['description'];
+        $settlement->date = Carbon::parse($validated['date']);
+
+        // Transaction logic
+        if (! empty($validated['create_transaction'])) {
+            $transaction = $this->createOrUpdateTransaction(null, $validated, $contact);
+            if ($transaction) {
+                $settlement->financial_transaction_id = $transaction->id;
+            }
+        }
+
+        $settlement->save();
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $settlement->addMedia($file)->toMediaCollection('attachments');
+            }
+        }
+
+        return redirect()->route('settlements.contact.show', $contact)
+            ->with('success', 'Lançamento registrado com sucesso.');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Settlement $settlement)
+    {
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
+
+        $settlement->load('media');
+        $contact = $settlement->contact;
+        $accounts = FinancialAccount::all();
+        $cards = FinancialCreditCard::all();
+
+        return view('settlements.edit', compact('settlement', 'contact', 'accounts', 'cards'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateSettlementRequest $request, Settlement $settlement)
+    {
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
+
+        $validated = $request->validated();
+
+        $settlement->type = $validated['type'];
+        $settlement->amount = $validated['amount'];
+        $settlement->description = $validated['description'];
+        $settlement->date = Carbon::parse($validated['date']);
+
+        // Transaction logic
+        if (! empty($validated['create_transaction'])) {
+            $transaction = $this->createOrUpdateTransaction($settlement->financialTransaction, $validated, $settlement->contact);
+            $settlement->financial_transaction_id = $transaction->id;
+        } else {
+            if ($settlement->financial_transaction_id) {
+                $settlement->financialTransaction()->delete();
+                $settlement->financial_transaction_id = null;
+            }
+        }
+
+        $settlement->save();
+
+        if (! empty($validated['delete_attachments'])) {
+            $settlement->getMedia('attachments')
+                ->whereIn('id', $validated['delete_attachments'])
+                ->each(fn ($media) => $media->delete());
+        }
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $settlement->addMedia($file)->toMediaCollection('attachments');
+            }
+        }
+
+        return redirect()->route('settlements.contact.show', $settlement->contact_id)
+            ->with('success', 'Lançamento atualizado com sucesso.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Settlement $settlement)
+    {
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
+
+        if ($settlement->financialTransaction) {
+            $settlement->financialTransaction()->delete();
+        }
+
+        $contactId = $settlement->contact_id;
+        $settlement->delete();
+
+        return redirect()->route('settlements.contact.show', $contactId)
+            ->with('success', 'Lançamento excluído com sucesso.');
+    }
+
+    /**
+     * Create or update the associated financial transaction.
+     */
+    private function createOrUpdateTransaction(?FinancialTransaction $transaction, array $validated, Contact $contact): ?FinancialTransaction
+    {
+        // Type translation
+        // TheyOwe (I paid) -> expense, IPaid (I paid) -> expense
+        // TheyPaid (They paid me) -> income
+        $type = 'expense';
+        if ($validated['type'] === SettlementType::TheyPaid->value) {
+            $type = 'income';
+        }
+
+        $date = Carbon::parse($validated['date']);
+
+        $description = $validated['description'];
+        $suffix = ' - '.$contact->name;
+        if (! Str::endsWith($description, $suffix)) {
+            $description .= $suffix;
+        }
+
+        $data = [
+            'type' => $type,
+            'amount' => $validated['amount'],
+            'description' => $description,
+            'date' => $date,
+            'is_posted' => true,
+            'financial_account_id' => null,
+            'financial_credit_card_invoice_id' => null,
+        ];
+
+        if ($validated['targetType'] === 'card') {
+            $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+            $data['financial_credit_card_invoice_id'] = $invoice->id;
+        } else {
+            $data['financial_account_id'] = $validated['financial_account_id'];
+        }
+
+        if ($transaction) {
+            $transaction->update($data);
+        } else {
+            $transaction = FinancialTransaction::create($data);
+        }
+
+        // Sincroniza a tag "Reembolso" (is_primary = true)
+        $transaction->tags()->sync([
+            FinancialTag::REEMBOLSO_ID => ['is_primary' => true],
+        ]);
+
+        return $transaction;
+    }
+
+    public function trashed()
+    {
+        $settlements = Settlement::onlyTrashed()
+            ->with(['contact', 'contact.media'])
+            ->orderByDesc('deleted_at')
+            ->paginate(50);
+
+        return view('settlements.trashed', compact('settlements'));
+    }
+
+    public function restore($id)
+    {
+        $settlement = Settlement::onlyTrashed()->findOrFail($id);
+
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser restaurado individualmente.');
+
+        $settlement->restore();
+
+        if ($settlement->financial_transaction_id) {
+            FinancialTransaction::withTrashed()
+                ->where('id', $settlement->financial_transaction_id)
+                ->restore();
+        }
+
+        return redirect()->route('settlements.trashed')->with('success', 'Acerto restaurado com sucesso.');
+    }
+
+    public function forceDelete($id)
+    {
+        $settlement = Settlement::onlyTrashed()->findOrFail($id);
+
+        abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
+
+        if ($settlement->financial_transaction_id) {
+            $transaction = FinancialTransaction::withTrashed()->find($settlement->financial_transaction_id);
+            if ($transaction) {
+                $transaction->items()->delete();
+                $transaction->forceDelete();
+            }
+        }
+
+        $settlement->forceDelete();
+
+        return redirect()->route('settlements.trashed')->with('success', 'Acerto excluído permanentemente.');
+    }
+
+    public function show(Settlement $settlement)
+    {
+        $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard', 'media']);
+
+        return view('settlements.details', compact('settlement'));
+    }
+
+    /**
+     * Serve the settlement's attachment.
+     */
+    public function attachment(Settlement $settlement, $mediaId)
+    {
+        $media = $settlement->getMedia('attachments')->where('id', $mediaId)->first();
+
+        if (! $media) {
+            abort(404);
+        }
+
+        return response()->file($media->getPath(), [
+            'Content-Disposition' => 'inline; filename="'.$media->file_name.'"',
+        ]);
+    }
+}

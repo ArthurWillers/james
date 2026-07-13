@@ -38,45 +38,37 @@
                 />
             </div>
 
-            <div x-data="{
-                search: '',
-                contacts: {{ Js::from($allContacts) }},
-                selectedIds: {{ Js::from(old('contact_ids', $group->contacts->pluck('id')->toArray())) }},
-                get filteredContacts() {
-                    if (this.search === '') return this.contacts;
-                    const s = this.search.toLowerCase();
-                    return this.contacts.filter(c => c.name.toLowerCase().includes(s));
-                }
-            }">
-                <h3 class="text-sm font-semibold text-neutral-700 mb-3">Membros do Grupo</h3>
-                
-                <div class="relative mb-4">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <x-heroicon-o-magnifying-glass class="size-5 text-neutral-400" />
-                    </div>
-                    <input type="text" x-model="search" placeholder="Buscar contatos pelo nome..." class="block w-full rounded-xl border-0 py-2.5 pl-10 pr-3 text-neutral-900 ring-1 ring-inset ring-neutral-300 placeholder:text-neutral-400 focus:ring-2 focus:ring-inset focus:ring-accent sm:text-sm sm:leading-6 transition-colors">
-                </div>
+        </x-card>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto p-1">
-                    <template x-for="contact in filteredContacts" :key="contact.id">
-                        <x-form.form-checkbox name="contact_ids[]" ::value="contact.id" id="" x-model="selectedIds" class="w-full p-3 rounded-xl border border-neutral-200 hover:border-accent hover:bg-neutral-50 transition-colors" x-bind:class="{'bg-accent/5 border-accent': selectedIds.includes(String(contact.id)) || selectedIds.includes(contact.id)}">
-                            <div class="flex items-center gap-3">
-                                <template x-if="contact.avatar">
-                                    <img :src="contact.avatar" class="shrink-0 border rounded-md object-cover bg-neutral-200 border-[var(--color-accent)] w-10 h-10 text-sm">
-                                </template>
-                                <template x-if="!contact.avatar">
-                                    <div class="shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 w-10 h-10 text-sm" x-text="contact.name.substring(0, 2).toUpperCase()"></div>
-                                </template>
-                                <span class="text-sm font-medium text-neutral-700 truncate" x-text="contact.name"></span>
-                            </div>
-                        </x-form.form-checkbox>
-                    </template>
+        <div x-data="{
+            search: '',
+            selectedIds: {{ Js::from(old('contact_ids', $group->contacts->pluck('id')->toArray())) }},
+            toggleAll() {
+                const visibleInputs = Array.from(document.querySelectorAll('input[name=\'contact_ids[]\']'))
+                    .filter(el => el.closest('[x-show]').style.display !== 'none');
                     
-                    <div x-show="filteredContacts.length === 0" class="col-span-full p-8 text-center text-neutral-500 bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
-                        Nenhum contato encontrado.
-                    </div>
+                if (this.selectedIds.length === visibleInputs.length && visibleInputs.length > 0) {
+                    this.selectedIds = [];
+                } else {
+                    this.selectedIds = visibleInputs.map(el => String(el.value));
+                }
+            }
+        }">
+            <h3 class="text-sm font-semibold text-neutral-700 mb-3 px-1">Membros do Grupo</h3>
+            
+            <div class="mb-4">
+                <x-contacts.selection-bar search-placeholder="Buscar contatos pelo nome..." />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
+                @foreach($allContacts as $contact)
+                    <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" x-show="search === '' || '{{ strtolower(addslashes($contact->name)) }}'.includes(search.toLowerCase())" />
+                @endforeach
+                
+                <div x-show="!Array.from(document.querySelectorAll('[x-show]')).some(el => el.style.display !== 'none')" class="col-span-full p-8 text-center text-neutral-500 bg-white rounded-xl border border-dashed border-neutral-200 shadow-sm" style="display: none;">
+                    Nenhum contato encontrado.
                 </div>
             </div>
-        </x-card>
+        </div>
     </form>
 </x-layouts.app>

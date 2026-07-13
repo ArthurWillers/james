@@ -96,6 +96,14 @@ class FinancialTransaction extends Model
     }
 
     /**
+     * Get the settlements associated with the transaction.
+     */
+    public function settlements(): HasMany
+    {
+        return $this->hasMany(Settlement::class);
+    }
+
+    /**
      * Get the recurrence associated with the transaction.
      */
     public function recurrence(): BelongsTo
