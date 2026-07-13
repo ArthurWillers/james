@@ -169,18 +169,17 @@ class SettlementController extends Controller
             ->unique()
             ->values();
 
-        $formatted = 'R$'.number_format(abs($netBalance), 2, ',', '.');
         $baseMessageText = '';
 
         if ($netBalance > 0) {
-            $baseMessageText = "Oi! Tô passando pra lembrar que você está me devendo.\n\nValor: *$formatted*\n";
+            $baseMessageText = "Oi! Tô passando pra lembrar que você está me devendo.\n\nValor: *".formatCurrency(abs($netBalance))."*\n";
         } elseif ($netBalance < 0) {
-            $baseMessageText = "Oi! Sei que te devo *$formatted*. Vou acertar o mais breve possível!";
+            $baseMessageText = "Oi! Sei que te devo *".formatCurrency(abs($netBalance))."*. Vou acertar o mais breve possível!";
         } else {
             $baseMessageText = 'Oi! Estamos quites, sem pendências!';
         }
 
-        return view('settlements.show', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl', 'pixKeys', 'baseMessageText'));
+        return view('settlements.contact', compact('contact', 'settlements', 'toReceive', 'toPay', 'netBalance', 'settleUrl', 'pixKeys', 'baseMessageText'));
     }
 
     /**
@@ -430,7 +429,7 @@ class SettlementController extends Controller
     {
         $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard', 'media']);
 
-        return view('settlements.details', compact('settlement'));
+        return view('settlements.show', compact('settlement'));
     }
 
     /**
