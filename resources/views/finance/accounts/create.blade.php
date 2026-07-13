@@ -8,7 +8,7 @@
     </div>
 
     <x-page-header title="Nova Conta">
-        <x-ui.back-button fallback="{{ route('financial.accounts.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('financial.accounts.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="create-account-form">
             <x-heroicon-o-check class="size-4" />

@@ -7,7 +7,7 @@
     </div>
 
     <x-page-header title="Editar Tag">
-        <x-ui.back-button fallback="{{ route('financial.tags.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('financial.tags.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="edit-tag-form">
             <x-heroicon-o-check class="size-4" />

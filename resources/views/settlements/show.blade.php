@@ -9,14 +9,14 @@
 
     <x-page-header title="{{ $settlement->description ?: 'Acerto' }}">
         <div class="flex items-center gap-2">
-            <x-ui.back-button fallback="{{ route('settlements.history') }}" />
+            <x-back-button fallback="{{ route('settlements.history') }}" />
             @if(!$settlement->trashed())
                 @if(!$settlement->settlement_group_id)
                     <x-button color="outline" href="{{ route('settlements.edit', $settlement) }}" class="bg-white">
                         <x-heroicon-o-pencil class="size-4" />
                         Editar
                     </x-button>
-                    <x-ui.delete-modal
+                    <x-delete-modal
                         item-name="este acerto"
                         description="Caso tenha sido gerada uma transação financeira atrelada, ela também será movida para a lixeira."
                         action="{{ route('settlements.destroy', $settlement) }}"
@@ -32,7 +32,7 @@
             <x-card class="p-6 border-neutral-200">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div class="flex items-center gap-4">
-                        <x-ui.avatar :model="$settlement->contact" size="lg" />
+                        <x-avatar :model="$settlement->contact" size="lg" />
                         <div>
                             <h2 class="text-lg font-bold text-neutral-900">{{ $settlement->contact->name }}</h2>
                             <a href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="text-sm font-medium text-accent hover:text-accent-dark transition-colors inline-flex items-center gap-1 mt-0.5">
@@ -51,10 +51,10 @@
                             {{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}
                         </div>
                         <div class="mt-1">
-                            <x-ui.badge :color="$settlement->type->color()" class="inline-flex">
+                            <x-badge :color="$settlement->type->color()" class="inline-flex">
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5 mr-1.5" />
                                 {{ $settlement->type->label() }}
-                            </x-ui.badge>
+                            </x-badge>
                         </div>
                     </div>
                 </div>
@@ -64,19 +64,19 @@
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Meio de Pagamento</h3>
                         <div class="flex items-center gap-4">
                             @if($settlement->financialTransaction->invoice)
-                                <x-ui.avatar icon="heroicon-o-credit-card" size="lg" />
+                                <x-avatar icon="heroicon-o-credit-card" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlement->financialTransaction->invoice->creditCard->name }}</div>
                                     <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ formatMonthYear($settlement->financialTransaction->invoice->closing_date) }}</div>
                                 </div>
                             @elseif($settlement->financialTransaction->account)
-                                <x-ui.avatar icon="heroicon-o-building-library" size="lg" />
+                                <x-avatar icon="heroicon-o-building-library" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlement->financialTransaction->account->name }}</div>
                                     <div class="text-sm text-neutral-500">Conta Corrente</div>
                                 </div>
                             @else
-                                <x-ui.avatar icon="heroicon-o-currency-dollar" size="lg" />
+                                <x-avatar icon="heroicon-o-currency-dollar" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">Transação Avulsa</div>
                                     <div class="text-sm text-neutral-500">Sem conta ou cartão vinculado</div>
@@ -87,7 +87,7 @@
                 @endif
 
                 @if($settlement->hasMedia('attachments'))
-                    <x-ui.lightbox class="mt-8 pt-6 border-t border-neutral-100">
+                    <x-lightbox class="mt-8 pt-6 border-t border-neutral-100">
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Anexos</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($settlement->getMedia('attachments') as $media)
@@ -97,7 +97,7 @@
                                 @endphp
                                 @if($isImage)
                                     <button type="button" class="flex items-center text-left gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group w-full cursor-pointer" @click="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')">
-                                        <x-ui.avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
+                                        <x-avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
                                         <div class="truncate text-sm text-neutral-700">
                                             <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
                                             <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
@@ -106,7 +106,7 @@
                                 @else
                                     <a href="{{ $fileUrl }}" target="_blank"
                                        class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
-                                        <x-ui.avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
+                                        <x-avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
                                         <div class="truncate text-sm text-neutral-700">
                                             <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
                                             <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
@@ -115,7 +115,7 @@
                                 @endif
                             @endforeach
                         </div>
-                    </x-ui.lightbox>
+                    </x-lightbox>
                 @endif
             </x-card>
         </div>
@@ -163,7 +163,7 @@
                 </div>
             </x-card>
 
-            <x-ui.metadata-card :model="$settlement" />
+            <x-metadata-card :model="$settlement" />
         </div>
     </div>
 

@@ -9,14 +9,14 @@
 
     <x-page-header title="{{ $settlementGroup->description }}">
         <div class="flex items-center gap-3">
-            <x-ui.back-button fallback="{{ route('settlements.groups.index') }}" />
+            <x-back-button fallback="{{ route('settlements.groups.index') }}" />
 
             @if(!$settlementGroup->trashed())
                 <x-button color="outline" href="{{ route('settlements.groups.edit', $settlementGroup) }}" class="bg-white">
                     <x-heroicon-o-pencil class="size-4" />
                     Editar
                 </x-button>
-                <x-ui.delete-modal 
+                <x-delete-modal 
                     action="{{ route('settlements.groups.destroy', $settlementGroup) }}"
                     item-name="a divisão de conta"
                     item-desc="{{ $settlementGroup->description }}"
@@ -59,7 +59,7 @@
                     @foreach($settlementGroup->settlements as $settlement)
                         <div class="flex items-center justify-between p-4 rounded-xl border border-neutral-100 bg-white">
                             <div class="flex items-center gap-4">
-                                <x-ui.avatar :model="$settlement->contact" size="md" />
+                                <x-avatar :model="$settlement->contact" size="md" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlement->contact->name }}</div>
                                     <div class="text-xs text-neutral-500">Deve reembolsar</div>
@@ -82,13 +82,13 @@
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Meio de Pagamento</h3>
                         <div class="flex items-center gap-4">
                             @if($settlementGroup->financialTransaction->invoice)
-                                <x-ui.avatar icon="heroicon-o-credit-card" size="lg" />
+                                <x-avatar icon="heroicon-o-credit-card" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlementGroup->financialTransaction->invoice->creditCard->name }}</div>
                                     <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ formatMonthYear($settlementGroup->financialTransaction->invoice->closing_date) }}</div>
                                 </div>
                             @elseif($settlementGroup->financialTransaction->account)
-                                <x-ui.avatar icon="heroicon-o-building-library" size="lg" />
+                                <x-avatar icon="heroicon-o-building-library" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlementGroup->financialTransaction->account->name }}</div>
                                     <div class="text-sm text-neutral-500">Conta Corrente</div>
@@ -99,7 +99,7 @@
                 @endif
 
                 @if($settlementGroup->hasMedia('attachments'))
-                    <x-ui.lightbox class="mt-8 pt-6 border-t border-neutral-100">
+                    <x-lightbox class="mt-8 pt-6 border-t border-neutral-100">
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Anexos</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($settlementGroup->getMedia('attachments') as $media)
@@ -110,7 +110,7 @@
                                 @if($isImage)
                                     <button type="button" @click="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')"
                                        class="flex items-center text-left gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group w-full cursor-pointer">
-                                        <x-ui.avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
+                                        <x-avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
                                         <div class="truncate text-sm text-neutral-700">
                                             <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
                                             <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
@@ -119,7 +119,7 @@
                                 @else
                                     <a href="{{ $fileUrl }}" target="_blank"
                                        class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
-                                        <x-ui.avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
+                                        <x-avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
                                         <div class="truncate text-sm text-neutral-700">
                                             <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
                                             <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
@@ -128,7 +128,7 @@
                                 @endif
                             @endforeach
                         </div>
-                    </x-ui.lightbox>
+                    </x-lightbox>
                 @endif
             </x-card>
         </div>
@@ -168,7 +168,7 @@
                 </div>
             </x-card>
 
-            <x-ui.metadata-card :model="$settlementGroup" />
+            <x-metadata-card :model="$settlementGroup" />
         </div>
     </div>
 

@@ -266,12 +266,12 @@
             
             <div x-show="isEmpty" x-cloak class="col-span-full">
                 @if($showArchived)
-                    <x-ui.empty-state 
+                    <x-empty-state 
                         icon="heroicon-o-users" 
                         message="Nenhum contato arquivado encontrado."
                     />
                 @else
-                    <x-ui.empty-state 
+                    <x-empty-state 
                         icon="heroicon-o-users" 
                         message="Nenhum contato encontrado."
                         action-text="Novo Contato"

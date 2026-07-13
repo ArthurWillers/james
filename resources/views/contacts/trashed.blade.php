@@ -10,7 +10,7 @@
         title="Lixeira" 
         description="Contatos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('contacts.index') }}" />
+        <x-back-button fallback="{{ route('contacts.index') }}" />
     </x-page-header>
 
     <x-filter-bar 
@@ -141,14 +141,14 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-contact"
             item-name="o contato"
             dynamic-item-name="selectedContactName"
             alpine-action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)"
         />
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-contact"
             item-name="o contato"
             dynamic-item-name="selectedContactName"

@@ -10,7 +10,7 @@
         title="Lixeira" 
         description="Recorrências excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('financial.recurrences.index') }}" />
+        <x-back-button fallback="{{ route('financial.recurrences.index') }}" />
     </x-page-header>
 
     <x-filter-bar 
@@ -170,14 +170,14 @@
             </div>
         @endif
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-recurrence"
             item-name="a recorrência"
             dynamic-item-name="selectedRecurrenceTitle"
             alpine-action="'{{ route('financial.recurrences.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)"
         />
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-recurrence"
             item-name="a recorrência"
             dynamic-item-name="selectedRecurrenceTitle"

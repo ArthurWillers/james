@@ -7,7 +7,7 @@
     </div>
 
     <x-page-header title="Detalhes da Transação">
-        <x-ui.back-button fallback="{{ route('financial.transactions.index') }}" />
+        <x-back-button fallback="{{ route('financial.transactions.index') }}" />
 
         <x-button color="outline" href="{{ $editRoute }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
@@ -15,7 +15,7 @@
         </x-button>
 
         @if(!$isSettlementTransaction)
-            <x-ui.delete-modal 
+            <x-delete-modal 
                 action="{{ route('financial.transactions.destroy', $transaction->id) }}"
                 item-name="a transação"
                 item-desc="{{ $transaction->description }}"
@@ -77,7 +77,7 @@
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Conta / Origem</h3>
             @if($transaction->invoice)
                 <div class="flex items-center gap-3">
-                    <x-ui.avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
+                    <x-avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->invoice->creditCard->name }}</p>
                         <p class="text-xs text-neutral-500">Fatura de {{ formatMonthYear($transaction->invoice->closing_date) }}</p>
@@ -85,7 +85,7 @@
                 </div>
             @elseif($transaction->account)
                 <div class="flex items-center gap-3">
-                    <x-ui.avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
+                    <x-avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->account->name }}</p>
                         <p class="text-xs text-neutral-500">Conta Corrente</p>
@@ -131,11 +131,11 @@
         </x-card>
 
         <!-- Info -->
-        <x-ui.metadata-card :model="$transaction" />
+        <x-metadata-card :model="$transaction" />
     </div>
 
     @if(isset($settlementGroup) && $settlementGroup)
-        <x-ui.related-resource 
+        <x-related-resource 
             class="mb-6"
             icon="heroicon-o-user-group"
             title="Gerada por Divisão de Conta"
@@ -146,7 +146,7 @@
     @endif
 
     @if($transaction->transfer_pair_id && $transaction->transferPair)
-        <x-ui.related-resource 
+        <x-related-resource 
             class="mb-6"
             icon="heroicon-o-arrows-right-left"
             title="Transferência Vinculada"
@@ -160,7 +160,7 @@
         @php
             $settlement = $transaction->settlements->first();
         @endphp
-        <x-ui.related-resource 
+        <x-related-resource 
             class="mb-6"
             icon="heroicon-o-user"
             title="Acerto Vinculado"

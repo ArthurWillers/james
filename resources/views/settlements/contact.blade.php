@@ -6,7 +6,7 @@
         </x-breadcrumbs>
 
         <div class="flex items-center gap-2">
-            <x-ui.back-button fallback="{{ route('settlements.index') }}" />
+            <x-back-button fallback="{{ route('settlements.index') }}" />
 
             <x-modal.trigger name="share-modal-{{ $contact->id }}">
                 <x-button type="button" color="outline">
@@ -114,8 +114,8 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <!-- Contact Header -->
-        <x-ui.card href="{{ route('contacts.show', $contact->id) }}" class="flex items-center gap-4 h-full">
-            <x-ui.avatar :model="$contact" size="xl" />
+        <x-card href="{{ route('contacts.show', $contact->id) }}" class="flex items-center gap-4 h-full">
+            <x-avatar :model="$contact" size="xl" />
             <div>
                 <h1 class="text-2xl font-bold text-neutral-900">{{ $contact->name }}</h1>
                 <div class="flex items-center gap-2 text-neutral-500 text-sm mt-1">
@@ -129,7 +129,7 @@
                     @endif
                 </div>
             </div>
-        </x-ui.card>
+        </x-card>
 
         <!-- Acertos KPI Card -->
         <x-finance.kpi-card
@@ -147,16 +147,16 @@
     <h2 class="text-lg font-semibold text-neutral-900 mb-4">Histórico de Transações</h2>
     
     <div class="mb-12">
-        <x-ui.table>
-            <x-ui.table.header class="hidden sm:grid grid-cols-5">
-                <x-ui.table.column>Data</x-ui.table.column>
-                <x-ui.table.column>Descrição</x-ui.table.column>
-                <x-ui.table.column>Tipo</x-ui.table.column>
-                <x-ui.table.column>Pagamento</x-ui.table.column>
-                <x-ui.table.column class="text-right">Valor</x-ui.table.column>
-            </x-ui.table.header>
+        <x-table>
+            <x-table.header class="hidden sm:grid grid-cols-5">
+                <x-table.column>Data</x-table.column>
+                <x-table.column>Descrição</x-table.column>
+                <x-table.column>Tipo</x-table.column>
+                <x-table.column>Pagamento</x-table.column>
+                <x-table.column class="text-right">Valor</x-table.column>
+            </x-table.header>
 
-            <x-ui.table.body>
+            <x-table.body>
                 @forelse($settlements as $settlement)
                     @php
                         $isPositiveForMe = in_array($settlement->type->value, [\App\Enums\SettlementType::TheyOwe->value, \App\Enums\SettlementType::IPaid->value]);
@@ -164,12 +164,12 @@
                         $amountPrefix = $isPositiveForMe ? '+' : '-';
                     @endphp
 
-                    <x-ui.table.row href="{{ $settlement->settlement_group_id ? route('settlements.groups.show', $settlement->settlement_group_id) : route('settlements.show_item', $settlement) }}" class="hidden sm:grid grid-cols-5">
-                        <x-ui.table.cell class="text-neutral-500">
+                    <x-table.row href="{{ $settlement->settlement_group_id ? route('settlements.groups.show', $settlement->settlement_group_id) : route('settlements.show_item', $settlement) }}" class="hidden sm:grid grid-cols-5">
+                        <x-table.cell class="text-neutral-500">
                             {{ formatShort($settlement->date) }}
-                        </x-ui.table.cell>
+                        </x-table.cell>
                         
-                        <x-ui.table.cell>
+                        <x-table.cell>
                             <div class="flex items-center gap-2">
                                 <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
                                 @php
@@ -185,16 +185,16 @@
                                     </div>
                                 @endif
                             </div>
-                        </x-ui.table.cell>
+                        </x-table.cell>
 
-                        <x-ui.table.cell>
-                            <x-ui.badge :color="$settlement->type->color()" class="flex items-center gap-1 w-fit">
+                        <x-table.cell>
+                            <x-badge :color="$settlement->type->color()" class="flex items-center gap-1 w-fit">
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                 <span>{{ $settlement->type->label() }}</span>
-                            </x-ui.badge>
-                        </x-ui.table.cell>
+                            </x-badge>
+                        </x-table.cell>
 
-                        <x-ui.table.cell class="text-neutral-500 text-sm">
+                        <x-table.cell class="text-neutral-500 text-sm">
                             @php
                                 $transaction = $settlement->financialTransaction ?? $settlement->group?->financialTransaction;
                             @endphp
@@ -218,20 +218,20 @@
                             @else
                                 <span class="text-neutral-300">-</span>
                             @endif
-                        </x-ui.table.cell>
+                        </x-table.cell>
 
-                        <x-ui.table.cell class="text-right font-semibold {{ $amountColor }}">
+                        <x-table.cell class="text-right font-semibold {{ $amountColor }}">
                             {{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}
-                        </x-ui.table.cell>
+                        </x-table.cell>
 
                         <!-- Mobile View -->
                         <x-slot:mobile>
                             <div class="flex justify-between items-start gap-4">
                                 <div class="flex flex-col gap-1 min-w-0 flex-1">
                                     <div class="flex items-center gap-2">
-                                        <x-ui.badge :color="$settlement->type->color()" class="flex items-center shrink-0 w-fit">
+                                        <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 w-fit">
                                             <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
-                                        </x-ui.badge>
+                                        </x-badge>
                                         <span class="font-medium text-neutral-900 truncate">{{ $settlement->description }}</span>
                                         @php
                                             $mediaCount = $settlement->getMedia('attachments')->count();
@@ -256,18 +256,18 @@
                                 </div>
                             </div>
                         </x-slot:mobile>
-                    </x-ui.table.row>
+                    </x-table.row>
                 @empty
                     <div class="col-span-full">
-                        <x-ui.empty-state 
+                        <x-empty-state 
                             icon="heroicon-o-queue-list" 
                             title="Nenhuma transação" 
                             description="Você ainda não registrou nenhum acerto com este contato." 
                         />
                     </div>
                 @endforelse
-            </x-ui.table.body>
-        </x-ui.table>
+            </x-table.body>
+        </x-table>
 
         <div class="mt-6">
             {{ $settlements->links() }}

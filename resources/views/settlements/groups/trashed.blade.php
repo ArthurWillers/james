@@ -11,7 +11,7 @@
         title="Lixeira de Contas Divididas" 
         description="Divisões de contas excluídas. Restaure-as ou exclua permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('settlements.groups.index') }}" />
+        <x-back-button fallback="{{ route('settlements.groups.index') }}" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"
@@ -109,7 +109,7 @@
                     </x-slot>
                 </x-table.row>
             @empty
-                <x-ui.empty-state 
+                <x-empty-state 
                     icon="heroicon-o-trash" 
                     title="Nenhuma divisão excluída" 
                     description="Não há divisões de contas na lixeira." 
@@ -117,7 +117,7 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-group"
             item-name="a divisão"
             dynamic-item-name="selectedGroupDesc"
@@ -125,7 +125,7 @@
             alpine-action="'{{ route('settlements.groups.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)"
         />
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-group"
             item-name="a divisão de conta"
             dynamic-item-name="selectedGroupDesc"

@@ -8,7 +8,7 @@
     </div>
 
     <x-page-header title="Novo Grupo">
-        <x-ui.back-button fallback="{{ route('contacts.groups.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('contacts.groups.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="create-group-form">
             <x-heroicon-o-check class="size-4" />

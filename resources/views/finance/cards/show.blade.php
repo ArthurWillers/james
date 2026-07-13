@@ -8,14 +8,14 @@
     </div>
 
     <x-page-header title="Detalhes do Cartão">
-        <x-ui.back-button fallback="{{ route('financial.cards.index') }}" />
+        <x-back-button fallback="{{ route('financial.cards.index') }}" />
 
         <x-button color="outline" href="{{ route('financial.cards.edit', $card) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
             Editar
         </x-button>
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             action="{{ route('financial.cards.destroy', $card) }}"
             item-name="o cartão"
             item-desc="{{ $card->name }}"

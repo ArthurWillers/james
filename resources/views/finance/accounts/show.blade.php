@@ -7,7 +7,7 @@
     </div>
 
     <x-page-header title="Detalhes da Conta">
-        <x-ui.back-button fallback="{{ route('financial.accounts.index') }}" />
+        <x-back-button fallback="{{ route('financial.accounts.index') }}" />
 
         <x-modal.trigger name="adjust-balance-{{ $account->id }}">
             <x-button type="button" color="outline" class="bg-white">
@@ -49,7 +49,7 @@
             Editar
         </x-button>
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             action="{{ route('financial.accounts.destroy', $account) }}"
             item-name="a conta"
             item-desc="{{ $account->name }}"

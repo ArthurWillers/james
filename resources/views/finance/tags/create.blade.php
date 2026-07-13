@@ -7,7 +7,7 @@
     </div>
 
     <x-page-header title="Nova Tag">
-        <x-ui.back-button fallback="{{ route('financial.tags.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('financial.tags.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="create-tag-form">
             <x-heroicon-o-check class="size-4" />

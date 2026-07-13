@@ -9,7 +9,7 @@
     </div>
 
     <x-page-header title="Editar Grupo: {{ $group->name }}">
-        <x-ui.back-button fallback="{{ route('contacts.groups.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('contacts.groups.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="edit-group-form">
             <x-heroicon-o-check class="size-4" />

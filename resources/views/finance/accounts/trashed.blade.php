@@ -10,7 +10,7 @@
         title="Lixeira" 
         description="Contas financeiras excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('financial.accounts.index') }}" />
+        <x-back-button fallback="{{ route('financial.accounts.index') }}" />
     </x-page-header>
 
     <x-filter-bar 
@@ -131,7 +131,7 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-account"
             item-name="a conta"
             dynamic-item-name="selectedAccountName"
@@ -140,9 +140,9 @@
             <x-slot:content>
                 Tem certeza que deseja restaurar a conta "<span class="font-medium text-neutral-900" x-text="selectedAccountName"></span>"? Ela voltará a aparecer nos seus saldos e faturamentos.
             </x-slot:content>
-        </x-ui.restore-modal>
+        </x-restore-modal>
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-account"
             item-name="a conta"
             dynamic-item-name="selectedAccountName"
@@ -165,7 +165,7 @@
                     </div>
                 </div>
             </x-slot:content>
-        </x-ui.delete-modal>
+        </x-delete-modal>
     </x-table>
 
     @if($accounts->hasPages())

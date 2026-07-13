@@ -8,7 +8,7 @@
     </div>
 
     <x-page-header title="Novo Cartão">
-        <x-ui.back-button fallback="{{ route('financial.cards.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('financial.cards.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="create-card-form">
             <x-heroicon-o-check class="size-4" />

@@ -7,14 +7,14 @@
     </div>
 
     <x-page-header title="Detalhes do Contato">
-        <x-ui.back-button fallback="{{ route('contacts.index') }}" />
+        <x-back-button fallback="{{ route('contacts.index') }}" />
 
         <x-button color="outline" href="{{ route('contacts.edit', $contact) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
             Editar
         </x-button>
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             action="{{ route('contacts.destroy', $contact) }}"
             item-name="o contato"
             item-desc="{{ $contact->name }}"

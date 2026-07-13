@@ -10,7 +10,7 @@
         title="Lixeira" 
         description="Cartões de crédito excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('financial.cards.index') }}" />
+        <x-back-button fallback="{{ route('financial.cards.index') }}" />
     </x-page-header>
 
     <x-filter-bar 
@@ -131,7 +131,7 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-card"
             item-name="o cartão"
             dynamic-item-name="selectedCardName"
@@ -140,9 +140,9 @@
             <x-slot:content>
                 Tem certeza que deseja restaurar o cartão "<span class="font-medium text-neutral-900" x-text="selectedCardName"></span>"? Ele voltará a aparecer nos seus saldos e faturamentos.
             </x-slot:content>
-        </x-ui.restore-modal>
+        </x-restore-modal>
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-card"
             item-name="o cartão"
             dynamic-item-name="selectedCardName"
@@ -165,7 +165,7 @@
                     </div>
                 </div>
             </x-slot:content>
-        </x-ui.delete-modal>
+        </x-delete-modal>
     </x-table>
 
     @if($cards->hasPages())

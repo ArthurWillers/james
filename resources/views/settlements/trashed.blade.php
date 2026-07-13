@@ -11,7 +11,7 @@
         title="Lixeira" 
         description="Acertos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('settlements.history') }}" />
+        <x-back-button fallback="{{ route('settlements.history') }}" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"
@@ -44,9 +44,9 @@
                 <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1.5fr]">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
-                            <x-ui.badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
+                            <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-4" />
-                            </x-ui.badge>
+                            </x-badge>
                             <div class="overflow-hidden flex flex-col">
                                 @php
                                     $isPositiveForMe = in_array($settlement->type->value, [\App\Enums\SettlementType::TheyOwe->value, \App\Enums\SettlementType::IPaid->value]);
@@ -97,9 +97,9 @@
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 min-w-0 flex items-center gap-3">
-                                <x-ui.badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
+                                <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
                                     <x-dynamic-component :component="$settlement->type->icon()" class="size-4" />
-                                </x-ui.badge>
+                                </x-badge>
                                 <div class="overflow-hidden">
                                     <h3 class="text-sm font-semibold text-neutral-900 leading-tight mb-1 truncate">
                                         {{ $settlement->description }}
@@ -146,7 +146,7 @@
                     </x-slot>
                 </x-table.row>
             @empty
-                <x-ui.empty-state 
+                <x-empty-state 
                     icon="heroicon-o-trash" 
                     title="Nenhum acerto excluído" 
                     description="Não há acertos individuais na lixeira." 
@@ -154,7 +154,7 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-settlement"
             item-name="o acerto"
             dynamic-item-name="selectedSettlementDesc"
@@ -162,7 +162,7 @@
             alpine-action="'{{ route('settlements.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)"
         />
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-settlement"
             item-name="o acerto"
             dynamic-item-name="selectedSettlementDesc"

@@ -10,7 +10,7 @@
         title="Lixeira" 
         description="Transações financeiras excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-ui.back-button fallback="{{ route('financial.transactions.index') }}" />
+        <x-back-button fallback="{{ route('financial.transactions.index') }}" />
     </x-page-header>
 
     <x-filter-bar 
@@ -178,7 +178,7 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.restore-modal
+        <x-restore-modal
             modal-name="restore-transaction"
             item-name="a transação"
             dynamic-item-name="selectedTransactionName"
@@ -187,9 +187,9 @@
             <x-slot:content>
                 Tem certeza que deseja restaurar a transação "<span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>"? Ela voltará a impactar os saldos da sua conta ou fatura.
             </x-slot:content>
-        </x-ui.restore-modal>
+        </x-restore-modal>
 
-        <x-ui.delete-modal 
+        <x-delete-modal 
             modal-name="force-delete-transaction"
             item-name="a transação"
             dynamic-item-name="selectedTransactionName"
@@ -212,7 +212,7 @@
                     </div>
                 </div>
             </x-slot:content>
-        </x-ui.delete-modal>
+        </x-delete-modal>
     </x-table>
 
     @if($transactions->hasPages())

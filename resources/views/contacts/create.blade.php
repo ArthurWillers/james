@@ -8,7 +8,7 @@
     </div>
 
     <x-page-header title="Novo Contato">
-        <x-ui.back-button fallback="{{ route('contacts.index') }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('contacts.index') }}" text="Cancelar" />
 
         <x-button type="submit" form="create-contact-form">
             <x-heroicon-o-check class="size-4" />

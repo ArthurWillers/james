@@ -124,7 +124,7 @@
             @endforelse
         </x-table.body>
 
-        <x-ui.delete-modal
+        <x-delete-modal
             modalName="delete-tag"
             itemName="a tag"
             dynamicItemName="selectedTagName"

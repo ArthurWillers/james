@@ -9,7 +9,7 @@
     </div>
 
     <x-page-header title="Editar Cartão">
-        <x-ui.back-button fallback="{{ route('financial.cards.show', $card) }}" text="Cancelar" />
+        <x-back-button fallback="{{ route('financial.cards.show', $card) }}" text="Cancelar" />
 
         <x-button type="submit" form="edit-card-form">
             <x-heroicon-o-check class="size-4" />
