@@ -46,6 +46,19 @@
 
         <x-table.body>
             @forelse($transactions as $transaction)
+                @php
+                    $settlementGroup = $transaction->settlementGroup;
+                    $settlement = $transaction->settlements->first();
+                    $isSettlementTransaction = $settlementGroup || $settlement;
+                    
+                    if ($settlementGroup) {
+                        $settlementLabel = "Ir para Lixeira de Divisão";
+                        $settlementRoute = route('settlements.groups.trashed');
+                    } elseif ($settlement) {
+                        $settlementLabel = "Ir para Lixeira de Acerto";
+                        $settlementRoute = route('settlements.trashed');
+                    }
+                @endphp
                 <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr]">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
@@ -88,15 +101,22 @@
 
                     <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
-                            <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
-                                <x-heroicon-o-arrow-uturn-left class="size-4" />
-                                Restaurar
-                            </x-button>
+                            @if($isSettlementTransaction)
+                                <x-button color="outline" class="bg-white text-neutral-600 border-neutral-300 hover:bg-neutral-50" href="{{ $settlementRoute }}">
+                                    <x-heroicon-o-link class="size-4" />
+                                    {{ $settlementLabel }}
+                                </x-button>
+                            @else
+                                <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
+                                    <x-heroicon-o-arrow-uturn-left class="size-4" />
+                                    Restaurar
+                                </x-button>
 
-                            <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
-                                <x-heroicon-o-trash class="size-4" />
-                                Excluir
-                            </x-button>
+                                <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
+                                    <x-heroicon-o-trash class="size-4" />
+                                    Excluir
+                                </x-button>
+                            @endif
                         </div>
                     </x-table.cell>
 
@@ -127,15 +147,22 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                            Restaurar
-                                        </button>
+                                        @if($isSettlementTransaction)
+                                            <a href="{{ $settlementRoute }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                                <x-heroicon-o-link class="size-5" />
+                                                {{ $settlementLabel }}
+                                            </a>
+                                        @else
+                                            <button type="button" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                                <x-heroicon-o-arrow-uturn-left class="size-5" />
+                                                Restaurar
+                                            </button>
 
-                                        <button type="button" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-trash class="size-5" />
-                                            Excluir Permanentemente
-                                        </button>
+                                            <button type="button" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
+                                                <x-heroicon-o-trash class="size-5" />
+                                                Excluir Permanentemente
+                                            </button>
+                                        @endif
                                     </x-slot>
                                 </x-dropdown>
                             </div>

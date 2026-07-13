@@ -318,7 +318,13 @@ class FinancialTransactionController extends Controller
     public function trashed(Request $request)
     {
         $transactions = FinancialTransaction::onlyTrashed()
-            ->with(['account', 'invoice.creditCard', 'tags'])
+            ->with([
+                'account', 
+                'invoice.creditCard', 
+                'tags',
+                'settlements' => fn($q) => $q->withTrashed(),
+                'settlementGroup' => fn($q) => $q->withTrashed(),
+            ])
             ->orderByDesc('date')
             ->orderByDesc('updated_at')
             ->paginate(15);
