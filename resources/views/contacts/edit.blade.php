@@ -8,10 +8,7 @@
     </div>
 
     <x-page-header title="Editar Contato">
-        <x-button color="outline" href="{{ route('contacts.show', $contact) }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('contacts.show', $contact) }}" text="Cancelar" />
 
         <x-button type="submit" form="edit-contact-form">
             <x-heroicon-o-check class="size-4" />

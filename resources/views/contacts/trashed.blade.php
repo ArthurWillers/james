@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Contatos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('contacts.index') }}" />
     </x-page-header>
 
     <x-filter-bar 

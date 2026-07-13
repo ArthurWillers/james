@@ -9,9 +9,7 @@
 
     <x-page-header title="Editar Lançamento">
         <div class="flex items-center gap-2">
-            <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
-                Cancelar
-            </x-button>
+            <x-ui.back-button fallback="{{ route('settlements.contact.show', $contact) }}" text="Cancelar" />
             <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
                 Salvar
             </x-button>

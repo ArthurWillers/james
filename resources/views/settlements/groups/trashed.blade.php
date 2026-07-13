@@ -11,10 +11,7 @@
         title="Lixeira de Contas Divididas" 
         description="Divisões de contas excluídas. Restaure-as ou exclua permanentemente." 
     >
-        <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('settlements.groups.index') }}" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"

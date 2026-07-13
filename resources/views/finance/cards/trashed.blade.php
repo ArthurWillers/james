@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Cartões de crédito excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-button color="outline" href="{{ route('financial.cards.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.cards.index') }}" />
     </x-page-header>
 
     <x-filter-bar 

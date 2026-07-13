@@ -8,10 +8,7 @@
     </div>
 
     <x-page-header title="Editar Conta">
-        <x-button color="outline" href="{{ route('financial.accounts.show', $financialAccount) }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.accounts.show', $financialAccount) }}" text="Cancelar" />
 
         <x-button type="submit" form="edit-account-form">
             <x-heroicon-o-check class="size-4" />

@@ -7,10 +7,7 @@
     </div>
 
     <x-page-header title="Detalhes da Conta">
-        <x-button color="outline" href="{{ route('financial.accounts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.accounts.index') }}" />
 
         <x-modal.trigger name="adjust-balance-{{ $account->id }}">
             <x-button type="button" color="outline" class="bg-white">

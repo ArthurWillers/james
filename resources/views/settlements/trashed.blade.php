@@ -11,10 +11,7 @@
         title="Lixeira" 
         description="Acertos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('settlements.history') }}" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"

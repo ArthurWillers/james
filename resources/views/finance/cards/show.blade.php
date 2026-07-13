@@ -8,10 +8,7 @@
     </div>
 
     <x-page-header title="Detalhes do Cartão">
-        <x-button color="outline" href="{{ route('financial.cards.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.cards.index') }}" />
 
         <x-button color="outline" href="{{ route('financial.cards.edit', $card) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />

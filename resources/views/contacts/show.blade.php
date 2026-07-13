@@ -7,10 +7,7 @@
     </div>
 
     <x-page-header title="Detalhes do Contato">
-        <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('contacts.index') }}" />
 
         <x-button color="outline" href="{{ route('contacts.edit', $contact) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />

@@ -8,9 +8,7 @@
 
     <x-page-header title="Editar Divisão de Conta">
         <div class="flex items-center gap-2">
-            <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white">
-                Cancelar
-            </x-button>
+            <x-ui.back-button fallback="{{ route('settlements.index') }}" text="Cancelar" />
             <x-button type="submit" form="split-form" class="bg-neutral-900 hover:bg-black text-white">
                 Salvar
             </x-button>

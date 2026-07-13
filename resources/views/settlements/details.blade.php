@@ -9,10 +9,7 @@
 
     <x-page-header title="{{ $settlement->description ?: 'Acerto' }}">
         <div class="flex items-center gap-2">
-            <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
-                <x-heroicon-o-arrow-left class="size-4" />
-                Voltar
-            </x-button>
+            <x-ui.back-button fallback="{{ route('settlements.history') }}" />
             @if(!$settlement->trashed())
                 @if(!$settlement->settlement_group_id)
                     <x-button color="outline" href="{{ route('settlements.edit', $settlement) }}" class="bg-white">

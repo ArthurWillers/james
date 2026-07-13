@@ -9,6 +9,8 @@
 
     <x-page-header title="{{ $settlementGroup->description }}">
         <div class="flex items-center gap-3">
+            <x-ui.back-button fallback="{{ route('settlements.groups.index') }}" />
+
             @if(!$settlementGroup->trashed())
                 <x-button color="outline" href="{{ route('settlements.groups.edit', $settlementGroup) }}" class="bg-white">
                     <x-heroicon-o-pencil class="size-4" />

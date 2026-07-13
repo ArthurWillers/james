@@ -40,7 +40,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-neutral-900">Nova Transação</h1>
             <div class="flex items-center gap-3">
-                <x-button color="outline" href="{{ route('financial.transactions.index') }}" class="bg-white">Cancelar</x-button>
+                <x-ui.back-button fallback="{{ route('financial.transactions.index') }}" text="Cancelar" />
                 <x-button type="submit" form="transaction-form" class="bg-neutral-900 hover:bg-black text-white">Salvar</x-button>
             </div>
         </div>

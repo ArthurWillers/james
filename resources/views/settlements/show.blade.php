@@ -6,6 +6,8 @@
         </x-breadcrumbs>
 
         <div class="flex items-center gap-2">
+            <x-ui.back-button fallback="{{ route('settlements.index') }}" />
+
             <x-modal.trigger name="share-modal-{{ $contact->id }}">
                 <x-button type="button" color="outline">
                     <x-heroicon-o-share class="size-4" />

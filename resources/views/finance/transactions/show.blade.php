@@ -7,10 +7,7 @@
     </div>
 
     <x-page-header title="Detalhes da Transação">
-        <x-button color="outline" href="{{ route('financial.transactions.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.transactions.index') }}" />
 
         <x-button color="outline" href="{{ $editRoute }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />

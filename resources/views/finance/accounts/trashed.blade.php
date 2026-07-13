@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Contas financeiras excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-button color="outline" href="{{ route('financial.accounts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.accounts.index') }}" />
     </x-page-header>
 
     <x-filter-bar 

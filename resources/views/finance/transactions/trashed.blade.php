@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Transações financeiras excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-button color="outline" href="{{ route('financial.transactions.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-ui.back-button fallback="{{ route('financial.transactions.index') }}" />
     </x-page-header>
 
     <x-filter-bar 
