@@ -76,7 +76,7 @@ class SettlementGroupController extends Controller
      */
     public function store(StoreSettlementGroupRequest $request): RedirectResponse
     {
-        $group = $this->service->storeGroup($request->validated());
+        $this->service->storeGroup($request->validated());
 
         return redirect()->route('settlements.index')
             ->with('success', 'Divisão de conta registrada com sucesso.');
@@ -146,7 +146,7 @@ class SettlementGroupController extends Controller
         return view('settlements.groups.trashed', compact('settlementGroups'));
     }
 
-    public function restore($id)
+    public function restore(int $id)
     {
         $group = SettlementGroup::onlyTrashed()->findOrFail($id);
 
@@ -172,7 +172,7 @@ class SettlementGroupController extends Controller
         ]);
     }
 
-    public function forceDelete($id)
+    public function forceDelete(int $id)
     {
         $group = SettlementGroup::onlyTrashed()->findOrFail($id);
 

@@ -198,7 +198,7 @@ class FinancialTransactionController extends Controller
         $from = FinancialAccount::findOrFail($validated['from_account_id']);
         $to = FinancialAccount::findOrFail($validated['to_account_id']);
 
-        $transactions = FinancialTransaction::createTransfer(
+        FinancialTransaction::createTransfer(
             $from,
             $to,
             $validated['amount'],
@@ -346,7 +346,7 @@ class FinancialTransactionController extends Controller
         return redirect()->back()->with('success', 'Transação excluída permanentemente.');
     }
 
-    private function syncTagsWithPrimary($model, array $tags, $primaryId)
+    private function syncTagsWithPrimary(mixed $model, array $tags, ?int $primaryId)
     {
         if (empty($tags)) {
             $model->tags()->detach();
