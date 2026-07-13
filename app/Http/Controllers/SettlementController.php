@@ -134,7 +134,8 @@ class SettlementController extends Controller
                 'financialTransaction.account', 
                 'financialTransaction.invoice.creditCard',
                 'group.financialTransaction.account',
-                'group.financialTransaction.invoice.creditCard'
+                'group.financialTransaction.invoice.creditCard',
+                'media'
             ])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
@@ -229,6 +230,12 @@ class SettlementController extends Controller
         
         $settlement->save();
 
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $settlement->addMedia($file)->toMediaCollection('attachments');
+            }
+        }
+
         return redirect()->route('settlements.contact.show', $contact)
             ->with('success', 'Lançamento registrado com sucesso.');
     }
@@ -242,6 +249,7 @@ class SettlementController extends Controller
     {
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
 
+        $settlement->load('media');
         $contact = $settlement->contact;
         $accounts = \App\Models\FinancialAccount::all();
         $cards = \App\Models\FinancialCreditCard::all();
@@ -275,6 +283,18 @@ class SettlementController extends Controller
         }
         
         $settlement->save();
+
+        if (!empty($validated['delete_attachments'])) {
+            $settlement->getMedia('attachments')
+                ->whereIn('id', $validated['delete_attachments'])
+                ->each(fn ($media) => $media->delete());
+        }
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $settlement->addMedia($file)->toMediaCollection('attachments');
+            }
+        }
 
         return redirect()->route('settlements.contact.show', $settlement->contact_id)
             ->with('success', 'Lançamento atualizado com sucesso.');
@@ -399,7 +419,23 @@ class SettlementController extends Controller
 
     public function show(Settlement $settlement)
     {
-        $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard']);
+        $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard', 'media']);
         return view('settlements.details', compact('settlement'));
+    }
+
+    /**
+     * Serve the settlement's attachment.
+     */
+    public function attachment(Settlement $settlement, $mediaId)
+    {
+        $media = $settlement->getMedia('attachments')->where('id', $mediaId)->first();
+
+        if (! $media) {
+            abort(404);
+        }
+
+        return response()->file($media->getPath(), [
+            'Content-Disposition' => 'inline; filename="' . $media->file_name . '"'
+        ]);
     }
 }

@@ -19,7 +19,7 @@
     </x-page-header>
 
     <div class="mt-6">
-        <form action="{{ route('settlements.update', $settlement) }}" method="POST" id="settlement-form" x-data="{
+        <form action="{{ route('settlements.update', $settlement) }}" method="POST" enctype="multipart/form-data" id="settlement-form" x-data="{
             type: '{{ old('type', $settlement->type->value) }}',
             createTransaction: {{ old('create_transaction', $settlement->financial_transaction_id ? 'true' : 'false') == '1' || old('create_transaction', $settlement->financial_transaction_id ? 'true' : 'false') === 'true' ? 'true' : 'false' }},
             targetType: '{{ old('targetType', optional($settlement->financialTransaction ?? null)->invoice ? 'card' : 'account') }}',

@@ -36,6 +36,7 @@ Route::prefix('settlements')->name('settlements.')->group(function () {
     Route::get('/{settlement}/edit', [SettlementController::class, 'edit'])->name('edit');
     Route::put('/{settlement}', [SettlementController::class, 'update'])->name('update');
     Route::delete('/{settlement}', [SettlementController::class, 'destroy'])->name('destroy');
+    Route::get('/{settlement}/attachments/{media}/{filename?}', [SettlementController::class, 'attachment'])->name('attachment');
     
     // Archive routes
     Route::post('/archive', [SettlementArchiveController::class, 'store'])->name('archive');

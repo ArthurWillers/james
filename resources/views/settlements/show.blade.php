@@ -168,7 +168,15 @@
                         </x-ui.table.cell>
                         
                         <x-ui.table.cell>
-                            <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
+                                @if($settlement->hasMedia('attachments'))
+                                    <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0" title="{{ $settlement->getMedia('attachments')->count() }} anexos">
+                                        <x-heroicon-o-paper-clip class="size-3" />
+                                        <span>{{ $settlement->getMedia('attachments')->count() }}</span>
+                                    </div>
+                                @endif
+                            </div>
                         </x-ui.table.cell>
 
                         <x-ui.table.cell>
@@ -217,6 +225,12 @@
                                             <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                         </x-ui.badge>
                                         <span class="font-medium text-neutral-900 truncate">{{ $settlement->description }}</span>
+                                        @if($settlement->hasMedia('attachments'))
+                                            <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0">
+                                                <x-heroicon-o-paper-clip class="size-3" />
+                                                <span>{{ $settlement->getMedia('attachments')->count() }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="flex items-center gap-2 text-sm text-neutral-500">
                                         <span>{{ formatShort($settlement->date) }}</span>

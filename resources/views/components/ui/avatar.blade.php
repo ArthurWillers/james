@@ -4,6 +4,7 @@
     'icon' => null,
     'variant' => 'default',
     'radius' => 'md',
+    'image' => null,
 ])
 
 @php
@@ -37,7 +38,7 @@
         default => 'bg-neutral-200 border-neutral-300 text-neutral-600',
     };
 
-    $avatarUrl = $model->avatar ?? null;
+    $avatarUrl = $image ?? ($model->avatar ?? null);
     $initials = $model && method_exists($model, 'initials') ? $model->initials() : '';
     
     $imageClasses = match($variant) {

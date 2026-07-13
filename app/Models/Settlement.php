@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 #[Fillable([
     'contact_id',
@@ -18,9 +20,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'description',
     'date',
 ])]
-class Settlement extends Model
+class Settlement extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected function casts(): array
     {
@@ -29,6 +31,12 @@ class Settlement extends Model
             'date' => 'date',
             'amount' => 'float',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments')
+            ->useDisk('attachments');
     }
 
     public function financialTransaction(): BelongsTo
@@ -45,5 +53,7 @@ class Settlement extends Model
     {
         return $this->belongsTo(SettlementGroup::class, 'settlement_group_id');
     }
+
+
 }
 
