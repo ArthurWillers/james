@@ -7,12 +7,12 @@
     </div>
 
     <x-page-header title="Dividir Conta">
-        <div class="flex items-center gap-3">
-            <x-back-button fallback="{{ route('settlements.index') }}" text="Cancelar" />
-            <x-button type="submit" form="split-form" class="bg-neutral-900 hover:bg-black text-white">
-                Dividir Conta
-            </x-button>
-        </div>
+        <x-back-button fallback="{{ route('settlements.index') }}" text="Cancelar" />
+
+        <x-button type="submit" form="split-form">
+            <x-heroicon-o-check class="size-4" />
+            Dividir Conta
+        </x-button>
     </x-page-header>
 
     @php

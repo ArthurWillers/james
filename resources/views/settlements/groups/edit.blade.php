@@ -7,12 +7,12 @@
     </div>
 
     <x-page-header title="Editar Divisão de Conta">
-        <div class="flex items-center gap-2">
-            <x-back-button fallback="{{ route('settlements.index') }}" text="Cancelar" />
-            <x-button type="submit" form="split-form" class="bg-neutral-900 hover:bg-black text-white">
-                Salvar
-            </x-button>
-        </div>
+        <x-back-button fallback="{{ route('settlements.index') }}" text="Cancelar" />
+
+        <x-button type="submit" form="split-form">
+            <x-heroicon-o-check class="size-4" />
+            Salvar
+        </x-button>
     </x-page-header>
 
 
