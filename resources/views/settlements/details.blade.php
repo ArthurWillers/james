@@ -91,13 +91,19 @@
                 @endif
 
                 @if($settlement->hasMedia('attachments'))
-                    <div class="mt-8 pt-6 border-t border-neutral-100">
+                    <x-ui.lightbox class="mt-8 pt-6 border-t border-neutral-100">
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Anexos</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($settlement->getMedia('attachments') as $media)
-                                <a href="{{ route('settlements.attachment', [$settlement, $media, $media->file_name]) }}" target="_blank" class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
-                                    @if(in_array($media->mime_type, ['image/jpeg', 'image/png', 'image/jpg']))
-                                        <x-ui.avatar :image="route('settlements.attachment', [$settlement, $media, $media->file_name])" class="w-10! h-10!" radius="md" />
+                                @php
+                                    $isImage = in_array($media->mime_type, ['image/jpeg', 'image/png', 'image/jpg']);
+                                    $fileUrl = route('settlements.attachment', [$settlement, $media, $media->file_name]);
+                                @endphp
+                                <a href="{{ $fileUrl }}" 
+                                   @if($isImage) @click.prevent="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')" @else target="_blank" @endif
+                                   class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
+                                    @if($isImage)
+                                        <x-ui.avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
                                     @else
                                         <x-ui.avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
                                     @endif
@@ -108,7 +114,7 @@
                                 </a>
                             @endforeach
                         </div>
-                    </div>
+                    </x-ui.lightbox>
                 @endif
             </x-card>
         </div>
