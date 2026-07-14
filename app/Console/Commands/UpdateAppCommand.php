@@ -40,6 +40,7 @@ class UpdateAppCommand extends Command
         foreach ($requiredCommands as $cmd) {
             if (! Process::run("command -v $cmd")->successful()) {
                 error("Erro: O comando '{$cmd}' não está instalado ou não está no PATH.");
+
                 return self::FAILURE;
             }
         }
@@ -48,7 +49,7 @@ class UpdateAppCommand extends Command
             info('Novas atualizações encontradas no repositório.');
         } else {
             warning('O repositório local já está na versão mais recente.');
-            
+
             $force = confirm(
                 label: 'Deseja forçar o processo de atualização (build, otimizações, migrations) mesmo assim?',
                 default: false
@@ -56,6 +57,7 @@ class UpdateAppCommand extends Command
 
             if (! $force) {
                 info('Atualização cancelada pelo usuário.');
+
                 return self::SUCCESS;
             }
         }
@@ -70,7 +72,7 @@ class UpdateAppCommand extends Command
                 function () {
                     $process = Process::run('git pull');
                     if ($process->failed()) {
-                        throw new \Exception('Falha ao fazer git pull: ' . $process->errorOutput());
+                        throw new \Exception('Falha ao fazer git pull: '.$process->errorOutput());
                     }
                 },
                 'Atualizando código fonte...'
@@ -85,7 +87,7 @@ class UpdateAppCommand extends Command
                     }
                     $process = Process::run($composerCmd);
                     if ($process->failed()) {
-                        throw new \Exception('Falha no Composer: ' . $process->errorOutput());
+                        throw new \Exception('Falha no Composer: '.$process->errorOutput());
                     }
                 },
                 'Instalando dependências do PHP (Composer)...'
@@ -96,7 +98,7 @@ class UpdateAppCommand extends Command
                 function () {
                     $process = Process::run('npm ci');
                     if ($process->failed()) {
-                        throw new \Exception('Falha no NPM ci: ' . $process->errorOutput());
+                        throw new \Exception('Falha no NPM ci: '.$process->errorOutput());
                     }
                 },
                 'Instalando dependências do Front-end (NPM)...'
@@ -107,7 +109,7 @@ class UpdateAppCommand extends Command
                 function () {
                     $process = Process::run('npm run build');
                     if ($process->failed()) {
-                        throw new \Exception('Falha no NPM build: ' . $process->errorOutput());
+                        throw new \Exception('Falha no NPM build: '.$process->errorOutput());
                     }
                 },
                 'Compilando assets (Vite)...'
@@ -159,7 +161,7 @@ class UpdateAppCommand extends Command
             info('Atualização concluída com sucesso! 🚀');
 
         } catch (Throwable $e) {
-            error('Erro durante a atualização: ' . $e->getMessage());
+            error('Erro durante a atualização: '.$e->getMessage());
             $this->newLine();
             error('O processo foi interrompido.');
         } finally {
