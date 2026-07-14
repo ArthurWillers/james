@@ -96,3 +96,17 @@ sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl start james-scheduler:*
 ```
+
+### Dica: Reiniciando o Supervisor automaticamente sem pedir senha
+
+Durante o processo de deploy (`php artisan app:update`), o script tenta reiniciar o Supervisor em background rodando `sudo supervisorctl restart all`. Para que isso não falhe por causa da senha do Linux, você pode liberar esse comando específico no `sudoers`.
+
+No seu servidor, rode:
+```bash
+sudo visudo
+```
+E adicione a seguinte linha no final do arquivo (troque `seu_usuario` pelo usuário do seu servidor, ex: `avw`):
+```text
+seu_usuario ALL=(ALL) NOPASSWD: /usr/bin/supervisorctl restart all
+```
+Salve e saia. O `app:update` agora conseguirá reiniciar tudo 100% sozinho!
