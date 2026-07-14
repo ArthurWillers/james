@@ -128,8 +128,8 @@
             <div class="pt-4 border-t border-neutral-100 flex flex-col gap-2">
                 <x-form-input name="custom_icon" label="Ícone Customizado (Opcional)" x-model="selectedIcon" placeholder="Ex: heroicon-o-wifi" x-on:input.debounce.300ms="fetchCustomIcon()" />
                 <p class="text-xs text-neutral-500 leading-relaxed">
-                    Utilizamos a sintaxe do <strong>Blade UI Kit</strong> para renderização. Atualmente, as bibliotecas <a href="https://heroicons.com" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Heroicons</a> e <a href="https://ionic.io/ionicons" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Ionicons</a> estão instaladas no sistema.<br>
-                    Consulte a <a href="https://blade-ui-kit.com/blade-icons" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">documentação oficial</a> para buscar ícones (lembre-se de usar o prefixo correspondente, ex: <code>heroicon-o-</code> ou <code>ionicon-</code>).
+                    Utilizamos a sintaxe do <strong>Blade UI Kit</strong> para renderização. No momento, apenas a biblioteca <a href="https://heroicons.com" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Heroicons</a> está instalada no sistema.<br>
+                    Consulte a <a href="https://blade-ui-kit.com/blade-icons" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">documentação oficial</a> para buscar ícones (lembre-se de usar o prefixo <code>heroicon-o-</code> ou <code>heroicon-s-</code>).
                 </p>
             </div>
         </div>
