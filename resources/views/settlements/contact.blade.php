@@ -5,13 +5,13 @@
             <x-breadcrumbs.item>{{ $contact->name }}</x-breadcrumbs.item>
         </x-breadcrumbs>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
             <x-back-button fallback="{{ route('settlements.index') }}" />
 
             <x-modal.trigger name="share-modal-{{ $contact->id }}">
                 <x-button type="button" color="outline">
                     <x-heroicon-o-share class="size-4" />
-                    <span>Compartilhar</span>
+                    <span class="hidden sm:inline">Compartilhar</span>
                 </x-button>
             </x-modal.trigger>
 
@@ -101,13 +101,13 @@
             @if($settleUrl)
                 <x-button href="{{ $settleUrl }}" color="outline" class="bg-white">
                     <x-heroicon-o-check-circle class="size-4" />
-                    <span>Quitar Dívida</span>
+                    <span class="hidden sm:inline">Quitar Dívida</span>
                 </x-button>
             @endif
 
-            <x-button href="{{ route('settlements.create', $contact) }}">
+            <x-button href="{{ route('settlements.create', $contact) }}" class="w-full sm:w-auto">
                 <x-heroicon-o-plus class="size-4" />
-                <span>Novo Lançamento</span>
+                <span class="whitespace-nowrap">Novo Lançamento</span>
             </x-button>
         </div>
     </div>

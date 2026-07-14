@@ -12,15 +12,15 @@
             <x-back-button fallback="{{ route('settlements.history') }}" />
             @if(!$settlement->trashed())
                 @if(!$settlement->settlement_group_id)
-                    <x-button color="outline" href="{{ route('settlements.edit', $settlement) }}" class="bg-white">
-                        <x-heroicon-o-pencil class="size-4" />
-                        Editar
-                    </x-button>
                     <x-delete-modal
                         item-name="este acerto"
                         description="Caso tenha sido gerada uma transação financeira atrelada, ela também será movida para a lixeira."
                         action="{{ route('settlements.destroy', $settlement) }}"
                     />
+                    <x-button color="outline" href="{{ route('settlements.edit', $settlement) }}" class="bg-white flex-1 sm:flex-initial">
+                        <x-heroicon-o-pencil class="size-4" />
+                        <span class="whitespace-nowrap">Editar</span>
+                    </x-button>
                 @endif
             @endif
         </div>

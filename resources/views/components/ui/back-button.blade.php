@@ -13,5 +13,5 @@
     @if($icon)
         <x-dynamic-component :component="$icon" class="size-4" />
     @endif
-    {{ $text }}
+    <span>{{ $text }}</span>
 </x-button>

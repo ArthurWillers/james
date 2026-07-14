@@ -8,17 +8,17 @@
     </div>
 
     <x-page-header title="{{ $group->name }}" icon="heroicon-o-tag">
-        <x-button color="outline" href="{{ route('contacts.groups.edit', $group) }}" class="bg-white">
-            <x-heroicon-o-pencil class="size-4" />
-            Editar
-        </x-button>
-
         <x-modal.trigger name="delete-group-{{ $group->id }}">
             <x-button color="danger-outline" class="bg-white">
                 <x-heroicon-o-trash class="size-4" />
-                Excluir
+                <span class="hidden sm:inline">Excluir</span>
             </x-button>
         </x-modal.trigger>
+
+        <x-button color="outline" href="{{ route('contacts.groups.edit', $group) }}" class="bg-white flex-1 sm:flex-initial">
+            <x-heroicon-o-pencil class="size-4" />
+            <span class="whitespace-nowrap">Editar</span>
+        </x-button>
     </x-page-header>
 
     <!-- Delete Modal -->

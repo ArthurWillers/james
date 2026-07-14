@@ -12,10 +12,6 @@
             <x-back-button fallback="{{ route('settlements.groups.index') }}" />
 
             @if(!$settlementGroup->trashed())
-                <x-button color="outline" href="{{ route('settlements.groups.edit', $settlementGroup) }}" class="bg-white">
-                    <x-heroicon-o-pencil class="size-4" />
-                    Editar
-                </x-button>
                 <x-delete-modal 
                     action="{{ route('settlements.groups.destroy', $settlementGroup) }}"
                     item-name="a divisão de conta"
@@ -23,6 +19,10 @@
                     title="Excluir Divisão de Conta"
                     description="Isso removerá todos os acertos vinculados a ela."
                 />
+                <x-button color="outline" href="{{ route('settlements.groups.edit', $settlementGroup) }}" class="bg-white flex-1 sm:flex-initial">
+                    <x-heroicon-o-pencil class="size-4" />
+                    <span class="whitespace-nowrap">Editar</span>
+                </x-button>
             @endif
         </div>
     </x-page-header>

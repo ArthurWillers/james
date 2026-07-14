@@ -17,7 +17,7 @@
                     @if ($icon)
                         <x-dynamic-component :component="$icon" class="size-5!" />
                     @endif
-                    {{ $actionText }}
+                    <span class="whitespace-nowrap">{{ $actionText }}</span>
                 </x-button>
             @endif
         </div>

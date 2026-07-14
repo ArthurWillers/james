@@ -3,7 +3,7 @@
         <x-modal.trigger name="transfer-modal">
             <x-button type="button" color="outline" class="bg-white">
                 <x-heroicon-o-arrows-right-left class="size-4!" />
-                Transferência
+                <span class="hidden sm:inline">Transferência</span>
             </x-button>
         </x-modal.trigger>
 
@@ -87,7 +87,7 @@
         @if($hasTrashed)
             <x-button color="outline" href="{{ route('financial.transactions.trashed') }}" class="bg-white">
                 <x-heroicon-o-trash class="size-4" />
-                Lixeira
+                <span class="hidden sm:inline">Lixeira</span>
             </x-button>
         @endif
     </x-page-header>

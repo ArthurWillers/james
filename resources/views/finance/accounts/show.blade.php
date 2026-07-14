@@ -12,7 +12,7 @@
         <x-modal.trigger name="adjust-balance-{{ $account->id }}">
             <x-button type="button" color="outline" class="bg-white">
                 <x-heroicon-o-adjustments-horizontal class="size-4" />
-                Ajustar Saldo
+                <span class="hidden sm:inline">Ajustar Saldo</span>
             </x-button>
         </x-modal.trigger>
 
@@ -44,17 +44,17 @@
             </form>
         </x-modal>
 
-        <x-button color="outline" href="{{ route('financial.accounts.edit', $account) }}" class="bg-white">
-            <x-heroicon-o-pencil-square class="size-4" />
-            Editar
-        </x-button>
-
         <x-delete-modal 
             action="{{ route('financial.accounts.destroy', $account) }}"
             item-name="a conta"
             item-desc="{{ $account->name }}"
             title="Excluir Conta"
         />
+
+        <x-button color="outline" href="{{ route('financial.accounts.edit', $account) }}" class="bg-white flex-1 sm:flex-initial">
+            <x-heroicon-o-pencil-square class="size-4" />
+            <span class="whitespace-nowrap">Editar</span>
+        </x-button>
     </x-page-header>
 
     <x-card class="mb-6">
