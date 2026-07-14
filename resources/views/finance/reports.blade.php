@@ -1,7 +1,7 @@
 <x-layouts.financial>
     <x-page-header title="Relatórios Financeiros" icon="heroicon-o-chart-pie"></x-page-header>
 
-    <div x-data="reportsPage()" x-init="initCharts()" class="pb-2">
+    <div class="pb-2" x-data="reportsPage()" x-init="initCharts()">
 
         <!-- Mobile Filters Toggle -->
         <div class="sm:hidden mb-6">
@@ -25,7 +25,7 @@
                     <!-- Period -->
                     <div class="flex flex-col w-full sm:w-48">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Período</label>
-                        <x-select name="period" x-model="period" @change="submitIfNotCustom()" class="w-full">
+                        <x-select name="period" class="w-full" x-model="period" @change="submitIfNotCustom()">
                             <option value="this_month" @selected($period === 'this_month')>Este Mês</option>
                             <option value="last_month" @selected($period === 'last_month')>Mês Passado</option>
                             <option value="last_3m" @selected($period === 'last_3m')>Últimos 3 Meses</option>
@@ -61,7 +61,7 @@
                     <!-- Interval -->
                     <div class="flex flex-col w-full md:w-36">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Intervalo</label>
-                        <x-select name="interval" @change="submit()" class="w-full" :disabled="$isSingleDay">
+                        <x-select name="interval" class="w-full" :disabled="$isSingleDay" @change="submit()">
                             <option value="auto" @selected($interval === 'auto')>Automático</option>
                             <option value="daily" @selected($interval === 'daily')>Diário</option>
                             <option value="weekly" @selected($interval === 'weekly')>Semanal</option>
@@ -73,7 +73,7 @@
                     <!-- Accounts -->
                     <div class="flex flex-col w-full md:w-56">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Contas</label>
-                        <x-select name="account" @change="submit()" class="w-full">
+                        <x-select name="account" class="w-full" @change="submit()">
                             <option value="">Todas as Contas</option>
                             
                             <optgroup label="Por Tipo">
@@ -108,7 +108,7 @@
         <x-card class="hidden lg:block mb-6">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa</h3>
             <div class="relative w-full h-[400px]">
-                <div x-ref="chartSankey" class="w-full h-full"></div>
+                <div class="w-full h-full" x-ref="chartSankey"></div>
             </div>
         </x-card>
 
@@ -117,7 +117,7 @@
             <x-card class="hidden lg:block mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
                 <div class="relative w-full h-[350px]">
-                    <div x-ref="chartEvolution" class="w-full h-full"></div>
+                    <div class="w-full h-full" x-ref="chartEvolution"></div>
                 </div>
             </x-card>
 
@@ -125,7 +125,7 @@
             <x-card class="hidden lg:block mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
                 <div class="relative w-full h-[350px]">
-                    <div x-ref="chartNetWorthEvolution" class="w-full h-full"></div>
+                    <div class="w-full h-full" x-ref="chartNetWorthEvolution"></div>
                 </div>
             </x-card>
         @endif

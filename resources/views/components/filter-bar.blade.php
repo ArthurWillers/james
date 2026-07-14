@@ -28,7 +28,7 @@
         @endif
 
         @if($slot->isNotEmpty() || $hasFilters)
-            <button type="button" @click="expanded = !expanded" class="sm:hidden px-3 py-2 text-neutral-400 hover:text-neutral-600 focus:outline-none shrink-0" :class="{ 'bg-neutral-100 rounded-lg text-neutral-700': expanded }">
+            <button type="button" class="sm:hidden px-3 py-2 text-neutral-400 hover:text-neutral-600 focus:outline-none shrink-0" :class="{ 'bg-neutral-100 rounded-lg text-neutral-700': expanded }" @click="expanded = !expanded">
                 <x-heroicon-o-funnel class="w-5 h-5" />
             </button>
         @endif

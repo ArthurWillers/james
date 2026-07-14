@@ -47,7 +47,7 @@
                         }
                     }">
                         <div x-show="netBalance > 0">
-                            <x-form-select name="pix_key" label="Chave PIX (Opcional)" x-model="selectedPixKey" class="w-full text-sm">
+                            <x-form-select name="pix_key" label="Chave PIX (Opcional)" class="w-full text-sm" x-model="selectedPixKey">
                                 <option value="">Sem chave PIX</option>
                                 @foreach($pixKeys as $key)
                                     <option value="{{ $key }}">{{ $key }}</option>
@@ -61,16 +61,16 @@
                         </div>
                         
                         <div class="flex justify-end gap-3 pt-2">
-                            <x-button type="button" @click="window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal-{{ $contact->id }}' }))" color="outline" class="w-full sm:w-auto">
+                            <x-button type="button" color="outline" class="w-full sm:w-auto" @click="window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal-{{ $contact->id }}' }))">
                                 Fechar
                             </x-button>
-                            <x-button type="button" @click="window.open(`https://wa.me/?text=${encodeURIComponent(generatedText)}`, '_blank')" color="outline" class="w-full sm:w-auto">
+                            <x-button type="button" color="outline" class="w-full sm:w-auto" @click="window.open(`https://wa.me/?text=${encodeURIComponent(generatedText)}`, '_blank')">
                                 <x-heroicon-o-chat-bubble-oval-left-ellipsis class="size-4 text-green-600" />
                                 <span>WhatsApp</span>
                             </x-button>
-                            <x-button type="button" @click="copyText()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto">
+                            <x-button type="button" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto" @click="copyText()">
                                 <span class="flex items-center gap-1.5" x-show="!copied"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
-                                <span x-show="copied" x-cloak class="flex items-center gap-1.5 text-green-400"><x-heroicon-o-check class="size-4" /> Copiado!</span>
+                                <span class="flex items-center gap-1.5 text-green-400" x-show="copied" x-cloak><x-heroicon-o-check class="size-4" /> Copiado!</span>
                             </x-button>
                         </div>
                     </div>

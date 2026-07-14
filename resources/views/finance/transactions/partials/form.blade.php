@@ -9,7 +9,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
                     <div>
-                        <x-form-input label="Valor (R$)" name="amount" x-model="amount" :currency="true" placeholder="0,00" ::readonly="items.length > 0" ::class="items.length > 0 ? 'bg-neutral-100 text-neutral-500! font-medium' : ''" />
+                        <x-form-input label="Valor (R$)" name="amount" :currency="true" placeholder="0,00" ::readonly="items.length > 0" ::class="items.length > 0 ? 'bg-neutral-100 text-neutral-500! font-medium' : ''" x-model="amount" />
                         <div class="h-5 mt-1">
                             <p class="text-xs text-primary-600 flex items-center gap-1 font-medium m-0" x-show="items.length > 0"><x-heroicon-o-calculator class="size-3.5"/> Calculado via itens</p>
                         </div>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 
-                <div x-show="targetType === 'account'" class="pt-4 border-t border-neutral-100">
+                <div class="pt-4 border-t border-neutral-100" x-show="targetType === 'account'">
                     <x-switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
                     <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
                 </div>

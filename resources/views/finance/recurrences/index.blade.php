@@ -137,7 +137,7 @@
                                                 <span class="whitespace-nowrap">Editar</span>
                                             </a>
 
-                                            <button type="button" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')">
                                                 <x-heroicon-o-trash class="size-5 shrink-0" />
                                                 <span class="whitespace-nowrap">Excluir</span>
                                             </button>

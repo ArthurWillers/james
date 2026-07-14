@@ -1,4 +1,4 @@
-<x-card x-data="netWorthChart()" x-init="initChart()" class="w-full mb-6">
+<x-card class="w-full mb-6" x-data="netWorthChart()" x-init="initChart()">
     <!-- Header: Title and value + Periods -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>

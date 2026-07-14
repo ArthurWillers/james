@@ -107,12 +107,12 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $account->id }}, '{{ addslashes($account->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $account->id }}, '{{ addslashes($account->name) }}')">
                                             <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
                                             <span class="whitespace-nowrap">Restaurar</span>
                                         </button>
 
-                                        <button type="button" @click="openForceDelete({{ $account->id }}, '{{ addslashes($account->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $account->id }}, '{{ addslashes($account->name) }}')">
                                             <x-heroicon-o-trash class="size-5 shrink-0" />
                                             <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                         </button>

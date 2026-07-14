@@ -93,12 +93,12 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $group->id }}, '{{ addslashes($group->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $group->id }}, '{{ addslashes($group->description) }}')">
                                             <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
                                             <span class="whitespace-nowrap">Restaurar</span>
                                         </button>
 
-                                        <button type="button" @click="openForceDelete({{ $group->id }}, '{{ addslashes($group->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $group->id }}, '{{ addslashes($group->description) }}')">
                                             <x-heroicon-o-trash class="size-5 shrink-0" />
                                             <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                         </button>
