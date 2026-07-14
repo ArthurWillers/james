@@ -29,7 +29,7 @@
                     <div class="flex-1 sm:w-28 shrink-0">
                         <x-form-input :currency="true" x-model="item.unit_price" ::name="'items['+index+'][unit_price]'" placeholder="R$ 0,00" />
                     </div>
-                    <div class="flex items-center gap-1 shrink-0 pt-1.5 px-1">
+                    <div class="flex items-center gap-1 shrink-0 px-1">
                     <x-tags-selector 
                         x-name="`items[${index}][tags][]`" 
                         :options="$tags" 
@@ -38,15 +38,15 @@
                         @tags-changed="item.tags = $event.detail.ids; item.primary_tag_id = $event.detail.primaryId; items = [...items]"
                     >
                         <x-slot:trigger>
-                            <button type="button" class="cursor-pointer p-1.5 text-neutral-400 hover:text-accent hover:bg-neutral-100 rounded-lg transition-colors relative" title="Gerenciar Tags">
-                                <x-heroicon-o-tag class="size-4" />
+                            <button type="button" class="cursor-pointer flex items-center justify-center size-11 text-neutral-400 hover:text-accent hover:bg-neutral-100 rounded-xl transition-colors relative" title="Gerenciar Tags">
+                                <x-heroicon-o-tag class="size-5" />
                                 <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm ring-2 ring-white" x-text="selectedIds.length" x-show="selectedIds.length > 0"></span>
                             </button>
                         </x-slot:trigger>
                     </x-tags-selector>
 
-                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5! hover:bg-red-50" aria-label="Remover">
-                        <x-heroicon-o-trash class="size-4" />
+                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-2! hover:bg-red-50 size-11" aria-label="Remover">
+                        <x-heroicon-o-trash class="size-5!" />
                     </x-button>
                 </div>
             </div>

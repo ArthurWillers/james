@@ -4,9 +4,9 @@
     $previousUrl = url()->previous();
     $currentUrl = url()->current();
     
-    // Se a URL anterior for igual à atual (ex: recarregou a página ou falhou na validação de form),
-    // ou se não houver referer (cai na home/atual), usa a rota de fallback.
-    $href = ($previousUrl === $currentUrl || $previousUrl === url('/')) ? $fallback : $previousUrl;
+    // Se a URL anterior for igual à atual, veio de um form, ou sem referer
+    $fromForm = str_contains($previousUrl, '/create') || str_contains($previousUrl, '/edit');
+    $href = ($previousUrl === $currentUrl || $previousUrl === url('/') || $fromForm) ? $fallback : $previousUrl;
 @endphp
 
 <x-button color="outline" href="{{ $href }}" {{ $attributes->merge(['class' => 'bg-white']) }}>
