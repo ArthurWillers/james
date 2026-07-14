@@ -10,7 +10,7 @@
     
     <div class="flex flex-col gap-3">
         <!-- Table Header -->
-        <div class="flex gap-2 items-center text-xs font-bold text-neutral-400 uppercase tracking-widest px-1 mb-1" x-show="items.length > 0" style="display: none;">
+        <div class="hidden sm:flex gap-2 items-center text-xs font-bold text-neutral-400 uppercase tracking-widest px-1 mb-1" x-show="items.length > 0" style="display: none;">
             <div class="flex-1">Descrição do Item</div>
             <div class="w-24">Qtd</div>
             <div class="w-32">Valor (R$)</div>
@@ -18,17 +18,18 @@
         </div>
         
         <template x-for="(item, index) in items" :key="index">
-            <div class="flex gap-2 items-start py-1">
-                <div class="flex-1">
-                    <x-form-input x-model="item.description" ::name="'items['+index+'][description]'" placeholder="Descrição" />
+            <div class="flex flex-col sm:flex-row gap-2 sm:items-start py-2 sm:py-1 border-b border-neutral-100 sm:border-0 pb-3 sm:pb-1 mb-1 sm:mb-0 last:border-0">
+                <div class="w-full sm:flex-1">
+                    <x-form-input x-model="item.description" ::name="'items['+index+'][description]'" placeholder="Descrição do item" />
                 </div>
-                <div class="w-24 shrink-0">
-                    <x-form-input x-data @input="$event.target.value = $event.target.value.replace(/[^0-9.,]/g, '')" inputmode="decimal" x-model="item.quantity" ::name="'items['+index+'][quantity]'" placeholder="0" />
-                </div>
-                <div class="w-28 shrink-0">
-                    <x-form-input :currency="true" x-model="item.unit_price" ::name="'items['+index+'][unit_price]'" placeholder="0,00" />
-                </div>
-                <div class="flex items-center gap-1 shrink-0 pt-1.5 px-1">
+                <div class="flex gap-2 w-full sm:w-auto items-start">
+                    <div class="w-24 shrink-0">
+                        <x-form-input x-data @input="$event.target.value = $event.target.value.replace(/[^0-9.,]/g, '')" inputmode="decimal" x-model="item.quantity" ::name="'items['+index+'][quantity]'" placeholder="Qtd" />
+                    </div>
+                    <div class="flex-1 sm:w-28 shrink-0">
+                        <x-form-input :currency="true" x-model="item.unit_price" ::name="'items['+index+'][unit_price]'" placeholder="R$ 0,00" />
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0 pt-1.5 px-1">
                     <x-tags-selector 
                         x-name="`items[${index}][tags][]`" 
                         :options="$tags" 
