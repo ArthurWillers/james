@@ -1,15 +1,15 @@
 <x-layouts.app>
     <x-page-header title="Acertos">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
             @if($hasGroups)
-                <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
+                <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white flex-1 sm:flex-initial">
                     <x-heroicon-o-users class="size-4" />
                     <span class="hidden sm:inline">Contas Divididas</span>
                     <span class="sm:hidden">Grupos</span>
                 </x-button>
             @endif
             @if($hasHistory)
-                <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
+                <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white flex-1 sm:flex-initial">
                     <x-heroicon-o-clock class="size-4" />
                     <span class="hidden sm:inline">Histórico Global</span>
                     <span class="sm:hidden">Histórico</span>
