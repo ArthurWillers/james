@@ -92,7 +92,7 @@
         </div>
     </x-card>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
         <x-finance.kpi-card 
             title="Total de Receitas" 
             :value="formatCurrency($globalIncome)" 

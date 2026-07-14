@@ -8,7 +8,7 @@
     </x-page-header>
 
     <!-- 1. Linha de Destaque: Os Grandes Números -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         <x-finance.kpi-card 
             title="Saldo Líquido" 
             :value="formatCurrency($kpi['netBalance'])" 
@@ -42,7 +42,9 @@
     </div>
 
     <!-- Gráfico de Evolução do Saldo (Net Worth) -->
-    <x-financial.net-worth-chart />
+    <div class="hidden lg:block">
+        <x-financial.net-worth-chart />
+    </div>
 
     <!-- 2. Previsibilidade e Saldos -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 mt-8 items-stretch">
@@ -101,7 +103,7 @@
         </div>
 
         <!-- Lado Direito (lg:col-span-1): "Saldos por Conta" -->
-        <div class="lg:col-span-1 flex flex-col h-full">
+        <div class="hidden lg:flex lg:col-span-1 flex-col h-full">
             <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Saldos por Conta</h3>
                 <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
@@ -165,4 +167,8 @@
 
         <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
     @endif
+
+    <p class="text-xs text-neutral-400 text-center mt-8 lg:hidden">
+        Gráficos e relatórios detalhados estão disponíveis na versão desktop.
+    </p>
 </x-layouts.financial>

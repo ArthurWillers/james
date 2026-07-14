@@ -105,7 +105,7 @@
         @endif
 
         <!-- Sankey Chart -->
-        <x-card class="mb-6">
+        <x-card class="hidden lg:block mb-6">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa</h3>
             <div class="relative w-full h-[400px]">
                 <div x-ref="chartSankey" class="w-full h-full"></div>
@@ -114,7 +114,7 @@
 
         <!-- Evolution Chart -->
         @if(!$isSingleDay)
-            <x-card class="mb-6">
+            <x-card class="hidden lg:block mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
                 <div class="relative w-full h-[350px]">
                     <div x-ref="chartEvolution" class="w-full h-full"></div>
@@ -122,7 +122,7 @@
             </x-card>
 
             <!-- Net Worth Evolution Chart -->
-            <x-card class="mb-6">
+            <x-card class="hidden lg:block mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
                 <div class="relative w-full h-[350px]">
                     <div x-ref="chartNetWorthEvolution" class="w-full h-full"></div>
@@ -158,7 +158,7 @@
 
                 @if(count($accountBalancesChart) > 0)
                 <!-- Account Balances -->
-                <x-card class="flex flex-col h-full min-h-[400px]">
+                <x-card class="hidden lg:flex flex-col h-full min-h-[400px]">
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Saldos por Conta</h3>
                     <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
                 </x-card>
@@ -181,6 +181,10 @@
             @include('finance.partials.reports-transactions')
         </div>
     </div>
+
+    <p class="text-xs text-neutral-400 text-center mt-4 mb-8 lg:hidden">
+        Gráficos interativos e evolutivos estão disponíveis na versão desktop.
+    </p>
 
     <script>
     document.addEventListener('alpine:init', () => {
