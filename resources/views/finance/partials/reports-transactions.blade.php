@@ -40,7 +40,7 @@
                             <span class="font-semibold text-neutral-900 truncate">
                                 {{ $transaction->description }}
                             </span>
-                            <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Projeção</span>
+                            <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Projeção</span>
                         </div>
                     </x-table.cell>
 
@@ -70,7 +70,7 @@
 
                         <div class="flex items-center gap-1.5">
                             @foreach($visibleTags as $tag)
-                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-semibold border"
                                       style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;"
                                       title="{{ $tag->name }}">
                                     @if(isset($primary) && $tag->id === $primary->id)
@@ -83,7 +83,7 @@
                                 </span>
                             @endforeach
                             @if($tags->count() > 2)
-                                <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help"
+                                <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xxs font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help"
                                       title="{{ $others->skip($visibleTags->count() - ($primary ? 1 : 0))->pluck('name')->join(', ') }}">
                                     +{{ $tags->count() - $visibleTags->count() }}
                                 </span>
@@ -102,7 +102,7 @@
                             <div class="flex-1 min-w-0 flex flex-col gap-1.5">
                                 <h3 class="text-base font-semibold text-neutral-900 leading-tight flex items-center gap-2 truncate">
                                     {{ $transaction->description }}
-                                    <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Projeção</span>
+                                    <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Projeção</span>
                                 </h3>
                                 <span class="text-sm text-neutral-500">{{ formatShort($transaction->date) }}</span>
                             </div>

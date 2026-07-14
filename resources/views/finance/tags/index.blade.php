@@ -79,7 +79,7 @@
                                     <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 flex items-center gap-2 truncate">
                                         {{ $tag->name }}
                                         @if($tag->is_protected)
-                                            <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20">Protegida</span>
+                                            <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20">Protegida</span>
                                         @endif
                                     </h3>
                                     <div class="flex gap-2 text-sm text-neutral-500 mt-1">

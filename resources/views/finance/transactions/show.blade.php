@@ -203,7 +203,7 @@
                                         @endphp
                                         
                                         @if($itemPrimary)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border relative shadow-sm"
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xxs font-semibold border relative shadow-sm"
                                                   style="background-color: {{ $itemPrimary->color_hex }}15; color: {{ $itemPrimary->color_hex }}; border-color: {{ $itemPrimary->color_hex }}40;">
                                                 <span class="text-yellow-500 absolute -top-1 -right-1 bg-white rounded-full border border-yellow-200" style="padding: 1px;">
                                                     <x-heroicon-s-star class="size-2" />
@@ -214,7 +214,7 @@
                                         @endif
                                         
                                         @foreach($itemOthers as $tag)
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xxs font-medium border"
                                                   style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
                                                 <x-dynamic-component :component="$tag->icon" class="size-3" />
                                                 <span class="max-w-[80px] truncate">{{ $tag->name }}</span>
@@ -239,7 +239,7 @@
                                         @endphp
                                         
                                         @if($itemPrimary)
-                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border relative shadow-sm"
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-semibold border relative shadow-sm"
                                                   style="background-color: {{ $itemPrimary->color_hex }}15; color: {{ $itemPrimary->color_hex }}; border-color: {{ $itemPrimary->color_hex }}40;">
                                                 <span class="text-yellow-500 absolute -top-1 -right-1 bg-white rounded-full border border-yellow-200" style="padding: 1px;">
                                                     <x-heroicon-s-star class="size-2" />
@@ -250,7 +250,7 @@
                                         @endif
                                         
                                         @foreach($itemOthers as $tag)
-                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-medium border"
                                                   style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
                                                 <x-dynamic-component :component="$tag->icon" class="size-3" />
                                                 {{ $tag->name }}

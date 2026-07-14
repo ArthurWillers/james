@@ -99,13 +99,13 @@
             </x-modal>
             
             @if($settleUrl)
-                <x-button href="{{ $settleUrl }}" color="outline" class="bg-white">
+                <x-button href="{{ $settleUrl }}" color="outline" class="bg-white flex-1 sm:flex-initial justify-center">
                     <x-heroicon-o-check-circle class="size-4" />
-                    <span class="hidden sm:inline">Quitar Dívida</span>
+                    <span class="whitespace-nowrap">Quitar Dívida</span>
                 </x-button>
             @endif
 
-            <x-button href="{{ route('settlements.create', $contact) }}" class="flex-1 sm:flex-initial">
+            <x-button href="{{ route('settlements.create', $contact) }}" class="{{ $settleUrl ? 'w-full sm:w-auto justify-center' : 'flex-1 sm:flex-initial justify-center' }}">
                 <x-heroicon-o-plus class="size-4" />
                 <span class="whitespace-nowrap">Novo Acerto</span>
             </x-button>

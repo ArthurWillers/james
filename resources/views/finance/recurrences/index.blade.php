@@ -112,7 +112,7 @@
                                         <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 truncate flex items-center gap-2">
                                             {{ $recurrence->title }}
                                             @if(!$recurrence->is_active)
-                                                <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-600">Pausada</span>
+                                                <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xxs font-medium text-neutral-600">Pausada</span>
                                             @endif
                                         </h3>
                                         <div class="flex flex-col gap-1 text-sm text-neutral-500 mt-1">

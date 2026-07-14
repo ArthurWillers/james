@@ -43,13 +43,13 @@
                             @endif
                         </span>
                         @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
-                            <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                            <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
                         @endif
                         @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
-                            <span class="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
+                            <span class="text-xxs uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
                         @endif
                         @if(isset($transaction->is_invoice) && $transaction->is_invoice)
-                            <span class="text-[10px] uppercase font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-purple-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-document-text class="size-3" /> Fatura</span>
+                            <span class="text-xxs uppercase font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-purple-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-document-text class="size-3" /> Fatura</span>
                         @endif
                     </div>
                 </x-table.cell>
@@ -82,7 +82,7 @@
                     
                     <div class="flex items-center gap-1.5">
                         @foreach($visibleTags as $tag)
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-semibold border"
                                   style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;"
                                   title="{{ $tag->name }}">
                                 @if(isset($primary) && $tag->id === $primary->id)
@@ -96,7 +96,7 @@
                         @endforeach
 
                         @if($remainingCount > 0)
-                            <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help"
+                            <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xxs font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help"
                                   title="{{ $others->skip($visibleTags->count() - ($primary ? 1 : 0))->pluck('name')->join(', ') }}">
                                 +{{ $remainingCount }}
                             </span>
@@ -123,13 +123,13 @@
                                     @endif
                                 </span>
                                 @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
-                                    <span class="text-[10px] uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                                    <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
                                 @endif
                                 @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
-                                    <span class="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
+                                    <span class="text-xxs uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
                                 @endif
                                 @if(isset($transaction->is_invoice) && $transaction->is_invoice)
-                                    <span class="text-[10px] uppercase font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-purple-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-document-text class="size-3" /> Fatura</span>
+                                    <span class="text-xxs uppercase font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-purple-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-document-text class="size-3" /> Fatura</span>
                                 @endif
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-neutral-500">
