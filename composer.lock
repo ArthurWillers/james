@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "68d80a93b79f3d1b08a5777ead847d5c",
+    "content-hash": "e149ee54b7a586dd150978737b42db54",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1437,6 +1437,70 @@
                 }
             ],
             "time": "2026-05-23T22:00:21+00:00"
+        },
+        {
+            "name": "itsmalikjones/blade-iconic",
+            "version": "1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ItsMalikJones/blade-iconic.git",
+                "reference": "f46e05a4edf4e020971e687153d7a4e1e707aa40"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ItsMalikJones/blade-iconic/zipball/f46e05a4edf4e020971e687153d7a4e1e707aa40",
+                "reference": "f46e05a4edf4e020971e687153d7a4e1e707aa40",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.0",
+                "php": "^7.4|^8.0|^8.1"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^6.15|^7.0|^8.0",
+                "phpunit/phpunit": "^9.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ItsMalikJones\\BladeIconic\\BladeIconicServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ItsMalikJones\\BladeIconic\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Malik Alleyne-Jones",
+                    "homepage": "https://twitter.com/ItsMalikJones"
+                }
+            ],
+            "description": "A package to easily make use of Iconic icons in your Laravel Blade views",
+            "homepage": "https://github.com/itsmalikjones/blade-iconic",
+            "keywords": [
+                "blade",
+                "iconic",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/itsmalikjones/blade-iconic/issues",
+                "source": "https://github.com/itsmalikjones/blade-iconic"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/ItsMalikJones",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-02-21T15:07:49+00:00"
         },
         {
             "name": "laravel/fortify",
