@@ -11,7 +11,7 @@
         title="Lixeira" 
         description="Acertos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-back-button fallback="{{ route('settlements.history') }}" />
+        <x-back-button fallback="{{ route('settlements.history') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"
@@ -121,7 +121,7 @@
                                 </span>
                                 
                                 @if($settlement->settlement_group_id === null)
-                                    <x-dropdown position="bottom-end" accent>
+                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                         <x-slot name="trigger">
                                             <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-1.5 transition duration-150 ease-in-out hover:bg-neutral-100">
                                                 <x-heroicon-o-ellipsis-horizontal class="size-4" />
@@ -130,13 +130,13 @@
 
                                         <x-slot name="content">
                                             <button type="button" @click="openRestore({{ $settlement->id }}, '{{ addslashes($settlement->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                                Restaurar
+                                                <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Restaurar</span>
                                             </button>
 
                                             <button type="button" @click="openForceDelete({{ $settlement->id }}, '{{ addslashes($settlement->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-trash class="size-5" />
-                                                Excluir Permanentemente
+                                                <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                             </button>
                                         </x-slot>
                                     </x-dropdown>

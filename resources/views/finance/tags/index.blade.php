@@ -72,7 +72,7 @@
                     </x-table.cell>
 
                     <x-slot name="mobile">
-                        <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start justify-between gap-3 cursor-pointer" @click="window.location.href = '{{ route('financial.transactions.index', ['tag_id' => $tag->id]) }}'">
                             <div class="flex-1 min-w-0 flex items-center gap-3">
                                 <x-avatar :icon="$tag->icon" class="border-transparent! text-white! w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
                                 <div class="overflow-hidden">
@@ -89,23 +89,23 @@
                             </div>
                             @if(!$tag->is_protected)
                                 <div class="shrink-0">
-                                    <x-dropdown position="bottom-end" accent>
+                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max" @click.stop>
                                         <x-slot name="trigger">
-                                            <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100 relative z-10" @click.stop>
+                                            <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100 relative z-10">
                                                 <x-heroicon-o-ellipsis-horizontal class="size-5" />
                                             </button>
                                         </x-slot>
 
                                         <x-slot name="content">
-                                            <a href="{{ route('financial.tags.edit', $tag) }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click.stop>
-                                                <x-heroicon-o-pencil-square class="size-5" />
-                                                Editar
+                                            <a href="{{ route('financial.tags.edit', $tag) }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                                <x-heroicon-o-pencil-square class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Editar</span>
                                             </a>
 
                                             @if($usageCount == 0)
-                                                <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click.stop="openDelete({{ $tag->id }}, '{{ addslashes($tag->name) }}')">
-                                                    <x-heroicon-o-trash class="size-5" />
-                                                    Excluir
+                                                <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openDelete({{ $tag->id }}, '{{ addslashes($tag->name) }}')">
+                                                    <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                    <span class="whitespace-nowrap">Excluir</span>
                                                 </button>
                                             @endif
                                         </x-slot>

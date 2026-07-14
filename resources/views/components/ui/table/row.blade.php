@@ -1,11 +1,11 @@
 @props(['mobile' => null, 'href' => null])
-<div class="relative group/row last:rounded-b-lg border-b border-neutral-100 last:border-0">
+<div class="relative group/row last:rounded-b-xl first:rounded-t-xl border-b border-neutral-100 last:border-0">
     @if($href)
-        <a href="{{ $href }}" {{ $attributes->merge(['class' => 'grid items-center hover:bg-neutral-100 transition-colors rounded-b-inherit cursor-pointer']) }}>
+        <a href="{{ $href }}" {{ $attributes->merge(['class' => 'grid items-center hover:bg-neutral-100 transition-colors rounded-b-inherit rounded-t-inherit cursor-pointer']) }}>
             {{ $slot }}
         </a>
     @else
-        <div {{ $attributes->merge(['class' => 'grid items-center hover:bg-neutral-100 transition-colors rounded-b-inherit']) }}>
+        <div {{ $attributes->merge(['class' => 'grid items-center hover:bg-neutral-100 transition-colors rounded-b-inherit rounded-t-inherit']) }}>
             {{ $slot }}
         </div>
     @endif

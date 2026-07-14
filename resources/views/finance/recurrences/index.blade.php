@@ -124,7 +124,7 @@
                                     </div>
                                 </div>
                                 <div class="shrink-0">
-                                    <x-dropdown position="bottom-end" accent>
+                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                         <x-slot name="trigger">
                                             <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
                                                 <x-heroicon-o-ellipsis-horizontal class="size-5" />
@@ -133,13 +133,13 @@
 
                                         <x-slot name="content">
                                             <a href="{{ route('financial.recurrences.edit', $recurrence) }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-pencil-square class="size-5" />
-                                                Editar
+                                                <x-heroicon-o-pencil-square class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Editar</span>
                                             </a>
 
                                             <button type="button" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-trash class="size-5" />
-                                                Excluir
+                                                <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Excluir</span>
                                             </button>
                                         </x-slot>
                                     </x-dropdown>
