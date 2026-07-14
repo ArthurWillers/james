@@ -25,7 +25,7 @@
     </x-page-header>
 
     <x-card class="mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+        <div class="flex items-start sm:items-center gap-4 sm:gap-6">
             @php
                 $icon = match($transaction->type) {
                     'income' => 'heroicon-o-arrow-trending-up',
@@ -40,7 +40,7 @@
                     default => 'bg-neutral-100 text-neutral-600'
                 };
             @endphp
-            <div class="w-16 h-16 rounded-full flex items-center justify-center shrink-0 {{ $iconBg }}">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 {{ $iconBg }}">
                 <x-dynamic-component :component="$icon" class="size-8" />
             </div>
             
@@ -58,7 +58,7 @@
                     </x-badge>
                     
                     @if($transaction->is_posted)
-                        <x-badge color="success" size="sm">Efetivada</x-badge>
+                        <x-badge color="accent" size="sm">Efetivada</x-badge>
                     @else
                         <x-badge color="warning" size="sm">Pendente</x-badge>
                     @endif
