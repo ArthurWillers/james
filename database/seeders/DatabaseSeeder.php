@@ -17,10 +17,13 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(FinancialTagSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@james.test',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@james.test'],
+            [
+                'name' => 'Admin',
+                'password' => bcrypt('password'), // Senha padrão para acesso inicial
+            ]
+        );
 
     }
 }
