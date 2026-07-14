@@ -149,14 +149,23 @@ class UpdateAppCommand extends Command
             );
 
             // 9. Restart do Supervisor
+            $supervisorFailed = false;
             spin(
-                function () {
+                function () use (&$supervisorFailed) {
                     if (Process::run('command -v supervisorctl')->successful()) {
-                        Process::run('sudo supervisorctl restart all');
+                        $process = Process::run('sudo -n supervisorctl restart all');
+                        if ($process->failed()) {
+                            $supervisorFailed = true;
+                        }
                     }
                 },
                 'Reiniciando processos em background (Supervisor)...'
             );
+
+            if ($supervisorFailed) {
+                warning('Não foi possível reiniciar o Supervisor automaticamente (requer sudo sem senha).');
+                warning('Por favor, rode o comando manualmente: sudo supervisorctl restart all');
+            }
 
             info('Atualização concluída com sucesso! 🚀');
 
