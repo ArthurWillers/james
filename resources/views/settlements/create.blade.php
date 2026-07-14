@@ -7,15 +7,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Novo Lançamento">
-        <div class="flex items-center gap-3">
-            <x-button color="outline" href="{{ route('settlements.contact.show', $contact) }}" class="bg-white">
-                Cancelar
-            </x-button>
-            <x-button type="submit" form="settlement-form" class="bg-neutral-900 hover:bg-black text-white">
-                Salvar
-            </x-button>
-        </div>
+    <x-page-header title="Novo Lançamento" mobileBottom>
+        <x-form-actions fallback="{{ route('settlements.contact.show', $contact) }}" form="settlement-form" />
     </x-page-header>
 
     <div class="mt-6">
@@ -44,4 +37,6 @@
             @include('settlements.partials.form', ['settlement' => $settlement ?? null])
         </form>
     </div>
+
+    <x-form-actions fallback="{{ route('settlements.contact.show', $contact) }}" form="settlement-form" mobile />
 </x-layouts.app>

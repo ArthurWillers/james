@@ -7,22 +7,14 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Novo Contato">
-        <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
-
-        <x-button type="submit" form="create-contact-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Novo Contato" mobileBottom>
+        <x-form-actions fallback="{{ route('contacts.index') }}" form="create-contact-form" />
     </x-page-header>
 
     <form id="create-contact-form" action="{{ route('contacts.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <x-card class="mb-4 p-6">
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <x-card class="mb-4">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
 
                 <x-form-image-cropper
                     name="avatar"
@@ -76,4 +68,6 @@
             :value="old('notes')"
         />
     </form>
+
+    <x-form-actions fallback="{{ route('contacts.index') }}" form="create-contact-form" mobile />
 </x-layouts.app>

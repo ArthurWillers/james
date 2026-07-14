@@ -7,21 +7,13 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Novo Grupo">
-        <x-button color="outline" href="{{ route('contacts.groups.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
-
-        <x-button type="submit" form="create-group-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Novo Grupo" mobileBottom>
+        <x-form-actions fallback="{{ route('contacts.groups.index') }}" form="create-group-form" />
     </x-page-header>
 
     <form id="create-group-form" action="{{ route('contacts.groups.store') }}" method="POST">
         @csrf
-        <x-card class="mb-4 p-6">
+        <x-card class="mb-4">
             <div class="mb-6">
                 <x-form-input name="name" label="Nome do Grupo" value="{{ old('name') }}" placeholder="Ex: Futebol, Família, Trabalho..." required />
             </div>
@@ -62,10 +54,12 @@
                     <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" x-show="search === '' || '{{ strtolower(addslashes($contact->name)) }}'.includes(search.toLowerCase())" />
                 @endforeach
                 
-                <div x-show="!Array.from(document.querySelectorAll('[x-show]')).some(el => el.style.display !== 'none')" class="col-span-full p-8 text-center text-neutral-500 bg-white rounded-xl border border-dashed border-neutral-200 shadow-sm" style="display: none;">
+                <div class="col-span-full p-8 text-center text-neutral-500 bg-white rounded-xl border border-dashed border-neutral-200 shadow-sm" style="display: none;" x-show="!Array.from(document.querySelectorAll('[x-show]')).some(el => el.style.display !== 'none')">
                     Nenhum contato encontrado.
                 </div>
             </div>
         </div>
     </form>
+
+    <x-form-actions fallback="{{ route('contacts.groups.index') }}" form="create-group-form" mobile />
 </x-layouts.app>

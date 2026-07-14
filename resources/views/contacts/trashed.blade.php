@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Contatos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('contacts.index') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-filter-bar 
@@ -23,7 +20,7 @@
         
         <div class="w-full sm:w-auto">
             <select name="category" onchange="this.form.submit()" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 cursor-pointer">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 cursor-pointer">
                 <option value="">Todas categorias</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat }}" @selected(request('category') === $cat)>{{ $cat }}</option>
@@ -112,7 +109,7 @@
                                 </div>
                             </div>
                             <div class="shrink-0">
-                                <x-dropdown position="bottom-end" accent>
+                                <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
                                             <x-heroicon-o-ellipsis-horizontal class="size-5" />
@@ -120,14 +117,14 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                            Restaurar
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
+                                            <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                            <span class="whitespace-nowrap">Restaurar</span>
                                         </button>
 
-                                        <button type="button" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-trash class="size-5" />
-                                            Excluir Permanentemente
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $contact->id }}, '{{ addslashes($contact->name) }}')">
+                                            <x-heroicon-o-trash class="size-5 shrink-0" />
+                                            <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                         </button>
                                     </x-slot>
                                 </x-dropdown>
@@ -144,37 +141,20 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-contact"
-            title="Restaurar Contato" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar o contato de <span class="font-medium text-neutral-900" x-text="selectedContactName"></span>? Ele voltará para a sua lista de contatos ativos.
-            </x-slot>
-            <form :action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-restore-modal
+            modal-name="restore-contact"
+            item-name="o contato"
+            dynamic-item-name="selectedContactName"
+            alpine-action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)"
+        />
 
-        <x-modal 
-            name="force-delete-contact"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                Tem certeza que deseja excluir o contato de <span class="font-medium text-neutral-900" x-text="selectedContactName"></span> permanentemente? Esta ação é irreversível e todos os dados serão perdidos.
-            </x-slot>
-            <form :action="'{{ route('contacts.force', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-delete-modal 
+            modal-name="force-delete-contact"
+            item-name="o contato"
+            dynamic-item-name="selectedContactName"
+            permanent="true"
+            alpine-action="'{{ route('contacts.force', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)"
+        />
     </x-table>
 
     @if($contacts->hasPages())

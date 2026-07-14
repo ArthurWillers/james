@@ -1,7 +1,7 @@
 <x-layouts.financial>
     <x-page-header title="Relatórios Financeiros" icon="heroicon-o-chart-pie"></x-page-header>
 
-    <div x-data="reportsPage()" x-init="initCharts()" class="pb-2">
+    <div class="pb-2" x-data="reportsPage()" x-init="initCharts()">
 
         <!-- Mobile Filters Toggle -->
         <div class="sm:hidden mb-6">
@@ -25,7 +25,7 @@
                     <!-- Period -->
                     <div class="flex flex-col w-full sm:w-48">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Período</label>
-                        <x-select name="period" x-model="period" @change="submitIfNotCustom()" class="w-full">
+                        <x-select name="period" class="w-full" x-model="period" @change="submitIfNotCustom()">
                             <option value="this_month" @selected($period === 'this_month')>Este Mês</option>
                             <option value="last_month" @selected($period === 'last_month')>Mês Passado</option>
                             <option value="last_3m" @selected($period === 'last_3m')>Últimos 3 Meses</option>
@@ -61,7 +61,7 @@
                     <!-- Interval -->
                     <div class="flex flex-col w-full md:w-36">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Intervalo</label>
-                        <x-select name="interval" @change="submit()" class="w-full" :disabled="$isSingleDay">
+                        <x-select name="interval" class="w-full" :disabled="$isSingleDay" @change="submit()">
                             <option value="auto" @selected($interval === 'auto')>Automático</option>
                             <option value="daily" @selected($interval === 'daily')>Diário</option>
                             <option value="weekly" @selected($interval === 'weekly')>Semanal</option>
@@ -73,7 +73,7 @@
                     <!-- Accounts -->
                     <div class="flex flex-col w-full md:w-56">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Contas</label>
-                        <x-select name="account" @change="submit()" class="w-full">
+                        <x-select name="account" class="w-full" @change="submit()">
                             <option value="">Todas as Contas</option>
                             
                             <optgroup label="Por Tipo">
@@ -105,60 +105,60 @@
         @endif
 
         <!-- Sankey Chart -->
-        <x-card class="p-6 mb-6">
+        <x-card class="hidden lg:block mb-6">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa</h3>
             <div class="relative w-full h-[400px]">
-                <div x-ref="chartSankey" class="w-full h-full"></div>
+                <div class="w-full h-full" x-ref="chartSankey"></div>
             </div>
         </x-card>
 
         <!-- Evolution Chart -->
         @if(!$isSingleDay)
-            <x-card class="p-6 mb-6">
+            <x-card class="hidden lg:block mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
                 <div class="relative w-full h-[350px]">
-                    <div x-ref="chartEvolution" class="w-full h-full"></div>
+                    <div class="w-full h-full" x-ref="chartEvolution"></div>
                 </div>
             </x-card>
 
             <!-- Net Worth Evolution Chart -->
-            <x-card class="p-6 mb-6">
+            <x-card class="hidden lg:block mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
                 <div class="relative w-full h-[350px]">
-                    <div x-ref="chartNetWorthEvolution" class="w-full h-full"></div>
+                    <div class="w-full h-full" x-ref="chartNetWorthEvolution"></div>
                 </div>
             </x-card>
         @endif
 
         <!-- Tags and Accounts Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 items-start">
             
             <!-- Coluna da Esquerda (2/3) -->
-            <div class="lg:col-span-2 flex flex-col gap-6">
+            <div class="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
                 <!-- Top Categories -->
-                <x-card class="p-6">
+                <x-card>
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Top Tags</h3>
                     @include('finance.partials.reports-tags')
                 </x-card>
 
                 <!-- All Tags -->
-                <x-card class="p-6">
+                <x-card>
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Todas as Tags</h3>
                     @include('finance.partials.reports-all-tags')
                 </x-card>
             </div>
 
             <!-- Coluna da Direita (1/3) -->
-            <div class="lg:col-span-1 flex flex-col gap-6">
+            <div class="lg:col-span-1 flex flex-col gap-4 sm:gap-6">
                 <!-- Net Balance -->
-                <x-card class="p-6">
+                <x-card>
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Saldo Líquido por Tag</h3>
                     @include('finance.partials.reports-net-tags')
                 </x-card>
 
                 @if(count($accountBalancesChart) > 0)
                 <!-- Account Balances -->
-                <x-card class="p-6 flex flex-col h-full min-h-[400px]">
+                <x-card class="hidden lg:flex flex-col h-full min-h-[400px]">
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Saldos por Conta</h3>
                     <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
                 </x-card>
@@ -181,6 +181,10 @@
             @include('finance.partials.reports-transactions')
         </div>
     </div>
+
+    <p class="text-xs text-neutral-400 text-center mt-4 mb-8 lg:hidden">
+        Gráficos interativos e evolutivos estão disponíveis na versão desktop.
+    </p>
 
     <script>
     document.addEventListener('alpine:init', () => {

@@ -1,6 +1,6 @@
 <x-layouts.financial>
     <x-page-header title="Dashboard Financeiro" :action="route('financial.transactions.create')" actionText="Nova Transação" icon="heroicon-o-plus">
-        <form method="GET" action="{{ route('financial.dashboard') }}" x-data x-ref="filterForm" class="flex items-center bg-white border border-neutral-200 px-3 py-1.5 rounded-lg shadow-sm">
+        <form method="GET" action="{{ route('financial.dashboard') }}" class="flex items-center bg-white border border-neutral-200 px-3 py-1.5 rounded-lg shadow-sm" x-data x-ref="filterForm">
             <div @click="setTimeout(() => $refs.filterForm.submit(), 150)">
                 <x-switch name="include_investments" :checked="$includeInvestments" label="Investimentos" />
             </div>
@@ -8,7 +8,7 @@
     </x-page-header>
 
     <!-- 1. Linha de Destaque: Os Grandes Números -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         <x-finance.kpi-card 
             title="Saldo Líquido" 
             :value="formatCurrency($kpi['netBalance'])" 
@@ -42,14 +42,16 @@
     </div>
 
     <!-- Gráfico de Evolução do Saldo (Net Worth) -->
-    <x-financial.net-worth-chart />
+    <div class="hidden lg:block">
+        <x-financial.net-worth-chart />
+    </div>
 
     <!-- 2. Previsibilidade e Saldos -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8 items-stretch">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 mt-8 items-stretch">
         
         <!-- Previsibilidade de Caixa -->
         <div class="lg:col-span-1 flex flex-col h-full">
-            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+            <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Projeção de Caixa</h3>
                 
                 <div class="flex-1 flex flex-col justify-center gap-4">
@@ -101,8 +103,8 @@
         </div>
 
         <!-- Lado Direito (lg:col-span-1): "Saldos por Conta" -->
-        <div class="lg:col-span-1 flex flex-col h-full">
-            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+        <div class="hidden lg:flex lg:col-span-1 flex-col h-full">
+            <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Saldos por Conta</h3>
                 <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
             </x-card>
@@ -110,7 +112,7 @@
 
         <!-- Top 5 Despesas -->
         <div class="lg:col-span-1 flex flex-col h-full">
-            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+            <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Top Despesas (30 Dias)</h3>
                 @if(count($topExpenseTags) > 0)
                     <div class="space-y-6 flex-1 mt-2">
@@ -140,7 +142,7 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 mt-8">
         
         <!-- Radar -->
         <div class="lg:col-span-3">
@@ -165,4 +167,8 @@
 
         <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
     @endif
+
+    <p class="text-xs text-neutral-400 text-center mt-8 lg:hidden">
+        Gráficos e relatórios detalhados estão disponíveis na versão desktop.
+    </p>
 </x-layouts.financial>

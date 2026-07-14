@@ -7,11 +7,12 @@
 ])
 
 <div class="flex flex-col sm:flex-row sm:items-start gap-2 w-full sm:w-auto">
-    <x-ui.button type="button" @click="{{ $toggleAction }}" color="outline" title="Selecionar Todos" class="h-11 sm:h-[42px] px-3 bg-white shrink-0">
-        <x-heroicon-o-check-circle class="size-5" />
-    </x-ui.button>
+    <x-button type="button" color="outline" title="Selecionar Todos" class="h-11 sm:h-[42px] px-4 bg-white shrink-0 w-full sm:w-auto justify-center" @click="{{ $toggleAction }}">
+        <x-heroicon-o-check-circle class="size-5 mr-2" />
+        <span class="font-medium">Selecionar Todos</span>
+    </x-button>
     
-    <div class="flex flex-col sm:flex-row items-center gap-1 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full flex-1 transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full flex-1 transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40">
         <div class="relative w-full flex-1 flex items-center">
             <div class="absolute left-3 flex items-center pointer-events-none">
                 <x-heroicon-m-magnifying-glass class="h-4 w-4 text-neutral-400" />

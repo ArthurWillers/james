@@ -88,7 +88,7 @@
         <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden flex flex-col" @click.away="closeModal">
             <div class="p-4 border-b flex justify-between items-center">
                 <h3 class="font-bold text-neutral-800">Recortar Foto</h3>
-                <button type="button" @click="closeModal" class="text-neutral-400 hover:text-neutral-600 cursor-pointer">
+                <button type="button" class="text-neutral-400 hover:text-neutral-600 cursor-pointer" @click="closeModal">
                     <x-heroicon-o-x-mark class="size-5" />
                 </button>
             </div>

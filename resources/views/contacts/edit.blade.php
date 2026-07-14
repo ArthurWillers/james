@@ -7,24 +7,16 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Editar Contato">
-        <x-button color="outline" href="{{ route('contacts.show', $contact) }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
-
-        <x-button type="submit" form="edit-contact-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Editar Contato" mobileBottom>
+        <x-form-actions fallback="{{ route('contacts.show', $contact) }}" form="edit-contact-form" />
     </x-page-header>
 
     <form id="edit-contact-form" action="{{ route('contacts.update', $contact) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
-        <x-card class="mb-4 p-6">
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <x-card class="mb-4">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
 
                 <x-form-image-cropper
                     name="avatar"
@@ -81,6 +73,8 @@
             :value="old('notes', $contact->notes)"
         />
     </form>
+
+    <x-form-actions fallback="{{ route('contacts.show', $contact) }}" form="edit-contact-form" mobile />
 
     <x-modal 
         name="remove-avatar-{{ $contact->id }}"

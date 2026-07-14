@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Recorrências excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-button color="outline" href="{{ route('financial.recurrences.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('financial.recurrences.index') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-filter-bar 
@@ -96,7 +93,7 @@
 
                             <x-table.cell>
                                 <span class="text-sm text-neutral-600">
-                                    {{ $recurrence->deleted_at->format('d/m/Y H:i') }}
+                                    {{ formatDateTime($recurrence->deleted_at) }}
                                 </span>
                             </x-table.cell>
 
@@ -132,12 +129,12 @@
                                                 <div class="truncate text-xs font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                                     {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                                                 </div>
-                                                <span class="text-xs">Excluída: {{ $recurrence->deleted_at->format('d/m/Y') }}</span>
+                                                <span class="text-xs">Excluída: {{ formatShort($recurrence->deleted_at) }}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="shrink-0">
-                                        <x-dropdown position="bottom-end" accent>
+                                        <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                             <x-slot name="trigger">
                                                 <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
                                                     <x-heroicon-o-ellipsis-horizontal class="size-5" />
@@ -145,14 +142,14 @@
                                             </x-slot>
 
                                             <x-slot name="content">
-                                                <button type="button" @click="openRestore({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                                    <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                                    Restaurar
+                                                <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')">
+                                                    <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                                    <span class="whitespace-nowrap">Restaurar</span>
                                                 </button>
 
-                                                <button type="button" @click="openForceDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                                    <x-heroicon-o-trash class="size-5" />
-                                                    Excluir Permanentemente
+                                                <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')">
+                                                    <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                    <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                                 </button>
                                             </x-slot>
                                         </x-dropdown>
@@ -173,50 +170,21 @@
             </div>
         @endif
 
-        <x-modal 
-            name="restore-recurrence"
-            title="Restaurar Recorrência" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar a recorrência <span class="font-medium text-neutral-900" x-text="selectedRecurrenceTitle"></span>? Ela voltará a gerar transações ativamente.
-            </x-slot>
-            <form :action="'{{ route('financial.recurrences.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-restore-modal
+            modal-name="restore-recurrence"
+            item-name="a recorrência"
+            dynamic-item-name="selectedRecurrenceTitle"
+            alpine-action="'{{ route('financial.recurrences.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)"
+        />
 
-        <x-modal 
-            name="force-delete-recurrence"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir a recorrência <span class="font-medium text-neutral-900" x-text="selectedRecurrenceTitle"></span> permanentemente? Esta ação é irreversível.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
-                    <div class="flex">
-                        <div class="shrink-0">
-                            <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-amber-800">Cuidado</h3>
-                            <div class="mt-1 text-sm text-amber-700">
-                                <p>Isso não excluirá as transações geradas por esta recorrência, mas o vínculo se perderá para sempre.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </x-slot>
-            <form :action="'{{ route('financial.recurrences.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-delete-modal 
+            modal-name="force-delete-recurrence"
+            item-name="a recorrência"
+            dynamic-item-name="selectedRecurrenceTitle"
+            permanent="true"
+            warning="Isso não excluirá as transações geradas por esta recorrência, mas o vínculo se perderá para sempre."
+            alpine-action="'{{ route('financial.recurrences.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)"
+        />
         
         @if($recurrences->hasPages())
             <div class="px-6 py-4 border-t border-neutral-200">

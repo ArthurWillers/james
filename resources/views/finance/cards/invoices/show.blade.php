@@ -3,7 +3,7 @@
         <x-breadcrumbs>
             <x-breadcrumbs.item href="{{ route('financial.cards.index') }}">Cartões</x-breadcrumbs.item>
             <x-breadcrumbs.item href="{{ route('financial.cards.show', $card) }}">{{ $card->name }}</x-breadcrumbs.item>
-            <x-breadcrumbs.item>Fatura {{ Str::title(Carbon\Carbon::parse($invoice->reference_month)->isoFormat('MMM/YY')) }}</x-breadcrumbs.item>
+            <x-breadcrumbs.item>Fatura {{ formatMonthYear($invoice->reference_month) }}</x-breadcrumbs.item>
         </x-breadcrumbs>
     </div>
 
@@ -30,7 +30,7 @@
         $remaining = max(0, $total - $invoice->amount_paid);
     @endphp
 
-    <x-page-header title="Fatura de {{ Str::title(Carbon\Carbon::parse($invoice->reference_month)->isoFormat('MMMM YYYY')) }}">
+    <x-page-header title="Fatura de {{ formatMonthYearFull($invoice->reference_month) }}">
         <x-slot:subtitle>
             <div class="flex items-center gap-2 mt-2">
                 <x-badge :color="$badgeColor">
@@ -43,7 +43,7 @@
         <x-modal.trigger name="edit-invoice-modal">
             <x-button type="button" color="outline" class="bg-white">
                 <x-heroicon-o-pencil-square class="size-4" />
-                Editar Fatura
+                <span class="hidden sm:inline">Editar Fatura</span>
             </x-button>
         </x-modal.trigger>
 
@@ -51,7 +51,7 @@
             <x-modal.trigger name="unpay-invoice-modal">
                 <x-button type="button" color="outline" class="bg-white text-orange-600 hover:bg-orange-50 border-orange-200">
                     <x-heroicon-o-arrow-uturn-left class="size-4" />
-                    Reabrir Fatura
+                    <span class="hidden sm:inline">Reabrir Fatura</span>
                 </x-button>
             </x-modal.trigger>
 
@@ -71,9 +71,9 @@
 
         @if($status !== 'paid' && !$isFavorable && $total > 0)
             <x-modal.trigger name="pay-invoice-modal">
-                <x-button type="button">
+                <x-button type="button" class="w-full sm:w-auto">
                     <x-heroicon-o-currency-dollar class="size-4" />
-                    Registrar Pagamento
+                    <span class="whitespace-nowrap">Registrar Pagamento</span>
                 </x-button>
             </x-modal.trigger>
         @endif

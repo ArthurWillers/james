@@ -7,31 +7,29 @@
     </div>
 
     <x-page-header title="Histórico Global">
-        <div class="flex items-center gap-3">
             @if($hasTrashed)
                 <x-button color="outline" href="{{ route('settlements.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
                     <x-heroicon-o-trash class="size-4" />
-                    Lixeira
+                    <span class="hidden sm:inline">Lixeira</span>
                 </x-button>
             @endif
-            <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white">
+            <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white flex-1 sm:flex-initial">
                 <x-heroicon-o-arrow-left class="size-4" />
-                Voltar aos Acertos
+                <span class="whitespace-nowrap">Voltar</span>
             </x-button>
-        </div>
     </x-page-header>
 
     <div class="mt-6">
-        <x-ui.table>
-            <x-ui.table.header class="hidden sm:grid grid-cols-5">
-                <x-ui.table.column>Data</x-ui.table.column>
-                <x-ui.table.column>Contato</x-ui.table.column>
-                <x-ui.table.column>Descrição</x-ui.table.column>
-                <x-ui.table.column>Tipo</x-ui.table.column>
-                <x-ui.table.column class="text-right">Valor</x-ui.table.column>
-            </x-ui.table.header>
+        <x-table>
+            <x-table.header class="hidden sm:grid grid-cols-5">
+                <x-table.column>Data</x-table.column>
+                <x-table.column>Contato</x-table.column>
+                <x-table.column>Descrição</x-table.column>
+                <x-table.column>Tipo</x-table.column>
+                <x-table.column class="text-right">Valor</x-table.column>
+            </x-table.header>
 
-            <x-ui.table.body>
+            <x-table.body>
                 @forelse($settlements as $settlement)
                     @php
                         $isPositiveForMe = in_array($settlement->type->value, [\App\Enums\SettlementType::TheyOwe->value, \App\Enums\SettlementType::IPaid->value]);
@@ -42,41 +40,41 @@
                         $settlementRoute = route('settlements.show_item', $settlement);
                     @endphp
 
-                    <x-ui.table.row href="{{ $settlementRoute }}" class="hidden sm:grid grid-cols-5">
-                        <x-ui.table.cell class="text-neutral-500">
+                    <x-table.row href="{{ $settlementRoute }}" class="hidden sm:grid grid-cols-5">
+                        <x-table.cell class="text-neutral-500">
                             {{ formatShort($settlement->date) }}
-                        </x-ui.table.cell>
+                        </x-table.cell>
                         
-                        <x-ui.table.cell>
+                        <x-table.cell>
                             <div class="flex items-center gap-3">
-                                <x-ui.avatar :model="$settlement->contact" size="sm" />
+                                <x-avatar :model="$settlement->contact" size="sm" />
                                 <span class="font-medium text-neutral-900 truncate">{{ $settlement->contact->name }}</span>
                             </div>
-                        </x-ui.table.cell>
+                        </x-table.cell>
 
-                        <x-ui.table.cell>
+                        <x-table.cell>
                             <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
-                        </x-ui.table.cell>
+                        </x-table.cell>
 
-                        <x-ui.table.cell>
-                            <x-ui.badge :color="$settlement->type->color()" class="flex items-center gap-1 w-fit">
+                        <x-table.cell>
+                            <x-badge :color="$settlement->type->color()" class="flex items-center gap-1 w-fit">
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                 <span>{{ $settlement->type->label() }}</span>
-                            </x-ui.badge>
-                        </x-ui.table.cell>
+                            </x-badge>
+                        </x-table.cell>
 
-                        <x-ui.table.cell class="text-right font-semibold {{ $amountColor }}">
+                        <x-table.cell class="text-right font-semibold {{ $amountColor }}">
                             {{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}
-                        </x-ui.table.cell>
+                        </x-table.cell>
 
                         <!-- Mobile View -->
                         <x-slot:mobile>
                             <div class="flex justify-between items-start gap-4">
                                 <div class="flex flex-col gap-1 min-w-0 flex-1">
                                     <div class="flex items-center gap-2">
-                                        <x-ui.badge :color="$settlement->type->color()" class="flex items-center shrink-0 w-fit">
+                                        <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 w-fit">
                                             <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
-                                        </x-ui.badge>
+                                        </x-badge>
                                         <span class="font-medium text-neutral-900 truncate">{{ $settlement->description }}</span>
 
                                     </div>
@@ -92,18 +90,18 @@
                                 </div>
                             </div>
                         </x-slot:mobile>
-                    </x-ui.table.row>
+                    </x-table.row>
                 @empty
                     <div class="col-span-full">
-                        <x-ui.empty-state 
+                        <x-empty-state 
                             icon="heroicon-o-queue-list" 
                             title="Nenhuma transação" 
                             description="Seu histórico global de acertos aparecerá aqui." 
                         />
                     </div>
                 @endforelse
-            </x-ui.table.body>
-        </x-ui.table>
+            </x-table.body>
+        </x-table>
 
         <div class="mt-6">
             {{ $settlements->links() }}

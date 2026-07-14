@@ -9,17 +9,17 @@
     $value = $item['value'] ?? 0;
     
     if ($type === 'expense') {
-        $valueStr = '- R$ ' . number_format($value, 2, ',', '.');
+        $valueStr = '- ' . formatCurrency($value);
         $valueColor = 'text-red-600';
     } elseif ($type === 'income') {
-        $valueStr = '+ R$ ' . number_format($value, 2, ',', '.');
+        $valueStr = '+ ' . formatCurrency($value);
         $valueColor = 'text-green-600';
     } else { // net
         if ($value >= 0) {
-            $valueStr = '+ R$ ' . number_format($value, 2, ',', '.');
+            $valueStr = '+ ' . formatCurrency($value);
             $valueColor = 'text-green-600';
         } else {
-            $valueStr = '- R$ ' . number_format(abs($value), 2, ',', '.');
+            $valueStr = '- ' . formatCurrency(abs($value));
             $valueColor = 'text-red-600';
         }
     }

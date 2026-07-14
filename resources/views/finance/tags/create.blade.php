@@ -6,22 +6,16 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Nova Tag">
-        <x-button color="outline" href="{{ route('financial.tags.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
-
-        <x-button type="submit" form="create-tag-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Nova Tag" mobileBottom>
+        <x-form-actions fallback="{{ route('financial.tags.index') }}" form="create-tag-form" />
     </x-page-header>
 
     <form id="create-tag-form" action="{{ route('financial.tags.store') }}" method="POST">
         @csrf
         <div class="mt-6">
             @include('finance.tags.partials.form')
+
+            <x-form-actions fallback="{{ route('financial.tags.index') }}" form="create-tag-form" mobile />
         </div>
     </form>
 </x-layouts.financial>

@@ -8,70 +8,71 @@
     </div>
 
     <x-page-header title="{{ $settlementGroup->description }}">
-        <div class="flex items-center gap-3">
+            <x-back-button fallback="{{ route('settlements.groups.index') }}" />
+
             @if(!$settlementGroup->trashed())
-                <x-button color="outline" href="{{ route('settlements.groups.edit', $settlementGroup) }}" class="bg-white">
+                <x-delete-modal 
+                    action="{{ route('settlements.groups.destroy', $settlementGroup) }}"
+                    item-name="a divisão de conta"
+                    item-desc="{{ $settlementGroup->description }}"
+                    title="Excluir Divisão de Conta"
+                    description="Isso removerá todos os acertos vinculados a ela."
+                />
+                <x-button color="outline" href="{{ route('settlements.groups.edit', $settlementGroup) }}" class="bg-white flex-1 sm:flex-initial">
                     <x-heroicon-o-pencil class="size-4" />
-                    Editar
+                    <span class="whitespace-nowrap">Editar</span>
                 </x-button>
-                <x-modal.trigger name="delete-group-{{ $settlementGroup->id }}">
-                    <x-button color="danger-outline">
-                        <x-heroicon-o-trash class="size-4" />
-                        Excluir
-                    </x-button>
-                </x-modal.trigger>
             @endif
-        </div>
     </x-page-header>
 
-    <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
         <!-- Left Column: Items -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
-            <x-card class="p-6">
+        <div class="lg:col-span-8 flex flex-col gap-4 sm:gap-6">
+            <x-card>
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Participantes</h3>
                 
-                <div class="space-y-4">
+                <div class="space-y-2">
                     @php
                         // Calculate my share based on total - sum of all contacts
                         $contactsTotal = $settlementGroup->settlements->sum('amount');
                         $myShare = max(0, $settlementGroup->total_amount - $contactsTotal);
                     @endphp
 
-                    <!-- Minha Parte -->
-                    <div class="flex items-center justify-between p-4 rounded-xl border border-accent/30 bg-accent/5">
-                        <div class="flex items-center gap-4">
-                            <div class="shrink-0 flex items-center justify-center w-10 h-10 rounded-md bg-accent/20 text-accent font-bold text-sm">
-                                EU
-                            </div>
-                            <div>
-                                <div class="font-medium text-neutral-900">Minha Parte</div>
+                    <x-card size="sm" class="flex items-center justify-between border-accent/30 bg-accent/5">
+                        <div class="flex items-center gap-4 min-w-0">
+                            <x-avatar :model="auth()->user()" variant="accent" size="lg" />
+                            <div class="min-w-0">
+                                <div class="font-medium text-neutral-900 truncate">Minha Parte</div>
+                                <div class="text-xs text-neutral-500">Sua despesa</div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <span class="font-semibold text-neutral-900">{{ formatCurrency($myShare) }}</span>
+                        <div class="text-right shrink-0 ml-4 flex items-center gap-2">
+                            <span class="font-bold text-red-600 whitespace-nowrap tabular-nums">- {{ formatCurrency($myShare) }}</span>
+                            <div class="size-4"></div> <!-- Placeholder to align with chevron in other rows -->
                         </div>
-                    </div>
+                    </x-card>
 
                     <!-- Contatos -->
                     @foreach($settlementGroup->settlements as $settlement)
-                        <div class="flex items-center justify-between p-4 rounded-xl border border-neutral-100 bg-white">
-                            <div class="flex items-center gap-4">
-                                <x-ui.avatar :model="$settlement->contact" size="md" />
-                                <div>
-                                    <div class="font-medium text-neutral-900">{{ $settlement->contact->name }}</div>
+                        <x-card size="sm" href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="flex items-center justify-between group border-neutral-100">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <x-avatar :model="$settlement->contact" size="lg" />
+                                <div class="min-w-0">
+                                    <div class="font-medium text-neutral-900 group-hover:text-brand-600 transition-colors truncate">{{ $settlement->contact->name }}</div>
                                     <div class="text-xs text-neutral-500">Deve reembolsar</div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <span class="font-semibold text-neutral-900">{{ formatCurrency($settlement->amount) }}</span>
+                            <div class="text-right shrink-0 ml-4 flex items-center gap-2">
+                                <span class="font-bold text-green-600 whitespace-nowrap tabular-nums">+ {{ formatCurrency($settlement->amount) }}</span>
+                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-brand-600 transition-colors" />
                             </div>
-                        </div>
+                        </x-card>
                     @endforeach
                 </div>
 
                 <div class="mt-6 pt-4 border-t border-neutral-100 flex justify-between items-center">
                     <span class="text-sm font-medium text-neutral-500">Total</span>
-                    <span class="text-lg font-bold text-neutral-900">{{ formatCurrency($settlementGroup->total_amount) }}</span>
+                    <span class="text-lg font-bold text-red-600">- {{ formatCurrency($settlementGroup->total_amount) }}</span>
                 </div>
 
                 @if($settlementGroup->financialTransaction)
@@ -79,13 +80,13 @@
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Meio de Pagamento</h3>
                         <div class="flex items-center gap-4">
                             @if($settlementGroup->financialTransaction->invoice)
-                                <x-ui.avatar icon="heroicon-o-credit-card" size="lg" />
+                                <x-avatar icon="heroicon-o-credit-card" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlementGroup->financialTransaction->invoice->creditCard->name }}</div>
-                                    <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ $settlementGroup->financialTransaction->invoice->closing_date->format('m/Y') }}</div>
+                                    <div class="text-sm text-neutral-500">Cartão de Crédito • Fatura de {{ formatMonthYear($settlementGroup->financialTransaction->invoice->closing_date) }}</div>
                                 </div>
                             @elseif($settlementGroup->financialTransaction->account)
-                                <x-ui.avatar icon="heroicon-o-building-library" size="lg" />
+                                <x-avatar icon="heroicon-o-building-library" size="lg" />
                                 <div>
                                     <div class="font-medium text-neutral-900">{{ $settlementGroup->financialTransaction->account->name }}</div>
                                     <div class="text-sm text-neutral-500">Conta Corrente</div>
@@ -96,7 +97,7 @@
                 @endif
 
                 @if($settlementGroup->hasMedia('attachments'))
-                    <x-ui.lightbox class="mt-8 pt-6 border-t border-neutral-100">
+                    <x-lightbox class="mt-8 pt-6 border-t border-neutral-100">
                         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Anexos</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             @foreach($settlementGroup->getMedia('attachments') as $media)
@@ -107,7 +108,7 @@
                                 @if($isImage)
                                     <button type="button" @click="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')"
                                        class="flex items-center text-left gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group w-full cursor-pointer">
-                                        <x-ui.avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
+                                        <x-avatar :image="$fileUrl" class="w-10! h-10!" radius="md" />
                                         <div class="truncate text-sm text-neutral-700">
                                             <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
                                             <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
@@ -116,7 +117,7 @@
                                 @else
                                     <a href="{{ $fileUrl }}" target="_blank"
                                        class="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 transition-colors group">
-                                        <x-ui.avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
+                                        <x-avatar icon="heroicon-o-document" class="w-10! h-10! group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
                                         <div class="truncate text-sm text-neutral-700">
                                             <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
                                             <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
@@ -125,14 +126,14 @@
                                 @endif
                             @endforeach
                         </div>
-                    </x-ui.lightbox>
+                    </x-lightbox>
                 @endif
             </x-card>
         </div>
 
         <!-- Right Column: Meta -->
-        <div class="lg:col-span-4 flex flex-col gap-6">
-            <x-card class="p-6">
+        <div class="lg:col-span-4 flex flex-col gap-4 sm:gap-6">
+            <x-card>
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Detalhes</h3>
                 
                 <div class="space-y-4">
@@ -151,35 +152,23 @@
                     @if($settlementGroup->financialTransaction)
                         <div class="pt-4 border-t border-neutral-100">
                             <div class="text-xs text-neutral-500 mb-2">Transação Financeira</div>
-                            <a href="{{ route('financial.transactions.show', $settlementGroup->financialTransaction) }}" class="flex items-center justify-between p-3 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-colors bg-neutral-50">
+                            <x-card size="sm" href="{{ route('financial.transactions.show', $settlementGroup->financialTransaction) }}" class="flex items-center justify-between group bg-neutral-50/50">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500">
+                                    <div class="w-8 h-8 rounded-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 group-hover:border-accent/30 group-hover:text-accent transition-colors shrink-0">
                                         <x-heroicon-o-receipt-percent class="size-4" />
                                     </div>
-                                    <span class="text-sm font-medium text-neutral-700">Ver Transação</span>
+                                    <span class="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 transition-colors">Ver Transação</span>
                                 </div>
-                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400" />
-                            </a>
+                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-neutral-600 transition-colors shrink-0" />
+                            </x-card>
                         </div>
                     @endif
                 </div>
             </x-card>
 
-            <x-ui.metadata-card :model="$settlementGroup" />
+            <x-metadata-card :model="$settlementGroup" />
         </div>
     </div>
 
-    <x-modal
-        name="delete-group-{{ $settlementGroup->id }}"
-        title="Excluir Divisão de Conta"
-        message="Tem certeza que deseja excluir esta divisão de conta? Isso removerá todos os acertos vinculados a ela."
-        confirmVariant="danger">
-        <form action="{{ route('settlements.groups.destroy', $settlementGroup) }}" method="POST" class="m-0">
-            @csrf
-            @method('DELETE')
-            <x-button type="submit" color="red" class="w-full sm:w-auto">
-                Sim, excluir
-            </x-button>
-        </form>
-    </x-modal>
+
 </x-layouts.app>

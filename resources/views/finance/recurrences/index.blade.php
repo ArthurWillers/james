@@ -80,7 +80,7 @@
 
                         <x-table.cell>
                             <span class="text-sm text-neutral-600">
-                                {{ $recurrence->next_processing_date ? $recurrence->next_processing_date->format('d/m/Y') : 'N/A' }}
+                                {{ $recurrence->next_processing_date ? formatShort($recurrence->next_processing_date) : 'N/A' }}
                             </span>
                         </x-table.cell>
 
@@ -112,19 +112,19 @@
                                         <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 truncate flex items-center gap-2">
                                             {{ $recurrence->title }}
                                             @if(!$recurrence->is_active)
-                                                <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-600">Pausada</span>
+                                                <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xxs font-medium text-neutral-600">Pausada</span>
                                             @endif
                                         </h3>
                                         <div class="flex flex-col gap-1 text-sm text-neutral-500 mt-1">
                                             <div class="truncate text-xs font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                                 {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                                             </div>
-                                            <span class="text-xs">Próx: {{ $recurrence->next_processing_date ? $recurrence->next_processing_date->format('d/m/Y') : 'N/A' }}</span>
+                                            <span class="text-xs">Próx: {{ $recurrence->next_processing_date ? formatShort($recurrence->next_processing_date) : 'N/A' }}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="shrink-0">
-                                    <x-dropdown position="bottom-end" accent>
+                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                         <x-slot name="trigger">
                                             <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
                                                 <x-heroicon-o-ellipsis-horizontal class="size-5" />
@@ -133,13 +133,13 @@
 
                                         <x-slot name="content">
                                             <a href="{{ route('financial.recurrences.edit', $recurrence) }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-pencil-square class="size-5" />
-                                                Editar
+                                                <x-heroicon-o-pencil-square class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Editar</span>
                                             </a>
 
-                                            <button type="button" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-trash class="size-5" />
-                                                Excluir
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')">
+                                                <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Excluir</span>
                                             </button>
                                         </x-slot>
                                     </x-dropdown>
@@ -155,9 +155,7 @@
                 <x-empty-state 
                     icon="heroicon-o-arrow-path" 
                     title="Nenhuma recorrência cadastrada" 
-                    description="Cadastre suas assinaturas (ex: Netflix, Spotify) ou contas fixas para que o sistema gere as transações automaticamente." 
-                    :actionRoute="route('financial.recurrences.create')"
-                    actionText="Cadastrar Primeira Recorrência"
+                    description="Cadastre suas assinaturas ou contas fixas para que o sistema gere as transações automaticamente." 
                 />
             </div>
         @endif

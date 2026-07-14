@@ -7,40 +7,23 @@
     </div>
 
     <x-page-header title="Detalhes do Contato">
-        <x-button color="outline" href="{{ route('contacts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('contacts.index') }}" />
 
         <x-button color="outline" href="{{ route('contacts.edit', $contact) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
             Editar
         </x-button>
 
-        <x-modal.trigger name="delete-contact-{{ $contact->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-contact-{{ $contact->id }}"
-            title="Excluir Contato" 
-            message="Tem certeza que deseja mover este contato para a lixeira? Você poderá restaurá-lo depois se precisar." 
-            confirmVariant="danger">
-            <form action="{{ route('contacts.destroy', $contact) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Mover para Lixeira
-                </x-button>
-            </form>
-        </x-modal>
+        <x-delete-modal 
+            action="{{ route('contacts.destroy', $contact) }}"
+            item-name="o contato"
+            item-desc="{{ $contact->name }}"
+            title="Excluir Contato"
+        />
     </x-page-header>
 
-    <x-card class="mb-4 p-6">
-        <div class="flex items-center gap-6">
+    <x-card class="mb-4">
+        <div class="flex items-center gap-4 sm:gap-6">
             <x-avatar :model="$contact" size="2xl"/>
             
             <div class="flex flex-col gap-2">
@@ -63,7 +46,7 @@
     </x-card>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <x-card class="h-full p-6 flex flex-col">
+        <x-card class="h-full flex flex-col">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">Telefones</h3>
             @if(!empty($contact->phones))
                 <div class="overflow-y-auto max-h-[300px] pr-2 -mr-2">
@@ -73,7 +56,7 @@
                                 $label = is_array($phone) && !empty($phone['label']) ? $phone['label'] : 'Principal';
                                 $value = is_array($phone) ? ($phone['value'] ?? '') : $phone;
                             @endphp
-                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
+                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 sm:gap-6 py-3 first:pt-0 last:pb-0">
                                 <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span>
                                 <span class="text-[15px] text-neutral-800 break-all">{{ $value }}</span>
                             </div>
@@ -85,7 +68,7 @@
             @endif
         </x-card>
 
-        <x-card class="h-full p-6 flex flex-col">
+        <x-card class="h-full flex flex-col">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">E-mails</h3>
             @if(!empty($contact->emails))
                 <div class="overflow-y-auto max-h-[300px] pr-2 -mr-2">
@@ -95,7 +78,7 @@
                                 $label = is_array($email) && !empty($email['label']) ? $email['label'] : 'Principal';
                                 $value = is_array($email) ? ($email['value'] ?? '') : $email;
                             @endphp
-                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
+                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 sm:gap-6 py-3 first:pt-0 last:pb-0">
                                 <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span>
                                 <span class="text-[15px] text-neutral-800 break-all">{{ $value }}</span>
                             </div>
@@ -122,7 +105,7 @@
         </x-finance.kpi-card>
 
         <!-- Grupos -->
-        <x-card class="h-full p-6">
+        <x-card class="h-full">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest shrink-0">Grupos</h3>
                 <x-modal.trigger name="sync-groups">
@@ -172,7 +155,7 @@
     </div>
 
 
-    <x-card class="mb-4 p-6">
+    <x-card class="mb-4">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Notas</h3>
         @if($contact->notes)
             <div class="markdown-content text-[15px] text-neutral-700">
@@ -182,5 +165,9 @@
             <p class="text-sm text-neutral-400 italic">Nenhuma anotação.</p>
         @endif
     </x-card>
+
+    <div class="flex justify-start lg:justify-end mt-8">
+        <x-ui.metadata-card :model="$contact" class="w-full lg:max-w-sm mb-4" />
+    </div>
 
 </x-layouts.app>

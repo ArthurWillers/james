@@ -19,7 +19,7 @@
         
         <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
             <select name="group_id" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                 <option value="">Todos os grupos</option>
                 @foreach($groups as $grp)
                     <option value="{{ $grp->id }}" @selected((int)request('group_id') === $grp->id)>{{ $grp->name }}</option>
@@ -27,7 +27,7 @@
             </select>
 
             <select name="category" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                 <option value="">Todas categorias</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat }}" @selected(request('category') === $cat)>{{ $cat }}</option>
@@ -59,8 +59,6 @@
                 <x-empty-state 
                     icon="heroicon-o-users" 
                     message="Nenhum contato encontrado." 
-                    actionText="Novo Contato" 
-                    :actionRoute="route('contacts.create')" 
                 />
             </div>
         @endforelse

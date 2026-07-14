@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Cartões de crédito excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-button color="outline" href="{{ route('financial.cards.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('financial.cards.index') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-filter-bar 
@@ -102,7 +99,7 @@
                                 </div>
                             </div>
                             <div class="shrink-0">
-                                <x-dropdown position="bottom-end" accent>
+                                <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
                                             <x-heroicon-o-ellipsis-horizontal class="size-5" />
@@ -110,14 +107,14 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $card->id }}, '{{ addslashes($card->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                            Restaurar
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $card->id }}, '{{ addslashes($card->name) }}')">
+                                            <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                            <span class="whitespace-nowrap">Restaurar</span>
                                         </button>
 
-                                        <button type="button" @click="openForceDelete({{ $card->id }}, '{{ addslashes($card->name) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-trash class="size-5" />
-                                            Excluir Permanentemente
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $card->id }}, '{{ addslashes($card->name) }}')">
+                                            <x-heroicon-o-trash class="size-5 shrink-0" />
+                                            <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                         </button>
                                     </x-slot>
                                 </x-dropdown>
@@ -134,29 +131,27 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-card"
-            title="Restaurar Cartão" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar o cartão <span class="font-medium text-neutral-900" x-text="selectedCardName"></span>? Ele voltará a aparecer nos seus saldos e faturamentos.
-            </x-slot>
-            <form :action="'{{ route('financial.cards.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-restore-modal
+            modal-name="restore-card"
+            item-name="o cartão"
+            dynamic-item-name="selectedCardName"
+            alpine-action="'{{ route('financial.cards.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)"
+        >
+            <x-slot:content>
+                Tem certeza que deseja restaurar o cartão "<span class="font-medium text-neutral-900" x-text="selectedCardName"></span>"? Ele voltará a aparecer nos seus saldos e faturamentos.
+            </x-slot:content>
+        </x-restore-modal>
 
-        <x-modal 
-            name="force-delete-card"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir o cartão <span class="font-medium text-neutral-900" x-text="selectedCardName"></span> permanentemente? Esta ação é irreversível e todos os dados serão perdidos.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
+        <x-delete-modal 
+            modal-name="force-delete-card"
+            item-name="o cartão"
+            dynamic-item-name="selectedCardName"
+            permanent="true"
+            alpine-action="'{{ route('financial.cards.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)"
+        >
+            <x-slot:content>
+                <p class="mb-3">Tem certeza que deseja excluir o cartão "<span class="font-medium text-neutral-900" x-text="selectedCardName"></span>" permanentemente? Esta ação é irreversível e todos os dados serão perdidos.</p>
+                <div class="rounded-md bg-amber-50 p-3 border border-amber-200 text-left">
                     <div class="flex">
                         <div class="shrink-0">
                             <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
@@ -169,15 +164,8 @@
                         </div>
                     </div>
                 </div>
-            </x-slot>
-            <form :action="'{{ route('financial.cards.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedCardId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+            </x-slot:content>
+        </x-delete-modal>
     </x-table>
 
     @if($cards->hasPages())

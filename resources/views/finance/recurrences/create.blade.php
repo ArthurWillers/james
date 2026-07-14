@@ -13,15 +13,12 @@
             </x-breadcrumbs>
         </div>
 
-        <!-- Header with Actions -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-neutral-900">Nova Recorrência</h1>
-            <div class="flex items-center gap-3">
-                <x-button color="outline" href="{{ route('financial.recurrences.index') }}" class="bg-white">Cancelar</x-button>
-                <x-button type="submit" form="recurrence-form" class="bg-neutral-900 hover:bg-black text-white">Salvar</x-button>
-            </div>
-        </div>
+        <x-page-header title="Nova Recorrência" mobileBottom>
+            <x-form-actions fallback="{{ route('financial.recurrences.index') }}" form="recurrence-form" />
+        </x-page-header>
 
         @include('finance.recurrences.partials.form')
+
+        <x-form-actions fallback="{{ route('financial.recurrences.index') }}" form="recurrence-form" mobile />
     </form>
 </x-layouts.financial>

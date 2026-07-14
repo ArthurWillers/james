@@ -10,10 +10,7 @@
         title="Lixeira" 
         description="Transações financeiras excluídas. Elas podem ser restauradas ou excluídas permanentemente." 
     >
-        <x-button color="outline" href="{{ route('financial.transactions.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('financial.transactions.index') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-filter-bar 
@@ -49,6 +46,19 @@
 
         <x-table.body>
             @forelse($transactions as $transaction)
+                @php
+                    $settlementGroup = $transaction->settlementGroup;
+                    $settlement = $transaction->settlements->first();
+                    $isSettlementTransaction = $settlementGroup || $settlement;
+                    
+                    if ($settlementGroup) {
+                        $settlementLabel = "Ir para Lixeira de Divisão";
+                        $settlementRoute = route('settlements.groups.trashed');
+                    } elseif ($settlement) {
+                        $settlementLabel = "Ir para Lixeira de Acerto";
+                        $settlementRoute = route('settlements.trashed');
+                    }
+                @endphp
                 <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr]">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
@@ -66,7 +76,7 @@
                             <div class="overflow-hidden">
                                 <div class="font-medium text-neutral-900 truncate">{{ $transaction->description }}</div>
                                 <div class="mt-1 flex items-center gap-2">
-                                    <span class="text-xs text-neutral-500">{{ $transaction->date->format('d/m/Y') }}</span>
+                                    <span class="text-xs text-neutral-500">{{ formatShort($transaction->date) }}</span>
                                     @if($transaction->invoice)
                                         <x-badge color="neutral" size="sm"><x-heroicon-o-credit-card class="size-3 mr-1 inline"/> {{ $transaction->invoice->creditCard->name }}</x-badge>
                                     @elseif($transaction->account)
@@ -91,15 +101,22 @@
 
                     <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
-                            <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
-                                <x-heroicon-o-arrow-uturn-left class="size-4" />
-                                Restaurar
-                            </x-button>
+                            @if($isSettlementTransaction)
+                                <x-button color="outline" class="bg-white text-neutral-600 border-neutral-300 hover:bg-neutral-50" href="{{ $settlementRoute }}">
+                                    <x-heroicon-o-link class="size-4" />
+                                    {{ $settlementLabel }}
+                                </x-button>
+                            @else
+                                <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
+                                    <x-heroicon-o-arrow-uturn-left class="size-4" />
+                                    Restaurar
+                                </x-button>
 
-                            <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
-                                <x-heroicon-o-trash class="size-4" />
-                                Excluir
-                            </x-button>
+                                <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
+                                    <x-heroicon-o-trash class="size-4" />
+                                    Excluir
+                                </x-button>
+                            @endif
                         </div>
                     </x-table.cell>
 
@@ -122,7 +139,7 @@
                                 </div>
                             </div>
                             <div class="shrink-0">
-                                <x-dropdown position="bottom-end" accent>
+                                <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100">
                                             <x-heroicon-o-ellipsis-horizontal class="size-5" />
@@ -130,15 +147,22 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                            Restaurar
-                                        </button>
+                                        @if($isSettlementTransaction)
+                                            <a href="{{ $settlementRoute }}" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
+                                                <x-heroicon-o-link class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">{{ $settlementLabel }}</span>
+                                            </a>
+                                        @else
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
+                                                <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Restaurar</span>
+                                            </button>
 
-                                        <button type="button" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-trash class="size-5" />
-                                            Excluir Permanentemente
-                                        </button>
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $transaction->id }}, '{{ addslashes($transaction->description) }}')">
+                                                <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Excluir Permanentemente</span>
+                                            </button>
+                                        @endif
                                     </x-slot>
                                 </x-dropdown>
                             </div>
@@ -154,29 +178,27 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-transaction"
-            title="Restaurar Transação" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar a transação <span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>? Ela voltará a impactar os saldos da sua conta ou fatura.
-            </x-slot>
-            <form :action="'{{ route('financial.transactions.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)" method="POST" class="m-0">
-                @csrf
-                @method('PATCH')
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-restore-modal
+            modal-name="restore-transaction"
+            item-name="a transação"
+            dynamic-item-name="selectedTransactionName"
+            alpine-action="'{{ route('financial.transactions.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)"
+        >
+            <x-slot:content>
+                Tem certeza que deseja restaurar a transação "<span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>"? Ela voltará a impactar os saldos da sua conta ou fatura.
+            </x-slot:content>
+        </x-restore-modal>
 
-        <x-modal 
-            name="force-delete-transaction"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                <p class="mb-3">Tem certeza que deseja excluir a transação <span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span> permanentemente? Esta ação é irreversível.</p>
-                <div class="rounded-md bg-amber-50 p-3 border border-amber-200">
+        <x-delete-modal 
+            modal-name="force-delete-transaction"
+            item-name="a transação"
+            dynamic-item-name="selectedTransactionName"
+            permanent="true"
+            alpine-action="'{{ route('financial.transactions.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)"
+        >
+            <x-slot:content>
+                <p class="mb-3">Tem certeza que deseja excluir a transação "<span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>" permanentemente? Esta ação é irreversível.</p>
+                <div class="rounded-md bg-amber-50 p-3 border border-amber-200 text-left">
                     <div class="flex">
                         <div class="shrink-0">
                             <x-heroicon-m-exclamation-triangle class="size-5 text-amber-400" />
@@ -189,15 +211,8 @@
                         </div>
                     </div>
                 </div>
-            </x-slot>
-            <form :action="'{{ route('financial.transactions.forceDestroy', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedTransactionId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+            </x-slot:content>
+        </x-delete-modal>
     </x-table>
 
     @if($transactions->hasPages())

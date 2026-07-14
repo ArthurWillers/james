@@ -6,15 +6,8 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Dividir Conta">
-        <div class="flex items-center gap-3">
-            <x-button color="outline" href="{{ route('settlements.index') }}" class="bg-white">
-                Cancelar
-            </x-button>
-            <x-button type="submit" form="split-form" class="bg-neutral-900 hover:bg-black text-white">
-                Dividir Conta
-            </x-button>
-        </div>
+    <x-page-header title="Dividir Conta" mobileBottom>
+        <x-form-actions fallback="{{ route('settlements.index') }}" form="split-form" submitText="Dividir Conta" />
     </x-page-header>
 
     @php
@@ -99,4 +92,6 @@
             @include('settlements.groups.partials.form')
         </form>
     </div>
+
+    <x-form-actions fallback="{{ route('settlements.index') }}" form="split-form" submitText="Dividir Conta" mobile />
 </x-layouts.app>

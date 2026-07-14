@@ -24,6 +24,16 @@ namespace App\Helpers {
         {
             return Carbon::parse($date)->format('d/m/Y \à\s H:i');
         }
+
+        public static function formatMonthYear(string|Carbon $date): string
+        {
+            return Carbon::parse($date)->isoFormat('MM/YYYY');
+        }
+
+        public static function formatMonthYearFull(string|Carbon $date): string
+        {
+            return \Str::title(Carbon::parse($date)->isoFormat('MMMM YYYY'));
+        }
     }
 }
 
@@ -55,6 +65,20 @@ namespace {
         function formatRelative($date)
         {
             return DateHelper::formatRelative($date);
+        }
+    }
+
+    if (! function_exists('formatMonthYear')) {
+        function formatMonthYear($date)
+        {
+            return DateHelper::formatMonthYear($date);
+        }
+    }
+
+    if (! function_exists('formatMonthYearFull')) {
+        function formatMonthYearFull($date)
+        {
+            return DateHelper::formatMonthYearFull($date);
         }
     }
 }

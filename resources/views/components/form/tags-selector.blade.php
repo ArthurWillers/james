@@ -84,7 +84,7 @@
         @endif
         
         @if(isset($trigger))
-            <div @click="openModal" class="cursor-pointer">
+            <div class="cursor-pointer" @click="openModal">
                 {{ $trigger }}
             </div>
         @else
@@ -145,7 +145,7 @@
                             <h3 class="text-lg font-bold text-neutral-900">Selecione as Tags</h3>
                             <p class="text-sm text-neutral-500">Marque as tags relacionadas. Clique na estrela para definir a principal.</p>
                         </div>
-                        <button type="button" @click="closeModal" class="text-neutral-400 hover:text-neutral-600 transition-colors p-1 bg-neutral-50 hover:bg-neutral-100 rounded-full">
+                        <button type="button" class="text-neutral-400 hover:text-neutral-600 transition-colors p-1 bg-neutral-50 hover:bg-neutral-100 rounded-full" @click="closeModal">
                             <x-heroicon-o-x-mark class="size-5" />
                         </button>
                     </div>
@@ -189,7 +189,7 @@
                             </template>
                         </div>
                         
-                        <div x-show="filteredOptions.length === 0" class="py-12 text-center">
+                        <div class="py-12 text-center" x-show="filteredOptions.length === 0">
                             <div class="mx-auto size-12 bg-neutral-100 text-neutral-400 rounded-full flex items-center justify-center mb-3">
                                 <x-heroicon-o-tag class="size-6" />
                             </div>

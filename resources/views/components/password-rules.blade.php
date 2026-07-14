@@ -1,4 +1,4 @@
-<div x-data="{ showRules: false }" class="bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded-md mb-6">
+<div class="bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded-md mb-6" x-data="{ showRules: false }">
     <div class="flex justify-between items-center">
         <div class="flex items-center">
             <x-heroicon-o-information-circle class="w-7 h-7 text-blue-500 mr-4" />
@@ -6,11 +6,11 @@
         </div>
         <button type="button" @click="showRules = !showRules"
             class="text-sm text-blue-600 hover:underline cursor-pointer flex items-center transition-all">
-            <span x-show="!showRules" class="flex items-center">
+            <span class="flex items-center" x-show="!showRules">
                 Mostrar
                 <x-heroicon-m-chevron-down class="w-4 h-4 ml-1" />
             </span>
-            <span x-show="showRules" class="flex items-center" x-cloak>
+            <span class="flex items-center" x-show="showRules" x-cloak>
                 Ocultar
                 <x-heroicon-m-chevron-up class="w-4 h-4 ml-1" />
             </span>

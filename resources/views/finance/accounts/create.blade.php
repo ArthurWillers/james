@@ -7,21 +7,15 @@
         </x-breadcrumbs>
     </div>
 
-    <x-page-header title="Nova Conta">
-        <x-button color="outline" href="{{ route('financial.accounts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Cancelar
-        </x-button>
-
-        <x-button type="submit" form="create-account-form">
-            <x-heroicon-o-check class="size-4" />
-            Salvar
-        </x-button>
+    <x-page-header title="Nova Conta" mobileBottom>
+        <x-form-actions fallback="{{ route('financial.accounts.index') }}" form="create-account-form" />
     </x-page-header>
 
     <form id="create-account-form" action="{{ route('financial.accounts.store') }}" method="POST">
         @csrf
         
         @include('finance.accounts.partials.form')
+
+        <x-form-actions fallback="{{ route('financial.accounts.index') }}" form="create-account-form" mobile />
     </form>
 </x-layouts.financial>

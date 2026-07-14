@@ -19,7 +19,7 @@
     ];
 @endphp
 
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6"
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6"
     x-data="{
         open: false,
         selectedColor: '{{ old('color_hex', $tag->color_hex ?? '#64748b') }}',
@@ -49,8 +49,8 @@
     <input type="hidden" name="icon" x-model="selectedIcon">
 
     <!-- Coluna da Esquerda: Informações Principais -->
-    <div class="lg:col-span-5 flex flex-col gap-6">
-        <div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 flex flex-col gap-6">
+    <div class="lg:col-span-5 flex flex-col gap-4 sm:gap-6">
+        <div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4 sm:p-6 flex flex-col gap-4 sm:gap-6">
             <!-- Preview da Tag -->
             <div class="flex items-center justify-center p-8 bg-neutral-50 rounded-xl border border-neutral-100">
                 <div class="relative focus:outline-none rounded-md">
@@ -58,7 +58,7 @@
                         <div class="w-full h-full flex items-center justify-center">
                             @foreach($suggestedIcons as $icon)
                                 <div x-show="selectedIcon === '{{ $icon }}'">
-                                    <x-avatar :icon="$icon" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
+                                    <x-avatar :icon="$icon" size="xl" class="border-transparent! text-white! shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
                                 </div>
                             @endforeach
                         </div>
@@ -71,7 +71,7 @@
                             </div>
                         </template>
                         <template x-if="!customIconHtml">
-                            <x-avatar icon="heroicon-o-question-mark-circle" size="xl" class="!border-transparent !text-white shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
+                            <x-avatar icon="heroicon-o-question-mark-circle" size="xl" class="border-transparent! text-white! shadow-sm transition-all" x-bind:style="`background-color: ${selectedColor};`" />
                         </template>
                     </div>
                 </div>
@@ -107,8 +107,8 @@
     </div>
 
     <!-- Coluna da Direita: Ícones -->
-    <div class="lg:col-span-7 flex flex-col gap-6">
-        <div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 h-full flex flex-col gap-6">
+    <div class="lg:col-span-7 flex flex-col gap-4 sm:gap-6">
+        <div class="bg-white rounded-xl border border-neutral-200 shadow-sm p-4 sm:p-6 h-full flex flex-col gap-4 sm:gap-6">
             <!-- Grid de Ícones Sugeridos -->
             <div class="flex-1">
                 <label class="block text-sm font-medium text-neutral-700 mb-2">Selecione um Ícone</label>
@@ -117,7 +117,7 @@
                         <button type="button" 
                             @click="selectedIcon = '{{ $icon }}'"
                             class="p-3 rounded-xl flex items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-neutral-100 hover:text-neutral-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105"
-                            :class="selectedIcon === '{{ $icon }}' ? '!bg-accent/10 !text-accent ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
+                            :class="selectedIcon === '{{ $icon }}' ? 'bg-accent/10! text-accent! ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
                             <x-dynamic-component :component="$icon" class="size-6" />
                         </button>
                     @endforeach

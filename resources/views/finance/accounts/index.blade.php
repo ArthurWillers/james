@@ -49,8 +49,6 @@
                 <x-empty-state 
                     icon="heroicon-o-wallet" 
                     message="Nenhuma conta encontrada." 
-                    actionText="Nova Conta" 
-                    :actionRoute="route('financial.accounts.create')" 
                 />
             </div>
         @endforelse

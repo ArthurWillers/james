@@ -4,7 +4,7 @@
     'icon' => null,
     'color' => 'neutral',
     'href' => null,
-    'hideIconOnMobile' => false,
+    'hideIconOnMobile' => true,
 ])
 
 @php
@@ -46,13 +46,13 @@
     $theme = $colors[$color] ?? $colors['neutral'];
 @endphp
 
-<x-card :href="$href" {{ $attributes->merge(['class' => 'p-6 group']) }}>
-    <div class="flex items-center justify-between">
-        <div class="flex-1">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                <p class="text-sm font-medium text-neutral-600 {{ $href ? 'group-hover:text-brand-600 transition-colors' : '' }}">{{ $title }}</p>
+<x-card :href="$href" {{ $attributes->merge(['class' => 'p-3 sm:p-6 group flex flex-col justify-center']) }}>
+    <div class="flex items-center justify-between gap-2">
+        <div class="flex-1 min-w-0">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-1 sm:mb-2">
+                <p class="text-xs sm:text-sm font-medium text-neutral-500 leading-tight break-words {{ $href ? 'group-hover:text-brand-600 transition-colors' : '' }}" title="{{ $title }}">{{ $title }}</p>
             </div>
-            <p class="text-xl sm:text-2xl font-semibold {{ $theme['text'] }} break-words {{ $href ? $theme['hoverText'] . ' transition-colors' : '' }}">
+            <p class="text-lg sm:text-2xl font-bold tracking-tight leading-tight break-words {{ $theme['text'] }} {{ $href ? $theme['hoverText'] . ' transition-colors' : '' }}" title="{{ $value }}">
                 {{ $value }}
             </p>
             @if($slot->isNotEmpty())
@@ -62,8 +62,8 @@
             @endif
         </div>
         @if($icon)
-            <div class="{{ $hideIconOnMobile ? 'hidden sm:flex' : 'flex' }} w-10 h-10 sm:w-12 sm:h-12 {{ $theme['iconBg'] }} rounded-lg items-center justify-center flex-shrink-0 {{ $href ? $theme['iconHoverBg'] . ' transition-colors' : '' }}">
-                <x-dynamic-component :component="$icon" class="w-5 h-5 sm:w-6 sm:h-6 {{ $theme['iconText'] }} {{ $href ? 'group-hover:scale-110 transition-transform' : '' }}" />
+            <div class="{{ $hideIconOnMobile ? 'hidden sm:flex' : 'flex' }} w-12 h-12 {{ $theme['iconBg'] }} rounded-lg items-center justify-center shrink-0 {{ $href ? $theme['iconHoverBg'] . ' transition-colors' : '' }}">
+                <x-dynamic-component :component="$icon" class="w-6 h-6 {{ $theme['iconText'] }} {{ $href ? 'group-hover:scale-110 transition-transform' : '' }}" />
             </div>
         @endif
     </div>

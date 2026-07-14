@@ -44,7 +44,7 @@ class FinancialTagController extends Controller
      */
     public function store(StoreFinancialTagRequest $request): RedirectResponse
     {
-        $financialTag = FinancialTag::create($request->validated());
+        FinancialTag::create($request->validated());
 
         return redirect()
             ->route('financial.tags.index')

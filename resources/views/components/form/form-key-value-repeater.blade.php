@@ -28,7 +28,7 @@
             <template x-for="(item, index) in items" :key="index">
                 <div class="flex gap-2 items-start">
                     <div class="w-1/3">
-                        <x-form-input x-model="item.label" x-bind:name="`{{ $name }}[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`{{ $name }}.${index}.label`] ? '!border-red-500 focus:border-red-500! focus:!ring-red-400/30' : ''" />
+                        <x-form-input x-model="item.label" x-bind:name="`{{ $name }}[${index}][label]`" placeholder="Rótulo" x-bind:class="serverErrors[`{{ $name }}.${index}.label`] ? 'border-red-500! focus:border-red-500! focus:ring-red-400/30!' : ''" />
                         <template x-if="serverErrors[`{{ $name }}.${index}.label`]">
                             <div class="flex items-center gap-x-2 text-sm text-red-500 mt-1.5 animate-shake">
                                 <x-heroicon-m-exclamation-triangle class="size-5 shrink-0" />
@@ -37,7 +37,7 @@
                         </template>
                     </div>
                     <div class="flex-1">
-                        <x-form-input x-model="item.value" x-bind:name="`{{ $name }}[${index}][value]`" placeholder="{{ $valuePlaceholder }}" x-bind:class="serverErrors[`{{ $name }}.${index}.value`] ? '!border-red-500 focus:border-red-500! focus:!ring-red-400/30' : ''" />
+                        <x-form-input x-model="item.value" x-bind:name="`{{ $name }}[${index}][value]`" placeholder="{{ $valuePlaceholder }}" x-bind:class="serverErrors[`{{ $name }}.${index}.value`] ? 'border-red-500! focus:border-red-500! focus:ring-red-400/30!' : ''" />
                         <template x-if="serverErrors[`{{ $name }}.${index}.value`]">
                             <div class="flex items-center gap-x-2 text-sm text-red-500 mt-1.5 animate-shake">
                                 <x-heroicon-m-exclamation-triangle class="size-5 shrink-0" />
@@ -50,7 +50,7 @@
                     </x-button>
                 </div>
             </template>
-            <p x-show="items.length === 0" class="text-sm text-neutral-400 italic">{{ $emptyMessage }}</p>
+            <p class="text-sm text-neutral-400 italic" x-show="items.length === 0">{{ $emptyMessage }}</p>
         </div>
     </div>
 </x-card>

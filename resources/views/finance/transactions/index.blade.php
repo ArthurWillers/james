@@ -3,7 +3,7 @@
         <x-modal.trigger name="transfer-modal">
             <x-button type="button" color="outline" class="bg-white">
                 <x-heroicon-o-arrows-right-left class="size-4!" />
-                Transferência
+                <span class="hidden sm:inline">Transferência</span>
             </x-button>
         </x-modal.trigger>
 
@@ -87,7 +87,7 @@
         @if($hasTrashed)
             <x-button color="outline" href="{{ route('financial.transactions.trashed') }}" class="bg-white">
                 <x-heroicon-o-trash class="size-4" />
-                Lixeira
+                <span class="hidden sm:inline">Lixeira</span>
             </x-button>
         @endif
     </x-page-header>
@@ -95,33 +95,41 @@
     <x-filter-bar 
         action="{{ route('financial.transactions.index') }}" 
         searchPlaceholder="Buscar por descrição..." 
-        :filters="['search', 'account_id', 'type', 'is_posted', 'date']">
+        :filters="['search', 'account_id', 'tag_id', 'type', 'is_posted', 'date']">
         
         <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
             <select name="account_id" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                 <option value="">Todas as Contas</option>
                 @foreach($accounts as $account)
                     <option value="{{ $account->id }}" @selected(request('account_id') == $account->id)>{{ $account->name }}</option>
                 @endforeach
             </select>
             
+            <select name="tag_id" 
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                <option value="">Todas as Tags</option>
+                @foreach($tags as $tag)
+                    <option value="{{ $tag->id }}" @selected(request('tag_id') == $tag->id)>{{ $tag->name }}</option>
+                @endforeach
+            </select>
+            
             <select name="type" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                 <option value="">Todos os Tipos</option>
                 <option value="income" @selected(request('type') == 'income')>Receita</option>
                 <option value="expense" @selected(request('type') == 'expense')>Despesa</option>
             </select>
 
             <select name="is_posted" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
                 <option value="">Todos os Status</option>
                 <option value="1" @selected(request('is_posted') === '1')>Efetivadas</option>
                 <option value="0" @selected(request('is_posted') === '0')>Pendentes</option>
             </select>
 
             <input type="date" name="date" value="{{ request('date') }}" 
-                   class="w-full sm:w-auto bg-transparent border-0 py-1.5 px-3 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors"
+                   class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 px-3 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors"
                    title="Filtrar por data específica">
         </div>
     </x-filter-bar>

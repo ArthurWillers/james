@@ -12,7 +12,7 @@
     @if ($current) aria-current="page" @endif
     {{ $attributes->class([
         // Base
-        'relative px-3 h-8 inline-flex items-center gap-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-150',
+        'relative px-3 min-h-11 lg:min-h-8 inline-flex items-center gap-2 rounded-lg text-base lg:text-sm [&>svg]:size-5 lg:[&>svg]:size-4 font-medium whitespace-nowrap transition-colors duration-150',
         // Active indicator — 2px line sitting exactly on the nav border-b
         'after:absolute after:-bottom-3 after:inset-x-0 after:h-[2px] after:rounded-full',
         // Active

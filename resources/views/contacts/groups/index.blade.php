@@ -42,8 +42,6 @@
                 <x-empty-state 
                     icon="heroicon-o-tag" 
                     message="Nenhum grupo encontrado." 
-                    actionText="Novo Grupo" 
-                    :actionRoute="route('contacts.groups.create')" 
                 />
             </div>
         @endforelse

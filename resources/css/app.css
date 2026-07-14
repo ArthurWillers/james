@@ -11,6 +11,9 @@
 
     --color-accent: #DAA520;
 
+    --text-xxs: 0.625rem; /* 10px */
+    --text-xxs--line-height: 0.875rem; /* 14px */
+
     --animate-shake: shake 0.5s ease-in-out;
 
     @keyframes shake {

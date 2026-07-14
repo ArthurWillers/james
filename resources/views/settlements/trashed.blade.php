@@ -11,10 +11,7 @@
         title="Lixeira" 
         description="Acertos excluídos. Eles podem ser restaurados ou excluídos permanentemente." 
     >
-        <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('settlements.history') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"
@@ -47,9 +44,9 @@
                 <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1.5fr]">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
-                            <x-ui.badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
+                            <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
                                 <x-dynamic-component :component="$settlement->type->icon()" class="size-4" />
-                            </x-ui.badge>
+                            </x-badge>
                             <div class="overflow-hidden flex flex-col">
                                 @php
                                     $isPositiveForMe = in_array($settlement->type->value, [\App\Enums\SettlementType::TheyOwe->value, \App\Enums\SettlementType::IPaid->value]);
@@ -100,9 +97,9 @@
                     <x-slot name="mobile">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 min-w-0 flex items-center gap-3">
-                                <x-ui.badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
+                                <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 grayscale opacity-80">
                                     <x-dynamic-component :component="$settlement->type->icon()" class="size-4" />
-                                </x-ui.badge>
+                                </x-badge>
                                 <div class="overflow-hidden">
                                     <h3 class="text-sm font-semibold text-neutral-900 leading-tight mb-1 truncate">
                                         {{ $settlement->description }}
@@ -124,7 +121,7 @@
                                 </span>
                                 
                                 @if($settlement->settlement_group_id === null)
-                                    <x-dropdown position="bottom-end" accent>
+                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                         <x-slot name="trigger">
                                             <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-1.5 transition duration-150 ease-in-out hover:bg-neutral-100">
                                                 <x-heroicon-o-ellipsis-horizontal class="size-4" />
@@ -132,14 +129,14 @@
                                         </x-slot>
 
                                         <x-slot name="content">
-                                            <button type="button" @click="openRestore({{ $settlement->id }}, '{{ addslashes($settlement->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                                Restaurar
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $settlement->id }}, '{{ addslashes($settlement->description) }}')">
+                                                <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Restaurar</span>
                                             </button>
 
-                                            <button type="button" @click="openForceDelete({{ $settlement->id }}, '{{ addslashes($settlement->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                                <x-heroicon-o-trash class="size-5" />
-                                                Excluir Permanentemente
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $settlement->id }}, '{{ addslashes($settlement->description) }}')">
+                                                <x-heroicon-o-trash class="size-5 shrink-0" />
+                                                <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                             </button>
                                         </x-slot>
                                     </x-dropdown>
@@ -149,7 +146,7 @@
                     </x-slot>
                 </x-table.row>
             @empty
-                <x-ui.empty-state 
+                <x-empty-state 
                     icon="heroicon-o-trash" 
                     title="Nenhum acerto excluído" 
                     description="Não há acertos individuais na lixeira." 
@@ -157,36 +154,22 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-settlement"
-            title="Restaurar Acerto" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar o acerto "<span class="font-medium text-neutral-900" x-text="selectedSettlementDesc"></span>"? Ele voltará para o seu histórico global e reativará a transação vinculada, caso exista.
-            </x-slot>
-            <form :action="'{{ route('settlements.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)" method="POST" class="m-0">
-                @csrf
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-restore-modal
+            modal-name="restore-settlement"
+            item-name="o acerto"
+            dynamic-item-name="selectedSettlementDesc"
+            description="Ele voltará para o seu histórico global e reativará a transação vinculada, caso exista."
+            alpine-action="'{{ route('settlements.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)"
+        />
 
-        <x-modal 
-            name="force-delete-settlement"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                Tem certeza que deseja excluir este acerto permanentemente? Esta ação é irreversível e removerá também a transação financeira vinculada.
-            </x-slot>
-            <form :action="'{{ route('settlements.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-delete-modal 
+            modal-name="force-delete-settlement"
+            item-name="o acerto"
+            dynamic-item-name="selectedSettlementDesc"
+            permanent="true"
+            warning="Esta ação é irreversível e removerá também a transação financeira vinculada."
+            alpine-action="'{{ route('settlements.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)"
+        />
     </x-table>
 
     @if($settlements->hasPages())

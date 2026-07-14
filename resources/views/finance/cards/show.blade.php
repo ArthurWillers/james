@@ -8,40 +8,23 @@
     </div>
 
     <x-page-header title="Detalhes do Cartão">
-        <x-button color="outline" href="{{ route('financial.cards.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('financial.cards.index') }}" />
 
         <x-button color="outline" href="{{ route('financial.cards.edit', $card) }}" class="bg-white">
             <x-heroicon-o-pencil-square class="size-4" />
             Editar
         </x-button>
 
-        <x-modal.trigger name="delete-card-{{ $card->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-card-{{ $card->id }}"
-            title="Excluir Cartão" 
-            message="Tem certeza que deseja excluir este cartão? A ação o moverá para a lixeira." 
-            confirmVariant="danger">
-            <form action="{{ route('financial.cards.destroy', $card) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Cartão
-                </x-button>
-            </form>
-        </x-modal>
+        <x-delete-modal 
+            action="{{ route('financial.cards.destroy', $card) }}"
+            item-name="o cartão"
+            item-desc="{{ $card->name }}"
+            title="Excluir Cartão"
+        />
     </x-page-header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <x-card class="col-span-full md:col-span-1 p-6 flex flex-col justify-center">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <x-card class="col-span-full md:col-span-1 flex flex-col justify-center">
             <h3 class="text-neutral-500 font-medium text-sm mb-1">Conta Vinculada</h3>
             <div class="font-semibold text-lg text-neutral-900">{{ $card->financialAccount->name }}</div>
             
@@ -57,7 +40,7 @@
             </div>
         </x-card>
         
-        <x-card class="col-span-full md:col-span-2 p-6 flex flex-col justify-center">
+        <x-card class="col-span-full md:col-span-2 flex flex-col justify-center">
             @if($card->credit_limit > 0)
                 @php
                     $usedLimit = $card->usedLimit();
@@ -112,7 +95,7 @@
                         <tr class="hover:bg-neutral-50/50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="font-medium text-neutral-900">
-                                    {{ Str::title(Carbon\Carbon::parse($invoice->reference_month)->isoFormat('MMMM YYYY')) }}
+                                    {{ formatMonthYearFull($invoice->reference_month) }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
@@ -168,8 +151,7 @@
         </div>
     </x-card>
 
-    <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2 mt-4">
-        <p>Criado em: {{ $card->created_at->format('d/m/Y H:i') }}</p>
-        <p>Última atualização: {{ $card->updated_at->format('d/m/Y H:i') }}</p>
+    <div class="flex justify-start lg:justify-end mt-8">
+        <x-ui.metadata-card :model="$card" class="w-full lg:max-w-sm mb-4" />
     </div>
 </x-layouts.financial>

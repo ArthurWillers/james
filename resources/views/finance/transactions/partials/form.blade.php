@@ -1,17 +1,17 @@
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
     
     <!-- Left Column: Main Data & Items -->
-    <div class="lg:col-span-8 flex flex-col gap-6">
+    <div class="lg:col-span-8 flex flex-col gap-4 sm:gap-6 order-last lg:order-first">
         <!-- Main Data Card -->
-        <x-card class="p-6">
-            <div class="flex flex-col gap-6">
+        <x-card>
+            <div class="flex flex-col gap-4 sm:gap-6">
                 <x-form-input label="Descrição" name="description" value="{{ old('description', $transaction->description ?? '') }}" placeholder="Descrição" autofocus />
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
                     <div>
-                        <x-form-input label="Valor (R$)" name="amount" x-model="amount" :currency="true" placeholder="0,00" ::readonly="items.length > 0" ::class="items.length > 0 ? 'bg-neutral-100 !text-neutral-500 font-medium' : ''" />
+                        <x-form-input label="Valor (R$)" name="amount" :currency="true" placeholder="0,00" ::readonly="items.length > 0" ::class="items.length > 0 ? 'bg-neutral-100 text-neutral-500! font-medium' : ''" x-model="amount" />
                         <div class="h-5 mt-1">
-                            <p x-show="items.length > 0" class="text-xs text-primary-600 flex items-center gap-1 font-medium m-0"><x-heroicon-o-calculator class="size-3.5"/> Calculado via itens</p>
+                            <p class="text-xs text-primary-600 flex items-center gap-1 font-medium m-0" x-show="items.length > 0"><x-heroicon-o-calculator class="size-3.5"/> Calculado via itens</p>
                         </div>
                     </div>
                     <div>
@@ -36,8 +36,8 @@
     </div>
 
     <!-- Right Column: Configurações -->
-    <div class="lg:col-span-4 flex flex-col">
-        <x-card class="p-6 space-y-6">
+    <div class="lg:col-span-4 flex flex-col order-first lg:order-last">
+        <x-card class="space-y-6">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Configurações</h3>
 
             @if(!isset($transaction))
@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 
-                <div x-show="targetType === 'account'" class="pt-4 border-t border-neutral-100">
+                <div class="pt-4 border-t border-neutral-100" x-show="targetType === 'account'">
                     <x-switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
                     <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
                 </div>

@@ -18,7 +18,7 @@ class FinancialTagFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word(),
+            'name' => $this->faker->unique()->word(),
             'color_hex' => $this->faker->hexColor(),
             'icon' => 'heroicon-o-tag',
         ];

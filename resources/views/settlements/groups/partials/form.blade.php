@@ -1,14 +1,14 @@
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
 
 
     <!-- Left Column: Main Data -->
-    <div class="lg:col-span-8 flex flex-col gap-6">
+    <div class="lg:col-span-8 flex flex-col gap-4 sm:gap-6 order-last lg:order-first">
         <!-- Dados Gerais -->
-        <x-card class="p-6">
-            <div class="flex flex-col gap-6">
+        <x-card>
+            <div class="flex flex-col gap-4 sm:gap-6">
                 <x-form-input label="Descrição" name="description" value="{{ old('description', isset($settlementGroup) ? $settlementGroup->description : '') }}" placeholder="Descrição" autofocus />
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
                     <div>
                         <div x-show="mode === 'equal'">
                             <x-form-input label="Valor Total (R$)" name="total_amount" :currency="true" placeholder="0,00" x-model="totalAmount" />
@@ -29,7 +29,7 @@
         </x-card>
 
         <!-- Participantes -->
-        <x-card class="p-6">
+        <x-card>
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Participantes</h3>
 
             <div class="space-y-3">
@@ -99,7 +99,7 @@
             </div>
 
             <div class="pt-6 mt-6 border-t border-neutral-100">
-                <x-form.dropzone name="attachments[]" :multiple="true" label="Adicionar Anexos" sublabel="Arraste arquivos JPG, PNG ou PDF (Max 10MB)" accept=".jpeg,.jpg,.png,.pdf" />
+                <x-dropzone name="attachments[]" :multiple="true" label="Adicionar Anexos" sublabel="Arraste arquivos JPG, PNG ou PDF (Max 10MB)" accept=".jpeg,.jpg,.png,.pdf" />
             </div>
             
             @if(isset($settlementGroup) && $settlementGroup->hasMedia('attachments'))
@@ -110,9 +110,9 @@
                             <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-lg bg-neutral-50">
                                 <div class="flex items-center gap-3 overflow-hidden">
                                     @if(in_array($media->mime_type, ['image/jpeg', 'image/png', 'image/jpg']))
-                                        <x-ui.avatar :image="route('settlements.groups.attachment', [$settlementGroup, $media, $media->file_name])" class="w-10! h-10!" radius="md" />
+                                        <x-avatar :image="route('settlements.groups.attachment', [$settlementGroup, $media, $media->file_name])" class="w-10! h-10!" radius="md" />
                                     @else
-                                        <x-ui.avatar icon="heroicon-o-document" class="w-10! h-10!" radius="md" variant="white" />
+                                        <x-avatar icon="heroicon-o-document" class="w-10! h-10!" radius="md" variant="white" />
                                     @endif
                                     <div class="truncate text-sm text-neutral-700">
                                         <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
@@ -120,9 +120,9 @@
                                     </div>
                                 </div>
                                 <div class="ml-2 shrink-0">
-                                    <x-form.form-checkbox name="delete_attachments[]" value="{{ $media->id }}" class="group">
+                                    <x-form-checkbox name="delete_attachments[]" value="{{ $media->id }}" class="group">
                                         <span class="text-sm font-medium text-red-600 group-hover:text-red-700">Excluir</span>
-                                    </x-form.form-checkbox>
+                                    </x-form-checkbox>
                                 </div>
                             </div>
                         @endforeach
@@ -133,8 +133,8 @@
     </div>
 
     <!-- Right Column: Configurações -->
-    <div class="lg:col-span-4 flex flex-col">
-        <x-card class="p-6 space-y-6">
+    <div class="lg:col-span-4 flex flex-col order-first lg:order-last">
+        <x-card class="space-y-6">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Configurações</h3>
 
             {{-- Modo de Divisão --}}
@@ -148,7 +148,7 @@
                 <input type="hidden" name="create_transaction" value="0">
                 <x-switch name="create_transaction" x-model="createTransaction" label="Criar Transação?" value="1" />
 
-                <div x-show="createTransaction" x-transition class="space-y-4 pt-2">
+                <div class="space-y-4 pt-2" x-show="createTransaction" x-transition>
                     <x-radio-block-group legend="Onde">
                         <x-radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
                         <x-radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />

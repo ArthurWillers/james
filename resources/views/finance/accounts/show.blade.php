@@ -7,15 +7,12 @@
     </div>
 
     <x-page-header title="Detalhes da Conta">
-        <x-button color="outline" href="{{ route('financial.accounts.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('financial.accounts.index') }}" />
 
         <x-modal.trigger name="adjust-balance-{{ $account->id }}">
             <x-button type="button" color="outline" class="bg-white">
                 <x-heroicon-o-adjustments-horizontal class="size-4" />
-                Ajustar Saldo
+                <span class="hidden sm:inline">Ajustar Saldo</span>
             </x-button>
         </x-modal.trigger>
 
@@ -47,36 +44,22 @@
             </form>
         </x-modal>
 
-        <x-button color="outline" href="{{ route('financial.accounts.edit', $account) }}" class="bg-white">
+        <x-delete-modal 
+            action="{{ route('financial.accounts.destroy', $account) }}"
+            item-name="a conta"
+            item-desc="{{ $account->name }}"
+            title="Excluir Conta"
+        />
+
+        <x-button color="outline" href="{{ route('financial.accounts.edit', $account) }}" class="bg-white flex-1 sm:flex-initial">
             <x-heroicon-o-pencil-square class="size-4" />
-            Editar
+            <span class="whitespace-nowrap">Editar</span>
         </x-button>
-
-        <x-modal.trigger name="delete-account-{{ $account->id }}">
-            <x-button type="button" color="danger-outline">
-                <x-heroicon-o-trash class="size-4" />
-                Excluir
-            </x-button>
-        </x-modal.trigger>
-
-        <x-modal 
-            name="delete-account-{{ $account->id }}"
-            title="Excluir Conta" 
-            message="Tem certeza que deseja mover esta conta para a lixeira? Você poderá restaurá-la depois se precisar." 
-            confirmVariant="danger">
-            <form action="{{ route('financial.accounts.destroy', $account) }}" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Mover para Lixeira
-                </x-button>
-            </form>
-        </x-modal>
     </x-page-header>
 
-    <x-card class="mb-6 p-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="flex items-center gap-6">
+    <x-card class="mb-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div class="flex items-center gap-4 sm:gap-6">
                 <x-avatar :icon="$account->type->icon()" size="xl" />
                 
                 <div class="flex flex-col gap-2">
@@ -92,7 +75,7 @@
             @if(!empty($account->pix_keys))
                 <div class="md:text-right flex flex-col md:items-end gap-2 border-t md:border-t-0 md:border-l border-neutral-100 pt-4 md:pt-0 md:pl-6 overflow-x-auto">
                     <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Chaves Pix</h3>
-                    <div class="flex gap-6 md:justify-end">
+                    <div class="flex gap-4 sm:gap-6 md:justify-end">
                         @foreach(array_chunk($account->pix_keys, 3) as $chunk)
                             <div class="flex flex-col gap-1.5 min-w-max">
                                 @foreach($chunk as $pixKey)
@@ -109,7 +92,7 @@
         </div>
     </x-card>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-6">
         <x-finance.kpi-card 
             title="Total de Receitas" 
             :value="formatCurrency($globalIncome)" 
@@ -132,7 +115,11 @@
             icon="heroicon-o-scale" 
             :color="$account->balance > 0 ? 'green' : ($account->balance < 0 ? 'red' : 'neutral')" 
             :href="route('financial.transactions.index', ['account_id' => $account->id])" 
-        />
+            class="col-span-2 md:col-span-1"
+            :hide-icon-on-mobile="false"
+        >
+            Saldo contábil no sistema
+        </x-finance.kpi-card>
     </div>
 
     @if($creditCards->isNotEmpty())
@@ -157,8 +144,7 @@
         <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
     @endif
 
-    <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2">
-        <p>Criado em: {{ $account->created_at->format('d/m/Y H:i') }}</p>
-        <p>Última atualização: {{ $account->updated_at->format('d/m/Y H:i') }}</p>
+    <div class="flex justify-start lg:justify-end mt-8">
+        <x-metadata-card :model="$account" class="w-full lg:max-w-sm mb-4" />
     </div>
 </x-layouts.financial>

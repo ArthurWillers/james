@@ -11,10 +11,7 @@
         title="Lixeira de Contas Divididas" 
         description="Divisões de contas excluídas. Restaure-as ou exclua permanentemente." 
     >
-        <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
+        <x-back-button fallback="{{ route('settlements.groups.index') }}" class="w-full sm:w-auto" />
     </x-page-header>
 
     <x-table class="lg:mb-8 mt-6"
@@ -88,7 +85,7 @@
                                     {{ formatCurrency($group->total_amount) }}
                                 </span>
                                 
-                                <x-dropdown position="bottom-end" accent>
+                                <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                     <x-slot name="trigger">
                                         <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-1.5 transition duration-150 ease-in-out hover:bg-neutral-100">
                                             <x-heroicon-o-ellipsis-horizontal class="size-4" />
@@ -96,14 +93,14 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" @click="openRestore({{ $group->id }}, '{{ addslashes($group->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-arrow-uturn-left class="size-5" />
-                                            Restaurar
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $group->id }}, '{{ addslashes($group->description) }}')">
+                                            <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
+                                            <span class="whitespace-nowrap">Restaurar</span>
                                         </button>
 
-                                        <button type="button" @click="openForceDelete({{ $group->id }}, '{{ addslashes($group->description) }}')" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer">
-                                            <x-heroicon-o-trash class="size-5" />
-                                            Excluir Permanentemente
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $group->id }}, '{{ addslashes($group->description) }}')">
+                                            <x-heroicon-o-trash class="size-5 shrink-0" />
+                                            <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                         </button>
                                     </x-slot>
                                 </x-dropdown>
@@ -112,7 +109,7 @@
                     </x-slot>
                 </x-table.row>
             @empty
-                <x-ui.empty-state 
+                <x-empty-state 
                     icon="heroicon-o-trash" 
                     title="Nenhuma divisão excluída" 
                     description="Não há divisões de contas na lixeira." 
@@ -120,36 +117,22 @@
             @endforelse
         </x-table.body>
 
-        <x-modal 
-            name="restore-group"
-            title="Restaurar Divisão de Conta" 
-            confirmVariant="success">
-            <x-slot name="content">
-                Tem certeza que deseja restaurar "<span class="font-medium text-neutral-900" x-text="selectedGroupDesc"></span>"? Isso reativará todos os acertos individuais associados a ela e a transação financeira, se houver.
-            </x-slot>
-            <form :action="'{{ route('settlements.groups.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)" method="POST" class="m-0">
-                @csrf
-                <x-button type="submit" class="w-full sm:w-auto">
-                    Confirmar Restauração
-                </x-button>
-            </form>
-        </x-modal>
+        <x-restore-modal
+            modal-name="restore-group"
+            item-name="a divisão"
+            dynamic-item-name="selectedGroupDesc"
+            description="Isso reativará todos os acertos individuais associados a ela e a transação financeira, se houver."
+            alpine-action="'{{ route('settlements.groups.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)"
+        />
 
-        <x-modal 
-            name="force-delete-group"
-            title="Exclusão Permanente" 
-            confirmVariant="danger">
-            <x-slot name="content">
-                Tem certeza que deseja excluir esta divisão de contas permanentemente? Esta ação removerá definitivamente todos os acertos vinculados e a transação financeira relacionada, sendo irreversível.
-            </x-slot>
-            <form :action="'{{ route('settlements.groups.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)" method="POST" class="m-0">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="red" class="w-full sm:w-auto">
-                    Excluir Permanentemente
-                </x-button>
-            </form>
-        </x-modal>
+        <x-delete-modal 
+            modal-name="force-delete-group"
+            item-name="a divisão de conta"
+            dynamic-item-name="selectedGroupDesc"
+            permanent="true"
+            warning="Esta ação removerá definitivamente todos os acertos vinculados e a transação financeira relacionada, sendo irreversível."
+            alpine-action="'{{ route('settlements.groups.force-delete', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)"
+        />
     </x-table>
 
     @if($settlementGroups->hasPages())

@@ -7,42 +7,25 @@
     </div>
 
     <x-page-header title="Detalhes da Transação">
-        <x-button color="outline" href="{{ route('financial.transactions.index') }}" class="bg-white">
-            <x-heroicon-o-arrow-left class="size-4" />
-            Voltar
-        </x-button>
-
-        <x-button color="outline" href="{{ $editRoute }}" class="bg-white">
-            <x-heroicon-o-pencil-square class="size-4" />
-            Editar
-        </x-button>
+        <x-back-button fallback="{{ route('financial.transactions.index') }}" />
 
         @if(!$isSettlementTransaction)
-            <x-modal.trigger name="delete-transaction-{{ $transaction->id }}">
-                <x-button type="button" color="danger-outline">
-                    <x-heroicon-o-trash class="size-4" />
-                    Excluir
-                </x-button>
-            </x-modal.trigger>
-
-            <x-modal 
-                name="delete-transaction-{{ $transaction->id }}"
-                title="Excluir Transação" 
-                message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita." 
-                confirmVariant="danger">
-                <form action="{{ route('financial.transactions.destroy', $transaction->id) }}" method="POST" class="m-0">
-                    @csrf
-                    @method('DELETE')
-                    <x-button type="submit" color="red" class="w-full sm:w-auto">
-                        Excluir
-                    </x-button>
-                </form>
-            </x-modal>
+            <x-delete-modal 
+                action="{{ route('financial.transactions.destroy', $transaction->id) }}"
+                item-name="a transação"
+                item-desc="{{ $transaction->description }}"
+                title="Excluir Transação"
+            />
         @endif
+
+        <x-button color="outline" href="{{ $editRoute }}" class="bg-white flex-1 sm:flex-initial">
+            <x-heroicon-o-pencil-square class="size-4" />
+            <span class="whitespace-nowrap">Editar</span>
+        </x-button>
     </x-page-header>
 
-    <x-card class="mb-6 p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+    <x-card class="mb-6">
+        <div class="flex items-start sm:items-center gap-4 sm:gap-6">
             @php
                 $icon = match($transaction->type) {
                     'income' => 'heroicon-o-arrow-trending-up',
@@ -57,7 +40,7 @@
                     default => 'bg-neutral-100 text-neutral-600'
                 };
             @endphp
-            <div class="w-16 h-16 rounded-full flex items-center justify-center shrink-0 {{ $iconBg }}">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 {{ $iconBg }}">
                 <x-dynamic-component :component="$icon" class="size-8" />
             </div>
             
@@ -71,11 +54,11 @@
                 <div class="flex items-center gap-2 flex-wrap">
                     <x-badge color="neutral" size="sm">
                         <x-heroicon-o-calendar class="size-3 mr-1 inline" />
-                        {{ $transaction->date->format('d/m/Y') }}
+                        {{ formatShort($transaction->date) }}
                     </x-badge>
                     
                     @if($transaction->is_posted)
-                        <x-badge color="success" size="sm">Efetivada</x-badge>
+                        <x-badge color="accent" size="sm">Efetivada</x-badge>
                     @else
                         <x-badge color="warning" size="sm">Pendente</x-badge>
                     @endif
@@ -90,19 +73,19 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <!-- Conta/Fatura -->
-        <x-card class="p-6">
+        <x-card>
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Conta / Origem</h3>
             @if($transaction->invoice)
                 <div class="flex items-center gap-3">
-                    <x-ui.avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
+                    <x-avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->invoice->creditCard->name }}</p>
-                        <p class="text-xs text-neutral-500">Fatura de {{ $transaction->invoice->closing_date->format('M/Y') }}</p>
+                        <p class="text-xs text-neutral-500">Fatura de {{ formatMonthYear($transaction->invoice->closing_date) }}</p>
                     </div>
                 </div>
             @elseif($transaction->account)
                 <div class="flex items-center gap-3">
-                    <x-ui.avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
+                    <x-avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
                     <div>
                         <p class="font-bold text-neutral-900">{{ $transaction->account->name }}</p>
                         <p class="text-xs text-neutral-500">Conta Corrente</p>
@@ -114,7 +97,7 @@
         </x-card>
 
         <!-- Tags -->
-        <x-card class="p-6">
+        <x-card>
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Tags</h3>
             @if($transaction->tags->isNotEmpty())
                 <div class="flex flex-wrap gap-2">
@@ -148,11 +131,11 @@
         </x-card>
 
         <!-- Info -->
-        <x-ui.metadata-card :model="$transaction" />
+        <x-metadata-card :model="$transaction" />
     </div>
 
     @if(isset($settlementGroup) && $settlementGroup)
-        <x-ui.related-resource 
+        <x-related-resource 
             class="mb-6"
             icon="heroicon-o-user-group"
             title="Gerada por Divisão de Conta"
@@ -163,7 +146,7 @@
     @endif
 
     @if($transaction->transfer_pair_id && $transaction->transferPair)
-        <x-ui.related-resource 
+        <x-related-resource 
             class="mb-6"
             icon="heroicon-o-arrows-right-left"
             title="Transferência Vinculada"
@@ -177,7 +160,7 @@
         @php
             $settlement = $transaction->settlements->first();
         @endphp
-        <x-ui.related-resource 
+        <x-related-resource 
             class="mb-6"
             icon="heroicon-o-user"
             title="Acerto Vinculado"
@@ -203,6 +186,46 @@
                 </x-table.header>
                 <x-table.body>
                     @foreach($transaction->items as $item)
+                        <!-- Mobile View -->
+                        <div class="sm:hidden p-4 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors flex flex-col gap-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <span class="font-medium text-neutral-900 break-words line-clamp-2">{{ $item->description }}</span>
+                                <span class="font-bold text-neutral-900 shrink-0">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between gap-3 text-sm">
+                                <span class="text-neutral-500">{{ (float) $item->quantity }}x {{ formatCurrency($item->unit_price) }}</span>
+                                @if($item->tags->isNotEmpty())
+                                    <div class="flex flex-wrap justify-end gap-1.5">
+                                        @php
+                                            $itemPrimary = $item->tags->firstWhere('pivot.is_primary', true);
+                                            $itemOthers = $item->tags->reject(fn($t) => $t->id === optional($itemPrimary)->id);
+                                        @endphp
+                                        
+                                        @if($itemPrimary)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xxs font-semibold border relative shadow-sm"
+                                                  style="background-color: {{ $itemPrimary->color_hex }}15; color: {{ $itemPrimary->color_hex }}; border-color: {{ $itemPrimary->color_hex }}40;">
+                                                <span class="text-yellow-500 absolute -top-1 -right-1 bg-white rounded-full border border-yellow-200" style="padding: 1px;">
+                                                    <x-heroicon-s-star class="size-2" />
+                                                </span>
+                                                <x-dynamic-component :component="$itemPrimary->icon" class="size-3" />
+                                                <span class="max-w-[80px] truncate">{{ $itemPrimary->name }}</span>
+                                            </span>
+                                        @endif
+                                        
+                                        @foreach($itemOthers as $tag)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xxs font-medium border"
+                                                  style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
+                                                <x-dynamic-component :component="$tag->icon" class="size-3" />
+                                                <span class="max-w-[80px] truncate">{{ $tag->name }}</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Desktop View -->
                         <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
                             <x-table.cell>
                                 <span class="font-medium text-neutral-900">{{ $item->description }}</span>
@@ -216,7 +239,7 @@
                                         @endphp
                                         
                                         @if($itemPrimary)
-                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border relative shadow-sm"
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-semibold border relative shadow-sm"
                                                   style="background-color: {{ $itemPrimary->color_hex }}15; color: {{ $itemPrimary->color_hex }}; border-color: {{ $itemPrimary->color_hex }}40;">
                                                 <span class="text-yellow-500 absolute -top-1 -right-1 bg-white rounded-full border border-yellow-200" style="padding: 1px;">
                                                     <x-heroicon-s-star class="size-2" />
@@ -227,7 +250,7 @@
                                         @endif
                                         
                                         @foreach($itemOthers as $tag)
-                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-medium border"
                                                   style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
                                                 <x-dynamic-component :component="$tag->icon" class="size-3" />
                                                 {{ $tag->name }}
@@ -239,13 +262,13 @@
                                 @endif
                             </x-table.cell>
                             <x-table.cell align="right">
-                                <span class="text-neutral-700">{{ $item->quantity }}</span>
+                                <span class="text-neutral-700">{{ (float) $item->quantity }}</span>
                             </x-table.cell>
                             <x-table.cell align="right">
-                                <span class="text-neutral-700">{{ formatCurrency($item->unit_price) }}</span>
+                                <span class="text-neutral-700 tabular-nums">{{ formatCurrency($item->unit_price) }}</span>
                             </x-table.cell>
                             <x-table.cell align="right">
-                                <span class="font-bold text-neutral-900">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
+                                <span class="font-bold text-neutral-900 tabular-nums">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
                             </x-table.cell>
                         </x-table.row>
                     @endforeach

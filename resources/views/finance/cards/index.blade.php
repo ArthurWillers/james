@@ -22,8 +22,6 @@
                 <x-empty-state 
                     icon="heroicon-o-credit-card" 
                     message="Nenhum cartão encontrado." 
-                    actionText="Novo Cartão" 
-                    :actionRoute="route('financial.cards.create')" 
                 />
             </div>
         @endforelse

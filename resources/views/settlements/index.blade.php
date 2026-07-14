@@ -1,24 +1,22 @@
 <x-layouts.app>
     <x-page-header title="Acertos">
-        <div class="flex items-center gap-3">
             @if($hasGroups)
-                <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white">
+                <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white flex-1 sm:flex-initial">
                     <x-heroicon-o-users class="size-4" />
                     <span class="hidden sm:inline">Contas Divididas</span>
                     <span class="sm:hidden">Grupos</span>
                 </x-button>
             @endif
             @if($hasHistory)
-                <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white">
+                <x-button color="outline" href="{{ route('settlements.history') }}" class="bg-white flex-1 sm:flex-initial">
                     <x-heroicon-o-clock class="size-4" />
                     <span class="hidden sm:inline">Histórico Global</span>
                     <span class="sm:hidden">Histórico</span>
                 </x-button>
             @endif
-        </div>
     </x-page-header>
 
-    <div class="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
+    <div class="mb-8 grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
         <x-finance.kpi-card 
             title="A Receber" 
             :value="formatCurrency($toReceive)" 
@@ -40,8 +38,11 @@
             :value="formatCurrency($netBalance)" 
             icon="heroicon-o-scale" 
             :color="$netBalance == 0 ? 'neutral' : ($netBalance > 0 ? 'green' : 'red')" 
-            :hide-icon-on-mobile="true"
-        />
+            :hide-icon-on-mobile="false"
+            class="col-span-2 md:col-span-1"
+        >
+            {{ $netBalance > 0 ? 'Você tem a receber no geral' : ($netBalance < 0 ? 'Você tem a pagar no geral' : 'Tudo quitado') }}
+        </x-finance.kpi-card>
     </div>
 
     <div x-data="{
@@ -253,7 +254,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-all duration-300" :class="{ 'pb-28': selectedIds.length > 0 }">
             @foreach($contacts as $contact)
                 <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
                     <div class="shrink-0 pl-4 border-l border-neutral-100">
@@ -264,14 +265,14 @@
                 </x-contacts.selectable-card>
             @endforeach
             
-            <div x-show="isEmpty" x-cloak class="col-span-full">
+            <div class="col-span-full" x-show="isEmpty" x-cloak>
                 @if($showArchived)
-                    <x-ui.empty-state 
+                    <x-empty-state 
                         icon="heroicon-o-users" 
                         message="Nenhum contato arquivado encontrado."
                     />
                 @else
-                    <x-ui.empty-state 
+                    <x-empty-state 
                         icon="heroicon-o-users" 
                         message="Nenhum contato encontrado."
                         action-text="Novo Contato"
@@ -280,8 +281,8 @@
                 @endif
             </div>
             
-            <div x-show="hasMorePages" x-cloak class="col-span-full flex justify-center mt-4">
-                <x-button type="button" @click="loadMore()" color="outline" class="bg-white">
+            <div class="col-span-full flex justify-center mt-4" x-show="hasMorePages" x-cloak>
+                <x-button type="button" color="outline" class="bg-white" @click="loadMore()">
                     <x-heroicon-o-arrow-down class="size-4" />
                     Carregar Mais
                 </x-button>
@@ -296,7 +297,7 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-10"
-             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200 min-w-[300px]" style="display: none;">
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 sm:gap-6 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200 min-w-[300px]" style="display: none;">
             
             <div class="flex items-center gap-4">
                 <div class="text-sm font-medium text-neutral-700">
@@ -310,28 +311,29 @@
                         <x-modal.trigger name="bulk-unarchive">
                             <x-button type="button" color="primary">
                                 <x-heroicon-o-arrow-path class="size-4" />
-                                Desarquivar
+                                <span class="hidden sm:inline">Desarquivar</span>
                             </x-button>
                         </x-modal.trigger>
                     @else
-                        <x-button type="button" @click="openShareModal()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white transition-all">
-                            <x-heroicon-o-share class="size-4" /> Compartilhar
+                        <x-button type="button" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white transition-all" @click="openShareModal()">
+                            <x-heroicon-o-share class="size-4" /> 
+                            <span class="hidden sm:inline">Compartilhar</span>
                         </x-button>
                         <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
-                            <x-heroicon-o-scissors class="size-4" />
-                            Dividir Conta
+                            <x-heroicon-o-chart-pie class="size-4" />
+                            <span class="hidden sm:inline">Dividir Conta</span>
                         </x-button>
                         <x-modal.trigger name="bulk-archive">
                             <x-button type="button" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
                                 <x-heroicon-o-archive-box class="size-4" />
-                                Arquivar
+                                <span class="hidden sm:inline">Arquivar</span>
                             </x-button>
                         </x-modal.trigger>
                     @endif
                 </div>
             </div>
 
-            <button type="button" @click="selectedIds = []" class="p-2 -mr-2 rounded-xl text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção">
+            <button type="button" class="p-2 -mr-2 rounded-xl text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção" @click="selectedIds = []">
                 <x-heroicon-o-x-mark class="size-5" />
             </button>
         </div>
@@ -341,7 +343,7 @@
             title="Arquivar Acertos" 
             message="Tem certeza que deseja arquivar os acertos dos contatos selecionados? Eles não aparecerão na lista principal até que sejam desarquivados." 
             confirmVariant="primary">
-            <x-button type="button" @click="archiveSelected()" class="w-full sm:w-auto">
+            <x-button type="button" class="w-full sm:w-auto" @click="archiveSelected()">
                 Sim, arquivar
             </x-button>
         </x-modal>
@@ -351,7 +353,7 @@
             title="Desarquivar Acertos" 
             message="Tem certeza que deseja desarquivar os acertos dos contatos selecionados? Eles voltarão a aparecer na lista principal." 
             confirmVariant="primary">
-            <x-button type="button" @click="unarchiveSelected()" class="w-full sm:w-auto">
+            <x-button type="button" class="w-full sm:w-auto" @click="unarchiveSelected()">
                 Sim, desarquivar
             </x-button>
         </x-modal>
@@ -364,7 +366,7 @@
             <x-slot:content>
                 <div class="space-y-4">
                     <div>
-                        <x-form-select name="pix_key" label="Chave PIX (Opcional)" x-model="selectedPixKey" class="w-full text-sm">
+                        <x-form-select name="pix_key" label="Chave PIX (Opcional)" class="w-full text-sm" x-model="selectedPixKey">
                             <option value="">Sem chave PIX</option>
                             @foreach($pixKeys as $key)
                                 <option value="{{ $key }}">{{ $key }}</option>
@@ -374,20 +376,20 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-neutral-700 mb-1">Mensagem</label>
-                        <textarea x-model="generatedText" rows="6" class="w-full rounded-lg border-neutral-300 focus:border-neutral-500 focus:ring-neutral-500 text-sm font-mono"></textarea>
+                        <textarea rows="6" class="w-full rounded-lg border-neutral-300 focus:border-neutral-500 focus:ring-neutral-500 text-sm font-mono" x-model="generatedText"></textarea>
                     </div>
                     
                     <div class="flex justify-end gap-3 pt-2">
-                        <x-button type="button" @click="window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal' }))" color="outline" class="w-full sm:w-auto">
+                        <x-button type="button" color="outline" class="w-full sm:w-auto" @click="window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal' }))">
                             Fechar
                         </x-button>
-                        <x-button type="button" @click="window.open(`https://wa.me/?text=${encodeURIComponent(generatedText)}`, '_blank')" color="outline" class="w-full sm:w-auto">
+                        <x-button type="button" color="outline" class="w-full sm:w-auto" @click="window.open(`https://wa.me/?text=${encodeURIComponent(generatedText)}`, '_blank')">
                             <x-heroicon-o-chat-bubble-oval-left-ellipsis class="size-4 text-green-600" />
                             <span>WhatsApp</span>
                         </x-button>
-                        <x-button type="button" @click="executeCopy()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto">
-                            <span x-show="!copied" class="flex items-center gap-1.5"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
-                            <span x-show="copied" x-cloak class="flex items-center gap-1.5 text-green-400"><x-heroicon-o-check class="size-4" /> Copiado!</span>
+                        <x-button type="button" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto" @click="executeCopy()">
+                            <span class="flex items-center gap-1.5" x-show="!copied"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
+                            <span class="flex items-center gap-1.5 text-green-400" x-show="copied" x-cloak><x-heroicon-o-check class="size-4" /> Copiado!</span>
                         </x-button>
                     </div>
                 </div>

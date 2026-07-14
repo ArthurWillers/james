@@ -53,15 +53,12 @@
             </x-breadcrumbs>
         </div>
 
-        <!-- Header with Actions -->
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-neutral-900">Editar Transação</h1>
-            <div class="flex items-center gap-3">
-                <x-button color="outline" href="{{ route('financial.transactions.show', $transaction->id) }}" class="bg-white">Cancelar</x-button>
-                <x-button type="submit" form="transaction-form" class="bg-neutral-900 hover:bg-black text-white">Salvar Alterações</x-button>
-            </div>
-        </div>
+        <x-page-header title="Editar Transação" mobileBottom>
+            <x-form-actions fallback="{{ route('financial.transactions.show', $transaction->id) }}" form="transaction-form" submitText="Salvar Alterações" />
+        </x-page-header>
 
         @include('finance.transactions.partials.form', ['transaction' => $transaction])
+
+        <x-form-actions fallback="{{ route('financial.transactions.show', $transaction->id) }}" form="transaction-form" submitText="Salvar Alterações" mobile />
     </form>
 </x-layouts.financial>
