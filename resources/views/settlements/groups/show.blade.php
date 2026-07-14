@@ -49,7 +49,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="font-semibold text-neutral-900">{{ formatCurrency($myShare) }}</span>
+                            <span class="font-bold text-red-600">- {{ formatCurrency($myShare) }}</span>
                         </div>
                     </div>
 
@@ -64,7 +64,7 @@
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span class="font-semibold text-neutral-900">{{ formatCurrency($settlement->amount) }}</span>
+                                <span class="font-bold text-green-600">+ {{ formatCurrency($settlement->amount) }}</span>
                             </div>
                         </div>
                     @endforeach
@@ -72,7 +72,7 @@
 
                 <div class="mt-6 pt-4 border-t border-neutral-100 flex justify-between items-center">
                     <span class="text-sm font-medium text-neutral-500">Total</span>
-                    <span class="text-lg font-bold text-neutral-900">{{ formatCurrency($settlementGroup->total_amount) }}</span>
+                    <span class="text-lg font-bold text-red-600">- {{ formatCurrency($settlementGroup->total_amount) }}</span>
                 </div>
 
                 @if($settlementGroup->financialTransaction)
