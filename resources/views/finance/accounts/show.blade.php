@@ -140,8 +140,7 @@
         <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
     @endif
 
-    <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2">
-        <p>Criado em: {{ formatDateTime($account->created_at) }}</p>
-        <p>Última atualização: {{ formatDateTime($account->updated_at) }}</p>
+    <div class="flex justify-start lg:justify-end mt-8">
+        <x-ui.metadata-card :model="$account" class="w-full lg:max-w-sm mb-4" />
     </div>
 </x-layouts.financial>

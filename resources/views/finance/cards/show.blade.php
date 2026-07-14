@@ -151,8 +151,7 @@
         </div>
     </x-card>
 
-    <div class="flex flex-col gap-1 text-xs text-neutral-500 mb-4 px-2 mt-4">
-        <p>Criado em: {{ formatDateTime($card->created_at) }}</p>
-        <p>Última atualização: {{ formatDateTime($card->updated_at) }}</p>
+    <div class="flex justify-start lg:justify-end mt-8">
+        <x-ui.metadata-card :model="$card" class="w-full lg:max-w-sm mb-4" />
     </div>
 </x-layouts.financial>

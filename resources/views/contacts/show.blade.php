@@ -166,4 +166,8 @@
         @endif
     </x-card>
 
+    <div class="flex justify-start lg:justify-end mt-8">
+        <x-ui.metadata-card :model="$contact" class="w-full lg:max-w-sm mb-4" />
+    </div>
+
 </x-layouts.app>
