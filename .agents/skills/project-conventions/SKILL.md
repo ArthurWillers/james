@@ -23,14 +23,18 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
 9. **Reutilização de Componentes:** Sempre priorize o uso de componentes Blade já existentes no projeto (`<x-card>`, `<x-button>`, `<x-page-header>`). Evite criar HTML estrutural do zero.
 10. **Responsividade (Desktop-First):** O foco principal é **Desktop-First**. A versão mobile foca em cadastro e visualizações simples. **Obrigatório:** Consulte as regras detalhadas de mobile no arquivo `references/mobile-ui.md`.
 11. **Feedback Visual:** Interações que envolvam processos assíncronos DEVEM possuir *loading states* e desabilitar os botões temporariamente para evitar cliques duplos.
+12. **Botões no Cabeçalho (Page Header):** 
+    - 1 botão: Deve ocupar 100% da largura no mobile (`w-full sm:w-auto`).
+    - 2 botões: No mobile, cada um ocupa 50% (`flex-1 sm:flex-initial`).
+    - 3+ botões: O mais à direita estica no mobile (`flex-1`) e os demais têm tamanho baseado no conteúdo. O botão Voltar sempre deve ter texto visível.
 
 ## Backend e Arquitetura
 
-12. **Lógica de Negócio:** A lógica principal deve ser mantida nos Controllers. Não há necessidade de extrair para classes genéricas de Ação (Actions/Services), a menos que a complexidade seja excessivamente alta.
-13. **Validação de Formulários:** Sempre utilize FormRequests dedicados para validações no backend em vez de usar `$request->validate()` diretamente nos Controllers.
+13. **Lógica de Negócio:** A lógica principal deve ser mantida nos Controllers. Não há necessidade de extrair para classes genéricas de Ação (Actions/Services), a menos que a complexidade seja excessivamente alta.
+14. **Validação de Formulários:** Sempre utilize FormRequests dedicados para validações no backend em vez de usar `$request->validate()` diretamente nos Controllers.
 
 ## Workflow e Ferramentas
 
-14. **Documentação:** Se for solicitada a criação ou atualização de documentação, os arquivos devem ser criados DENTRO do diretório `/docs` seguindo o padrão de escrita existente.
-15. **Formatação de Código (Pint):** Sempre que arquivos PHP forem criados ou alterados, o agente DEVE rodar o formatador executando `./vendor/bin/pint` nativamente (sem usar Sail).
-16. **Evolução Contínua (Meta-regra):** Sempre que o agente identificar um padrão repetitivo não documentado ou tomar uma nova decisão importante de design com o usuário, o agente DEVE sugerir proativamente a adição desse novo mandamento neste arquivo.
+15. **Documentação:** Se for solicitada a criação ou atualização de documentação, os arquivos devem ser criados DENTRO do diretório `/docs` seguindo o padrão de escrita existente.
+16. **Formatação de Código (Pint):** Sempre que arquivos PHP forem criados ou alterados, o agente DEVE rodar o formatador executando `./vendor/bin/pint` nativamente (sem usar Sail).
+17. **Evolução Contínua (Meta-regra):** Sempre que o agente identificar um padrão repetitivo não documentado ou tomar uma nova decisão importante de design com o usuário, o agente DEVE sugerir proativamente a adição desse novo mandamento neste arquivo.

@@ -9,7 +9,7 @@
     </div>
 
     @if($slot->isNotEmpty() || $action)
-        <div class="{{ $mobileBottom ? 'hidden md:flex' : 'flex' }} items-center gap-3 w-full sm:w-auto">
+        <div class="{{ $mobileBottom ? 'hidden md:flex' : 'flex' }} items-center justify-end gap-3 w-full sm:w-auto">
             {{ $slot }}
             
             @if ($action)

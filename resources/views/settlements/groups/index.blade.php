@@ -7,14 +7,12 @@
     </div>
 
     <x-page-header title="Contas Divididas">
-        <div class="flex items-center gap-3">
             @if($hasTrashed)
-                <x-button color="outline" href="{{ route('settlements.groups.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700">
+                <x-button color="outline" href="{{ route('settlements.groups.trashed') }}" class="bg-white text-neutral-500 hover:text-neutral-700 w-full sm:w-auto">
                     <x-heroicon-o-trash class="size-4" />
                     Lixeira
                 </x-button>
             @endif
-        </div>
     </x-page-header>
 
     <div class="mt-6">

@@ -8,7 +8,6 @@
     </div>
 
     <x-page-header title="{{ $settlement->description ?: 'Acerto' }}">
-        <div class="flex items-center gap-2">
             <x-back-button fallback="{{ route('settlements.history') }}" />
             @if(!$settlement->trashed())
                 @if(!$settlement->settlement_group_id)
@@ -23,7 +22,6 @@
                     </x-button>
                 @endif
             @endif
-        </div>
     </x-page-header>
 
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">

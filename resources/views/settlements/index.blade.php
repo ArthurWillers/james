@@ -1,6 +1,5 @@
 <x-layouts.app>
     <x-page-header title="Acertos">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
             @if($hasGroups)
                 <x-button color="outline" href="{{ route('settlements.groups.index') }}" class="bg-white flex-1 sm:flex-initial">
                     <x-heroicon-o-users class="size-4" />
@@ -15,7 +14,6 @@
                     <span class="sm:hidden">Histórico</span>
                 </x-button>
             @endif
-        </div>
     </x-page-header>
 
     <div class="mb-8 grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
