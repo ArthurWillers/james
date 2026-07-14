@@ -279,3 +279,13 @@ Com o crescimento e a adição de novos módulos, notou-se uma divergência visu
 
 **Decisão:**
 Foi estabelecida uma política de padronização estrita de layout. Modais de ação destrutiva (excluir/restaurar) deverão usar textos e layouts idênticos através de componentes genéricos centralizados. O layout de formulários e a posição dos botões de ação (Salvar, Cancelar, Voltar) devem seguir um padrão único em todo o sistema. Para atingir esse objetivo, devemos criar e extrair ativamente componentes Blade (`x-ui.*`, `x-form.*`, etc.) e partials genéricos, eliminando código HTML duplicado e garantindo uniformidade visual.
+
+## 020 — Skill de Convenções do Projeto (/project-conventions)
+
+**Data:** 14 de Julho de 2026
+
+**Contexto:**
+Para manter o rigor e a padronização no desenvolvimento do projeto, precisávamos de uma forma automatizada e centralizada de garantir que as decisões de arquitetura, estilos (Tailwind) e componentes (Blade/Alpine) fossem sempre respeitadas pelas inteligências artificiais e desenvolvedores atuando no código.
+
+**Decisão:**
+Foi criada a skill estruturada `.agents/skills/project-conventions/SKILL.md`. Essa documentação atua como a fonte de verdade absoluta e deve ser lida ativamente (via o comando `/project-conventions` ou gatilhos de contexto) antes e durante a criação ou refatoração de views. Ela documenta regras rígidas como a proibição de valores arbitrários no Tailwind, ordem estrita de atributos do AlpineJS e uso mandatório de componentes Blade específicos, garantindo consistência sem depender apenas da memória de contexto.
