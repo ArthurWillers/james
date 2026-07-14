@@ -27,10 +27,10 @@
         </div>
     </x-page-header>
 
-    <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
         <!-- Left Column: Items -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
-            <x-card class="p-6">
+        <div class="lg:col-span-8 flex flex-col gap-4 sm:gap-6">
+            <x-card>
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Participantes</h3>
                 
                 <div class="space-y-4">
@@ -134,8 +134,8 @@
         </div>
 
         <!-- Right Column: Meta -->
-        <div class="lg:col-span-4 flex flex-col gap-6">
-            <x-card class="p-6">
+        <div class="lg:col-span-4 flex flex-col gap-4 sm:gap-6">
+            <x-card>
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Detalhes</h3>
                 
                 <div class="space-y-4">

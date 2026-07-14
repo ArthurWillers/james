@@ -45,11 +45,11 @@
     <x-financial.net-worth-chart />
 
     <!-- 2. Previsibilidade e Saldos -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8 items-stretch">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 mt-8 items-stretch">
         
         <!-- Previsibilidade de Caixa -->
         <div class="lg:col-span-1 flex flex-col h-full">
-            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+            <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Projeção de Caixa</h3>
                 
                 <div class="flex-1 flex flex-col justify-center gap-4">
@@ -102,7 +102,7 @@
 
         <!-- Lado Direito (lg:col-span-1): "Saldos por Conta" -->
         <div class="lg:col-span-1 flex flex-col h-full">
-            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+            <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Saldos por Conta</h3>
                 <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
             </x-card>
@@ -110,7 +110,7 @@
 
         <!-- Top 5 Despesas -->
         <div class="lg:col-span-1 flex flex-col h-full">
-            <x-card class="p-6 bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
+            <x-card class="bg-white rounded-xl border border-gray-100 shadow-sm h-full flex flex-col">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Top Despesas (30 Dias)</h3>
                 @if(count($topExpenseTags) > 0)
                     <div class="space-y-6 flex-1 mt-2">
@@ -140,7 +140,7 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 mt-8">
         
         <!-- Radar -->
         <div class="lg:col-span-3">

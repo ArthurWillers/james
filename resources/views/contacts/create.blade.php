@@ -13,8 +13,8 @@
 
     <form id="create-contact-form" action="{{ route('contacts.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <x-card class="mb-4 p-6">
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <x-card class="mb-4">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
 
                 <x-form-image-cropper
                     name="avatar"

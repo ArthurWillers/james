@@ -1,12 +1,12 @@
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
     
     <!-- Left Column: Main Data -->
-    <div class="lg:col-span-8 flex flex-col gap-6 order-last lg:order-first">
-        <x-card class="p-6">
-            <div class="flex flex-col gap-6">
+    <div class="lg:col-span-8 flex flex-col gap-4 sm:gap-6 order-last lg:order-first">
+        <x-card>
+            <div class="flex flex-col gap-4 sm:gap-6">
                 <x-form-input label="Descrição" name="description" x-model="description" placeholder="Descrição" autofocus />
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
                     <div>
                         <x-form-input label="Valor (R$)" name="amount" :currency="true" placeholder="0,00" value="{{ old('amount', isset($settlement) ? number_format(abs($settlement->amount), 2, '.', '') : '') }}" />
                     </div>
@@ -52,7 +52,7 @@
 
     <!-- Right Column: Configurações -->
     <div class="lg:col-span-4 flex flex-col order-first lg:order-last">
-        <x-card class="p-6 space-y-6">
+        <x-card class="space-y-6">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Configurações</h3>
 
             {{-- Tipo de Acerto --}}

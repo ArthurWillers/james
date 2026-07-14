@@ -1,6 +1,6 @@
 @props(['tags'])
 
-<x-card class="p-6 flex flex-col">
+<x-card class="flex flex-col">
     <div class="flex justify-between items-center mb-6 shrink-0">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Itens da Transação (Opcional)</h3>
         <x-button type="button" @click="addItem" color="accent-ghost" class="text-xs! py-1! px-2!">

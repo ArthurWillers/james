@@ -319,11 +319,11 @@ class FinancialTransactionController extends Controller
     {
         $transactions = FinancialTransaction::onlyTrashed()
             ->with([
-                'account', 
-                'invoice.creditCard', 
+                'account',
+                'invoice.creditCard',
                 'tags',
-                'settlements' => fn($q) => $q->withTrashed(),
-                'settlementGroup' => fn($q) => $q->withTrashed(),
+                'settlements' => fn ($q) => $q->withTrashed(),
+                'settlementGroup' => fn ($q) => $q->withTrashed(),
             ])
             ->orderByDesc('date')
             ->orderByDesc('updated_at')

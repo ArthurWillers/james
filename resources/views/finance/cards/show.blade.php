@@ -23,8 +23,8 @@
         />
     </x-page-header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <x-card class="col-span-full md:col-span-1 p-6 flex flex-col justify-center">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <x-card class="col-span-full md:col-span-1 flex flex-col justify-center">
             <h3 class="text-neutral-500 font-medium text-sm mb-1">Conta Vinculada</h3>
             <div class="font-semibold text-lg text-neutral-900">{{ $card->financialAccount->name }}</div>
             
@@ -40,7 +40,7 @@
             </div>
         </x-card>
         
-        <x-card class="col-span-full md:col-span-2 p-6 flex flex-col justify-center">
+        <x-card class="col-span-full md:col-span-2 flex flex-col justify-center">
             @if($card->credit_limit > 0)
                 @php
                     $usedLimit = $card->usedLimit();

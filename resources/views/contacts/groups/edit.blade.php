@@ -16,7 +16,7 @@
         @csrf
         @method('PUT')
         
-        <x-card class="mb-4 p-6">
+        <x-card class="mb-4">
             <div class="mb-6">
                 <x-form-input name="name" label="Nome do Grupo" value="{{ old('name', $group->name) }}" required />
             </div>

@@ -174,7 +174,7 @@ class SettlementController extends Controller
         if ($netBalance > 0) {
             $baseMessageText = "Oi! Tô passando pra lembrar que você está me devendo.\n\nValor: *".formatCurrency(abs($netBalance))."*\n";
         } elseif ($netBalance < 0) {
-            $baseMessageText = "Oi! Sei que te devo *".formatCurrency(abs($netBalance))."*. Vou acertar o mais breve possível!";
+            $baseMessageText = 'Oi! Sei que te devo *'.formatCurrency(abs($netBalance)).'*. Vou acertar o mais breve possível!';
         } else {
             $baseMessageText = 'Oi! Estamos quites, sem pendências!';
         }

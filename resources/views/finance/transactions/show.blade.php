@@ -24,8 +24,8 @@
         @endif
     </x-page-header>
 
-    <x-card class="mb-6 p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+    <x-card class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             @php
                 $icon = match($transaction->type) {
                     'income' => 'heroicon-o-arrow-trending-up',
@@ -73,7 +73,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <!-- Conta/Fatura -->
-        <x-card class="p-6">
+        <x-card>
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Conta / Origem</h3>
             @if($transaction->invoice)
                 <div class="flex items-center gap-3">
@@ -97,7 +97,7 @@
         </x-card>
 
         <!-- Tags -->
-        <x-card class="p-6">
+        <x-card>
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Tags</h3>
             @if($transaction->tags->isNotEmpty())
                 <div class="flex flex-wrap gap-2">

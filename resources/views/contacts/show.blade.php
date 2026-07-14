@@ -22,8 +22,8 @@
         />
     </x-page-header>
 
-    <x-card class="mb-4 p-6">
-        <div class="flex items-center gap-6">
+    <x-card class="mb-4">
+        <div class="flex items-center gap-4 sm:gap-6">
             <x-avatar :model="$contact" size="2xl"/>
             
             <div class="flex flex-col gap-2">
@@ -46,7 +46,7 @@
     </x-card>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <x-card class="h-full p-6 flex flex-col">
+        <x-card class="h-full flex flex-col">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">Telefones</h3>
             @if(!empty($contact->phones))
                 <div class="overflow-y-auto max-h-[300px] pr-2 -mr-2">
@@ -56,7 +56,7 @@
                                 $label = is_array($phone) && !empty($phone['label']) ? $phone['label'] : 'Principal';
                                 $value = is_array($phone) ? ($phone['value'] ?? '') : $phone;
                             @endphp
-                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
+                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 sm:gap-6 py-3 first:pt-0 last:pb-0">
                                 <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span>
                                 <span class="text-[15px] text-neutral-800 break-all">{{ $value }}</span>
                             </div>
@@ -68,7 +68,7 @@
             @endif
         </x-card>
 
-        <x-card class="h-full p-6 flex flex-col">
+        <x-card class="h-full flex flex-col">
             <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6 shrink-0">E-mails</h3>
             @if(!empty($contact->emails))
                 <div class="overflow-y-auto max-h-[300px] pr-2 -mr-2">
@@ -78,7 +78,7 @@
                                 $label = is_array($email) && !empty($email['label']) ? $email['label'] : 'Principal';
                                 $value = is_array($email) ? ($email['value'] ?? '') : $email;
                             @endphp
-                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 py-3 first:pt-0 last:pb-0">
+                            <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 sm:gap-6 py-3 first:pt-0 last:pb-0">
                                 <span class="text-sm font-medium text-neutral-400 sm:w-24 shrink-0">{{ $label }}</span>
                                 <span class="text-[15px] text-neutral-800 break-all">{{ $value }}</span>
                             </div>
@@ -105,7 +105,7 @@
         </x-finance.kpi-card>
 
         <!-- Grupos -->
-        <x-card class="h-full p-6">
+        <x-card class="h-full">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest shrink-0">Grupos</h3>
                 <x-modal.trigger name="sync-groups">
@@ -155,7 +155,7 @@
     </div>
 
 
-    <x-card class="mb-4 p-6">
+    <x-card class="mb-4">
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Notas</h3>
         @if($contact->notes)
             <div class="markdown-content text-[15px] text-neutral-700">

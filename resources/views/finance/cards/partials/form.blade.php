@@ -1,6 +1,6 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
-    <div class="flex flex-col gap-6">
-        <x-card class="p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pb-6">
+    <div class="flex flex-col gap-4 sm:gap-6">
+        <x-card>
             <div class="flex flex-col gap-4">
                 <div>
                     <x-form-input name="name" label="Nome do Cartão" value="{{ old('name', $card->name ?? '') }}" placeholder="Ex: Nubank, Itaú" />
@@ -22,8 +22,8 @@
         </x-card>
     </div>
 
-    <div class="flex flex-col gap-6">
-        <x-card class="p-6">
+    <div class="flex flex-col gap-4 sm:gap-6">
+        <x-card>
             <h3 class="font-medium text-neutral-900 mb-4">Datas e Vencimento</h3>
             <div class="flex flex-col gap-4">
                 <div>

@@ -105,7 +105,7 @@
         @endif
 
         <!-- Sankey Chart -->
-        <x-card class="p-6 mb-6">
+        <x-card class="mb-6">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa</h3>
             <div class="relative w-full h-[400px]">
                 <div x-ref="chartSankey" class="w-full h-full"></div>
@@ -114,7 +114,7 @@
 
         <!-- Evolution Chart -->
         @if(!$isSingleDay)
-            <x-card class="p-6 mb-6">
+            <x-card class="mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
                 <div class="relative w-full h-[350px]">
                     <div x-ref="chartEvolution" class="w-full h-full"></div>
@@ -122,7 +122,7 @@
             </x-card>
 
             <!-- Net Worth Evolution Chart -->
-            <x-card class="p-6 mb-6">
+            <x-card class="mb-6">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
                 <div class="relative w-full h-[350px]">
                     <div x-ref="chartNetWorthEvolution" class="w-full h-full"></div>
@@ -131,34 +131,34 @@
         @endif
 
         <!-- Tags and Accounts Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 items-start">
             
             <!-- Coluna da Esquerda (2/3) -->
-            <div class="lg:col-span-2 flex flex-col gap-6">
+            <div class="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
                 <!-- Top Categories -->
-                <x-card class="p-6">
+                <x-card>
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Top Tags</h3>
                     @include('finance.partials.reports-tags')
                 </x-card>
 
                 <!-- All Tags -->
-                <x-card class="p-6">
+                <x-card>
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Todas as Tags</h3>
                     @include('finance.partials.reports-all-tags')
                 </x-card>
             </div>
 
             <!-- Coluna da Direita (1/3) -->
-            <div class="lg:col-span-1 flex flex-col gap-6">
+            <div class="lg:col-span-1 flex flex-col gap-4 sm:gap-6">
                 <!-- Net Balance -->
-                <x-card class="p-6">
+                <x-card>
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Saldo Líquido por Tag</h3>
                     @include('finance.partials.reports-net-tags')
                 </x-card>
 
                 @if(count($accountBalancesChart) > 0)
                 <!-- Account Balances -->
-                <x-card class="p-6 flex flex-col h-full min-h-[400px]">
+                <x-card class="flex flex-col h-full min-h-[400px]">
                     <h3 class="text-lg font-bold text-neutral-900 mb-4 px-1">Saldos por Conta</h3>
                     <x-finance.account-balances-chart :chartData="$accountBalancesChart" />
                 </x-card>

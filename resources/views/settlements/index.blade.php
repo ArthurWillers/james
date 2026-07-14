@@ -296,7 +296,7 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-10"
-             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-6 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200 min-w-[300px]" style="display: none;">
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 sm:gap-6 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200 min-w-[300px]" style="display: none;">
             
             <div class="flex items-center gap-4">
                 <div class="text-sm font-medium text-neutral-700">

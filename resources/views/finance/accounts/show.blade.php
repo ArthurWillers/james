@@ -57,9 +57,9 @@
         />
     </x-page-header>
 
-    <x-card class="mb-6 p-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="flex items-center gap-6">
+    <x-card class="mb-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div class="flex items-center gap-4 sm:gap-6">
                 <x-avatar :icon="$account->type->icon()" size="xl" />
                 
                 <div class="flex flex-col gap-2">
@@ -75,7 +75,7 @@
             @if(!empty($account->pix_keys))
                 <div class="md:text-right flex flex-col md:items-end gap-2 border-t md:border-t-0 md:border-l border-neutral-100 pt-4 md:pt-0 md:pl-6 overflow-x-auto">
                     <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Chaves Pix</h3>
-                    <div class="flex gap-6 md:justify-end">
+                    <div class="flex gap-4 sm:gap-6 md:justify-end">
                         @foreach(array_chunk($account->pix_keys, 3) as $chunk)
                             <div class="flex flex-col gap-1.5 min-w-max">
                                 @foreach($chunk as $pixKey)

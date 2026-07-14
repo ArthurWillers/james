@@ -30,7 +30,7 @@
         </x-nav-link>
     </x-sidebar>
 
-    <main class="lg:ml-64 p-6 lg:pt-8 lg:px-8">
+    <main class="lg:ml-64 p-3 sm:p-6 lg:pt-8 lg:px-8">
         {{ $slot }}
     </main>
 

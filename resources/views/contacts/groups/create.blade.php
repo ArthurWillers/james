@@ -13,7 +13,7 @@
 
     <form id="create-group-form" action="{{ route('contacts.groups.store') }}" method="POST">
         @csrf
-        <x-card class="mb-4 p-6">
+        <x-card class="mb-4">
             <div class="mb-6">
                 <x-form-input name="name" label="Nome do Grupo" value="{{ old('name') }}" placeholder="Ex: Futebol, Família, Trabalho..." required />
             </div>
