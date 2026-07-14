@@ -1,3 +1,5 @@
+@props(['headerBg' => null])
+
 <div x-data="{ open: false }">
     <aside
         class="fixed top-0 left-0 h-screen w-64 border-e bg-neutral-100 border-neutral-300 p-4 flex flex-col gap-4 z-40 transition-transform duration-300 ease-in-out lg:translate-x-0"
@@ -63,7 +65,7 @@
 
     <div class="fixed inset-0 bg-black/10 z-30 lg:hidden" x-cloak x-show="open" @click="open = false"></div>
 
-    <header class="flex items-center px-6 w-full min-h-14 lg:hidden bg-neutral-100">
+    <header class="flex items-center px-6 w-full min-h-14 lg:hidden {{ $headerBg }}">
         <button class="cursor-pointer rounded-lg p-1 hover:bg-neutral-200" @click="open = !open">
             <x-heroicon-o-bars-3 class="w-6 h-6" />
         </button>

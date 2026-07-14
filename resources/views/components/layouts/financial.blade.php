@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app headerBg="bg-neutral-100">
     <x-module-navbar scrollable>
         <x-module-nav-link :href="route('financial.dashboard')" :current="request()->routeIs('financial.dashboard')">
             Dashboard

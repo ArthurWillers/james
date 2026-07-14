@@ -1,3 +1,4 @@
+@props(['headerBg' => null])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -7,7 +8,7 @@
 
 <body class="min-h-screen antialiased bg-neutral-50 text-neutral-900">
 
-    <x-sidebar>
+    <x-sidebar :headerBg="$headerBg">
         <x-nav-link :href="route('dashboard')" :current="request()->routeIs('dashboard')">
             <x-heroicon-o-home class="w-4 h-4" />
             Dashboard
