@@ -91,7 +91,15 @@ document.addEventListener('alpine:init', () => {
         async fetchData() {
             this.loading = true;
             try {
-                const response = await fetch(`/financial/dashboard/chart-data?period=${this.period}`);
+                const urlParams = new URLSearchParams(window.location.search);
+                const includeInvestments = urlParams.get('include_investments');
+                
+                let url = `/financial/dashboard/chart-data?period=${this.period}`;
+                if (includeInvestments !== null) {
+                    url += `&include_investments=${includeInvestments}`;
+                }
+
+                const response = await fetch(url);
                 const data = await response.json();
                 this.updateChart(data);
             } catch (error) {

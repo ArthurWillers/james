@@ -8,8 +8,7 @@
         @endif
     </x-page-header>
 
-    <x-card class="overflow-hidden p-0 sm:p-0"
-         x-data="{
+    <div x-data="{
              selectedRecurrenceId: null,
              selectedRecurrenceTitle: '',
              openDelete(id, title) {
@@ -35,7 +34,7 @@
                         <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1.5fr_1fr_1.5fr] group transition-all">
                             <x-table.cell>
                                 <div class="flex items-center gap-3 w-full">
-                                    <div class="shrink-0 flex items-center justify-center size-10 rounded-full {{ $recurrence->type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                    <div class="shrink-0 flex items-center justify-center size-10 rounded-xl {{ $recurrence->type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                     @if($recurrence->type === 'expense')
                                         <x-heroicon-o-arrow-trending-down class="size-5" />
                                     @else
@@ -101,7 +100,7 @@
                         <x-slot name="mobile">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex-1 min-w-0 flex items-center gap-3">
-                                    <div class="shrink-0 flex items-center justify-center size-10 rounded-full {{ $recurrence->type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                    <div class="shrink-0 flex items-center justify-center size-10 rounded-xl {{ $recurrence->type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                         @if($recurrence->type === 'expense')
                                             <x-heroicon-o-arrow-trending-down class="size-5" />
                                         @else
@@ -151,13 +150,13 @@
             </x-table.body>
         </x-table>
         @else
-            <div class="p-6">
+            <x-card class="p-6">
                 <x-empty-state 
                     icon="heroicon-o-arrow-path" 
                     title="Nenhuma recorrência cadastrada" 
                     description="Cadastre suas assinaturas ou contas fixas para que o sistema gere as transações automaticamente." 
                 />
-            </div>
+            </x-card>
         @endif
 
         <x-modal 
@@ -178,9 +177,9 @@
         </x-modal>
         
         @if($recurrences->hasPages())
-            <div class="px-6 py-4 border-t border-neutral-200">
+            <div class="mt-4">
                 {{ $recurrences->links() }}
             </div>
         @endif
-    </x-card>
+    </div>
 </x-layouts.financial>

@@ -13,8 +13,9 @@ class FinanceDashboardChartController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $period = $request->query('period', '1m');
+        $includeInvestments = $request->boolean('include_investments');
 
-        $data = $this->dashboardService->getNetWorthChartData($period);
+        $data = $this->dashboardService->getNetWorthChartData($period, $includeInvestments);
 
         return response()->json($data);
     }

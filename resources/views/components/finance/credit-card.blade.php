@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        @if($limit)
+        @if((float) $limit > 0)
             <div class="mb-4">
                 <x-progress 
                     :value="$usedLimit" 
