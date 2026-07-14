@@ -18,7 +18,7 @@
         </div>
     </x-page-header>
 
-    <div class="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
+    <div class="mb-8 grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
         <x-finance.kpi-card 
             title="A Receber" 
             :value="formatCurrency($toReceive)" 
@@ -40,8 +40,11 @@
             :value="formatCurrency($netBalance)" 
             icon="heroicon-o-scale" 
             :color="$netBalance == 0 ? 'neutral' : ($netBalance > 0 ? 'green' : 'red')" 
-            :hide-icon-on-mobile="true"
-        />
+            :hide-icon-on-mobile="false"
+            class="col-span-2 md:col-span-1"
+        >
+            {{ $netBalance > 0 ? 'Você tem a receber no geral' : ($netBalance < 0 ? 'Você tem a pagar no geral' : 'Tudo quitado') }}
+        </x-finance.kpi-card>
     </div>
 
     <div x-data="{

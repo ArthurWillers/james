@@ -4,7 +4,7 @@
     'icon' => null,
     'color' => 'neutral',
     'href' => null,
-    'hideIconOnMobile' => false,
+    'hideIconOnMobile' => true,
 ])
 
 @php
@@ -50,9 +50,9 @@
     <div class="flex items-center justify-between gap-2">
         <div class="flex-1 min-w-0">
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-1 sm:mb-2">
-                <p class="text-xs sm:text-sm font-medium text-neutral-500 truncate {{ $href ? 'group-hover:text-brand-600 transition-colors' : '' }}" title="{{ $title }}">{{ $title }}</p>
+                <p class="text-[11px] sm:text-sm font-medium text-neutral-500 leading-tight break-words {{ $href ? 'group-hover:text-brand-600 transition-colors' : '' }}" title="{{ $title }}">{{ $title }}</p>
             </div>
-            <p class="text-base sm:text-2xl font-bold tracking-tight truncate {{ $theme['text'] }} {{ $href ? $theme['hoverText'] . ' transition-colors' : '' }}" title="{{ $value }}">
+            <p class="text-[14px] sm:text-2xl font-bold tracking-tight leading-tight break-words {{ $theme['text'] }} {{ $href ? $theme['hoverText'] . ' transition-colors' : '' }}" title="{{ $value }}">
                 {{ $value }}
             </p>
             @if($slot->isNotEmpty())
@@ -62,7 +62,7 @@
             @endif
         </div>
         @if($icon)
-            <div class="hidden sm:flex w-12 h-12 {{ $theme['iconBg'] }} rounded-lg items-center justify-center flex-shrink-0 {{ $href ? $theme['iconHoverBg'] . ' transition-colors' : '' }}">
+            <div class="{{ $hideIconOnMobile ? 'hidden sm:flex' : 'flex' }} w-12 h-12 {{ $theme['iconBg'] }} rounded-lg items-center justify-center shrink-0 {{ $href ? $theme['iconHoverBg'] . ' transition-colors' : '' }}">
                 <x-dynamic-component :component="$icon" class="w-6 h-6 {{ $theme['iconText'] }} {{ $href ? 'group-hover:scale-110 transition-transform' : '' }}" />
             </div>
         @endif

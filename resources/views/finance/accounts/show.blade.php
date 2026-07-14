@@ -92,7 +92,7 @@
         </div>
     </x-card>
 
-    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mb-6">
         <x-finance.kpi-card 
             title="Total de Receitas" 
             :value="formatCurrency($globalIncome)" 
@@ -115,7 +115,11 @@
             icon="heroicon-o-scale" 
             :color="$account->balance > 0 ? 'green' : ($account->balance < 0 ? 'red' : 'neutral')" 
             :href="route('financial.transactions.index', ['account_id' => $account->id])" 
-        />
+            class="col-span-2 md:col-span-1"
+            :hide-icon-on-mobile="false"
+        >
+            Saldo contábil no sistema
+        </x-finance.kpi-card>
     </div>
 
     @if($creditCards->isNotEmpty())
