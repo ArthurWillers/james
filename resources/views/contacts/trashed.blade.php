@@ -20,7 +20,7 @@
         
         <div class="w-full sm:w-auto">
             <select name="category" onchange="this.form.submit()" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 cursor-pointer">
+                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 cursor-pointer">
                 <option value="">Todas categorias</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat }}" @selected(request('category') === $cat)>{{ $cat }}</option>
