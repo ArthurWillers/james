@@ -72,8 +72,8 @@
                     </x-table.cell>
 
                     <x-slot name="mobile">
-                        <div class="flex items-start justify-between gap-3 cursor-pointer" @click="window.location.href = '{{ route('financial.transactions.index', ['tag_id' => $tag->id]) }}'">
-                            <div class="flex-1 min-w-0 flex items-center gap-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1 min-w-0 flex items-center gap-3 cursor-pointer" @click="window.location.href = '{{ route('financial.transactions.index', ['tag_id' => $tag->id]) }}'">
                                 <x-avatar :icon="$tag->icon" class="border-transparent! text-white! w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
                                 <div class="overflow-hidden">
                                     <h3 class="text-base font-semibold text-neutral-900 leading-tight mb-1 flex items-center gap-2 truncate">
@@ -89,7 +89,7 @@
                             </div>
                             @if(!$tag->is_protected)
                                 <div class="shrink-0">
-                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max" @click.stop>
+                                    <x-dropdown position="bottom-end" accent contentClass="min-w-max">
                                         <x-slot name="trigger">
                                             <button type="button" class="cursor-pointer rounded-md border border-neutral-300 p-2 transition duration-150 ease-in-out hover:bg-neutral-100 relative z-10">
                                                 <x-heroicon-o-ellipsis-horizontal class="size-5" />
