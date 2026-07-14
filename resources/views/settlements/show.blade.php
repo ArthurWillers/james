@@ -132,30 +132,30 @@
                     @if($settlement->settlement_group_id)
                         <div class="pt-4 border-t border-neutral-100">
                             <div class="text-xs text-neutral-500 mb-2">Parte de Divisão de Conta</div>
-                            <a href="{{ route('settlements.groups.show', $settlement->settlement_group_id) }}" class="flex items-center justify-between p-3 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-colors bg-neutral-50">
+                            <x-card size="sm" href="{{ route('settlements.groups.show', $settlement->settlement_group_id) }}" class="flex items-center justify-between group bg-neutral-50/50">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500">
+                                    <div class="w-8 h-8 rounded-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 group-hover:border-accent/30 group-hover:text-accent transition-colors shrink-0">
                                         <x-heroicon-o-users class="size-4" />
                                     </div>
-                                    <span class="text-sm font-medium text-neutral-700">Ver Divisão</span>
+                                    <span class="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 transition-colors">Ver Divisão</span>
                                 </div>
-                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400" />
-                            </a>
+                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-neutral-600 transition-colors shrink-0" />
+                            </x-card>
                         </div>
                     @endif
 
                     @if($settlement->financialTransaction)
                         <div class="pt-4 border-t border-neutral-100">
                             <div class="text-xs text-neutral-500 mb-2">Transação Financeira</div>
-                            <a href="{{ route('financial.transactions.show', $settlement->financialTransaction) }}" class="flex items-center justify-between p-3 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-colors bg-neutral-50">
+                            <x-card size="sm" href="{{ route('financial.transactions.show', $settlement->financialTransaction) }}" class="flex items-center justify-between group bg-neutral-50/50">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500">
+                                    <div class="w-8 h-8 rounded-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 group-hover:border-accent/30 group-hover:text-accent transition-colors shrink-0">
                                         <x-heroicon-o-receipt-percent class="size-4" />
                                     </div>
-                                    <span class="text-sm font-medium text-neutral-700">Ver Transação</span>
+                                    <span class="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 transition-colors">Ver Transação</span>
                                 </div>
-                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400" />
-                            </a>
+                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-neutral-600 transition-colors shrink-0" />
+                            </x-card>
                         </div>
                     @endif
                 </div>

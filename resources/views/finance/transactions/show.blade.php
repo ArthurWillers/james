@@ -186,6 +186,46 @@
                 </x-table.header>
                 <x-table.body>
                     @foreach($transaction->items as $item)
+                        <!-- Mobile View -->
+                        <div class="sm:hidden p-4 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors flex flex-col gap-3">
+                            <div class="flex justify-between items-start gap-3">
+                                <span class="font-medium text-neutral-900 break-words line-clamp-2">{{ $item->description }}</span>
+                                <span class="font-bold text-neutral-900 shrink-0">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between gap-3 text-sm">
+                                <span class="text-neutral-500">{{ (float) $item->quantity }}x {{ formatCurrency($item->unit_price) }}</span>
+                                @if($item->tags->isNotEmpty())
+                                    <div class="flex flex-wrap justify-end gap-1.5">
+                                        @php
+                                            $itemPrimary = $item->tags->firstWhere('pivot.is_primary', true);
+                                            $itemOthers = $item->tags->reject(fn($t) => $t->id === optional($itemPrimary)->id);
+                                        @endphp
+                                        
+                                        @if($itemPrimary)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border relative shadow-sm"
+                                                  style="background-color: {{ $itemPrimary->color_hex }}15; color: {{ $itemPrimary->color_hex }}; border-color: {{ $itemPrimary->color_hex }}40;">
+                                                <span class="text-yellow-500 absolute -top-1 -right-1 bg-white rounded-full border border-yellow-200" style="padding: 1px;">
+                                                    <x-heroicon-s-star class="size-2" />
+                                                </span>
+                                                <x-dynamic-component :component="$itemPrimary->icon" class="size-3" />
+                                                <span class="max-w-[80px] truncate">{{ $itemPrimary->name }}</span>
+                                            </span>
+                                        @endif
+                                        
+                                        @foreach($itemOthers as $tag)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                                                  style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
+                                                <x-dynamic-component :component="$tag->icon" class="size-3" />
+                                                <span class="max-w-[80px] truncate">{{ $tag->name }}</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Desktop View -->
                         <x-table.row class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
                             <x-table.cell>
                                 <span class="font-medium text-neutral-900">{{ $item->description }}</span>
@@ -222,13 +262,13 @@
                                 @endif
                             </x-table.cell>
                             <x-table.cell align="right">
-                                <span class="text-neutral-700">{{ $item->quantity }}</span>
+                                <span class="text-neutral-700">{{ (float) $item->quantity }}</span>
                             </x-table.cell>
                             <x-table.cell align="right">
-                                <span class="text-neutral-700">{{ formatCurrency($item->unit_price) }}</span>
+                                <span class="text-neutral-700 tabular-nums">{{ formatCurrency($item->unit_price) }}</span>
                             </x-table.cell>
                             <x-table.cell align="right">
-                                <span class="font-bold text-neutral-900">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
+                                <span class="font-bold text-neutral-900 tabular-nums">{{ formatCurrency($item->quantity * $item->unit_price) }}</span>
                             </x-table.cell>
                         </x-table.row>
                     @endforeach

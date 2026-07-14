@@ -5,7 +5,7 @@
             <x-breadcrumbs.item>{{ $contact->name }}</x-breadcrumbs.item>
         </x-breadcrumbs>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto">
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <x-back-button fallback="{{ route('settlements.index') }}" />
 
             <x-modal.trigger name="share-modal-{{ $contact->id }}">
@@ -105,9 +105,9 @@
                 </x-button>
             @endif
 
-            <x-button href="{{ route('settlements.create', $contact) }}" class="w-full sm:w-auto">
+            <x-button href="{{ route('settlements.create', $contact) }}" class="flex-1 sm:flex-initial">
                 <x-heroicon-o-plus class="size-4" />
-                <span class="whitespace-nowrap">Novo Lançamento</span>
+                <span class="whitespace-nowrap">Novo Acerto</span>
             </x-button>
         </div>
     </div>
@@ -137,6 +137,7 @@
             value="{{ formatCurrency(abs($netBalance)) }}"
             icon="heroicon-o-scale"
             :color="$netBalance > 0 ? 'green' : ($netBalance < 0 ? 'red' : 'neutral')"
+            :hideIconOnMobile="false"
             class="h-full"
         >
             {{ $netBalance > 0 ? 'Você tem a receber' : ($netBalance < 0 ? 'Você tem a pagar' : 'Tudo quitado') }}
@@ -220,7 +221,7 @@
                             @endif
                         </x-table.cell>
 
-                        <x-table.cell class="text-right font-semibold {{ $amountColor }}">
+                        <x-table.cell class="text-right font-semibold tabular-nums {{ $amountColor }}">
                             {{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}
                         </x-table.cell>
 
@@ -251,7 +252,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right shrink-0">
-                                    <span class="font-semibold {{ $amountColor }}">{{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}</span>
+                                    <span class="font-semibold tabular-nums {{ $amountColor }}">{{ $amountPrefix }} {{ formatCurrency($settlement->amount) }}</span>
                                     <div class="text-xs text-neutral-500 mt-0.5">{{ $settlement->type->label() }}</div>
                                 </div>
                             </div>

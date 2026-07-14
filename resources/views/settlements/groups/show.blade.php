@@ -31,42 +31,42 @@
             <x-card>
                 <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Participantes</h3>
                 
-                <div class="space-y-4">
+                <div class="space-y-2">
                     @php
                         // Calculate my share based on total - sum of all contacts
                         $contactsTotal = $settlementGroup->settlements->sum('amount');
                         $myShare = max(0, $settlementGroup->total_amount - $contactsTotal);
                     @endphp
 
-                    <!-- Minha Parte -->
-                    <div class="flex items-center justify-between p-4 rounded-xl border border-accent/30 bg-accent/5">
-                        <div class="flex items-center gap-4">
-                            <div class="shrink-0 flex items-center justify-center w-10 h-10 rounded-md bg-accent/20 text-accent font-bold text-sm">
-                                EU
-                            </div>
-                            <div>
-                                <div class="font-medium text-neutral-900">Minha Parte</div>
+                    <x-card size="sm" class="flex items-center justify-between border-accent/30 bg-accent/5">
+                        <div class="flex items-center gap-4 min-w-0">
+                            <x-avatar :model="auth()->user()" variant="accent" size="lg" />
+                            <div class="min-w-0">
+                                <div class="font-medium text-neutral-900 truncate">Minha Parte</div>
+                                <div class="text-xs text-neutral-500">Sua despesa</div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <span class="font-bold text-red-600">- {{ formatCurrency($myShare) }}</span>
+                        <div class="text-right shrink-0 ml-4 flex items-center gap-2">
+                            <span class="font-bold text-red-600 whitespace-nowrap tabular-nums">- {{ formatCurrency($myShare) }}</span>
+                            <div class="size-4"></div> <!-- Placeholder to align with chevron in other rows -->
                         </div>
-                    </div>
+                    </x-card>
 
                     <!-- Contatos -->
                     @foreach($settlementGroup->settlements as $settlement)
-                        <div class="flex items-center justify-between p-4 rounded-xl border border-neutral-100 bg-white">
-                            <div class="flex items-center gap-4">
-                                <x-avatar :model="$settlement->contact" size="md" />
-                                <div>
-                                    <div class="font-medium text-neutral-900">{{ $settlement->contact->name }}</div>
+                        <x-card size="sm" href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="flex items-center justify-between group border-neutral-100">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <x-avatar :model="$settlement->contact" size="lg" />
+                                <div class="min-w-0">
+                                    <div class="font-medium text-neutral-900 group-hover:text-brand-600 transition-colors truncate">{{ $settlement->contact->name }}</div>
                                     <div class="text-xs text-neutral-500">Deve reembolsar</div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <span class="font-bold text-green-600">+ {{ formatCurrency($settlement->amount) }}</span>
+                            <div class="text-right shrink-0 ml-4 flex items-center gap-2">
+                                <span class="font-bold text-green-600 whitespace-nowrap tabular-nums">+ {{ formatCurrency($settlement->amount) }}</span>
+                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-brand-600 transition-colors" />
                             </div>
-                        </div>
+                        </x-card>
                     @endforeach
                 </div>
 
@@ -152,15 +152,15 @@
                     @if($settlementGroup->financialTransaction)
                         <div class="pt-4 border-t border-neutral-100">
                             <div class="text-xs text-neutral-500 mb-2">Transação Financeira</div>
-                            <a href="{{ route('financial.transactions.show', $settlementGroup->financialTransaction) }}" class="flex items-center justify-between p-3 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-colors bg-neutral-50">
+                            <x-card size="sm" href="{{ route('financial.transactions.show', $settlementGroup->financialTransaction) }}" class="flex items-center justify-between group bg-neutral-50/50">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500">
+                                    <div class="w-8 h-8 rounded-lg bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 group-hover:border-accent/30 group-hover:text-accent transition-colors shrink-0">
                                         <x-heroicon-o-receipt-percent class="size-4" />
                                     </div>
-                                    <span class="text-sm font-medium text-neutral-700">Ver Transação</span>
+                                    <span class="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 transition-colors">Ver Transação</span>
                                 </div>
-                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400" />
-                            </a>
+                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-neutral-600 transition-colors shrink-0" />
+                            </x-card>
                         </div>
                     @endif
                 </div>
