@@ -256,7 +256,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pb-28">
             @foreach($contacts as $contact)
                 <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
                     <div class="shrink-0 pl-4 border-l border-neutral-100">
@@ -313,21 +313,22 @@
                         <x-modal.trigger name="bulk-unarchive">
                             <x-button type="button" color="primary">
                                 <x-heroicon-o-arrow-path class="size-4" />
-                                Desarquivar
+                                <span class="hidden sm:inline">Desarquivar</span>
                             </x-button>
                         </x-modal.trigger>
                     @else
                         <x-button type="button" @click="openShareModal()" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white transition-all">
-                            <x-heroicon-o-share class="size-4" /> Compartilhar
+                            <x-heroicon-o-share class="size-4" /> 
+                            <span class="hidden sm:inline">Compartilhar</span>
                         </x-button>
                         <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
                             <x-heroicon-o-scissors class="size-4" />
-                            Dividir Conta
+                            <span class="hidden sm:inline">Dividir Conta</span>
                         </x-button>
                         <x-modal.trigger name="bulk-archive">
                             <x-button type="button" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
                                 <x-heroicon-o-archive-box class="size-4" />
-                                Arquivar
+                                <span class="hidden sm:inline">Arquivar</span>
                             </x-button>
                         </x-modal.trigger>
                     @endif
