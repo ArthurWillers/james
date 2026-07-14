@@ -46,7 +46,8 @@
                             }
                         }
                     }">
-                        <div x-show="netBalance > 0">
+                        @if($netBalance > 0)
+                        <div>
                             <x-form-select name="pix_key" label="Chave PIX (Opcional)" class="w-full text-sm" x-model="selectedPixKey">
                                 <option value="">Sem chave PIX</option>
                                 @foreach($pixKeys as $key)
@@ -54,6 +55,7 @@
                                 @endforeach
                             </x-form-select>
                         </div>
+                        @endif
                         
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 mb-1">Mensagem</label>
