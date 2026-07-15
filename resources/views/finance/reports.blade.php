@@ -19,7 +19,7 @@
 
         <!-- Filters Bar -->
         <div class="w-full mb-6" x-bind:class="{ 'hidden sm:block': !showFilters }">
-            <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}" class="items-end! pe-2 py-3" button-class="sm:w-[44px] h-[44px]">
+            <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}" class="pe-2 py-3" button-class="sm:w-[44px] h-[44px]" align="end">
                 <div class="flex flex-col sm:flex-row items-end gap-4 px-2 py-0">
                 <div class="flex items-center gap-4 w-full md:w-auto flex-wrap sm:flex-nowrap">
                     <!-- Period -->
