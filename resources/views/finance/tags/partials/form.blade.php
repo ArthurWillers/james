@@ -7,15 +7,14 @@
     ];
 
     $suggestedIcons = [
-        'heroicon-o-tag', 'heroicon-o-shopping-cart', 'heroicon-o-shopping-bag', 'heroicon-o-credit-card',
-        'heroicon-o-banknotes', 'heroicon-o-currency-dollar', 'heroicon-o-home', 'heroicon-o-building-storefront',
-        'heroicon-o-truck', 'heroicon-o-wrench-screwdriver', 'heroicon-o-academic-cap', 'heroicon-o-book-open',
-        'heroicon-o-heart', 'heroicon-o-sparkles', 'heroicon-o-star', 'heroicon-o-fire',
-        'heroicon-o-bolt', 'heroicon-o-moon', 'heroicon-o-sun', 'heroicon-o-cloud',
-        'heroicon-o-building-library', 'heroicon-o-building-office', 'heroicon-o-camera', 'heroicon-o-clipboard-document-list',
-        'heroicon-o-computer-desktop', 'heroicon-o-device-phone-mobile', 'heroicon-o-face-smile', 'heroicon-o-globe-americas',
-        'heroicon-o-light-bulb', 'heroicon-o-map-pin', 'heroicon-o-musical-note', 'heroicon-o-paper-airplane',
-        'heroicon-o-shield-check', 'heroicon-o-ticket', 'heroicon-o-trophy', 'heroicon-o-users'
+        'heroicon-o-credit-card', 'heroicon-o-chart-bar', 'heroicon-o-academic-cap', 'heroicon-o-book-open',
+        'heroicon-o-computer-desktop', 'heroicon-o-device-phone-mobile', 'phosphor-airplane-tilt', 'phosphor-bus',
+        'heroicon-o-truck', 'heroicon-o-tv', 'heroicon-o-shield-check', 'heroicon-o-key',
+        'heroicon-o-cake', 'heroicon-o-ticket', 'phosphor-poker-chip', 'phosphor-paw-print',
+        'phosphor-baby', 'heroicon-o-scissors', 'phosphor-sneaker', 'phosphor-armchair',
+        'phosphor-plant', 'phosphor-coffee', 'phosphor-pizza', 'heroicon-o-briefcase',
+        'heroicon-o-building-office', 'heroicon-o-building-storefront', 'heroicon-o-cpu-chip', 'heroicon-o-beaker',
+        'heroicon-o-camera', 'heroicon-o-musical-note'
     ];
 @endphp
 
@@ -112,13 +111,15 @@
             <!-- Grid de Ícones Sugeridos -->
             <div class="flex-1">
                 <label class="block text-sm font-medium text-neutral-700 mb-2">Selecione um Ícone</label>
-                <div class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-6 gap-2">
+                <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                     @foreach($suggestedIcons as $icon)
                         <button type="button" 
                             @click="selectedIcon = '{{ $icon }}'"
-                            class="p-3 rounded-xl flex items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-neutral-100 hover:text-neutral-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105"
-                            :class="selectedIcon === '{{ $icon }}' ? 'bg-accent/10! text-accent! ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
-                            <x-dynamic-component :component="$icon" class="size-6" />
+                            class="cursor-pointer p-2 rounded-xl flex flex-col items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-accent/10 hover:text-accent hover:ring-2 hover:ring-accent/50 hover:scale-105 hover:shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105 z-0 hover:z-10 relative gap-1.5"
+                            :class="selectedIcon === '{{ $icon }}' ? 'bg-accent/10! text-accent! ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'"
+                            title="{{ $icon }}">
+                            <x-dynamic-component :component="$icon" class="size-6 shrink-0" />
+                            <span class="text-[9px] font-mono text-center leading-tight truncate w-full opacity-60">{{ str_replace(['heroicon-o-', 'phosphor-'], '', $icon) }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -128,8 +129,8 @@
             <div class="pt-4 border-t border-neutral-100 flex flex-col gap-2">
                 <x-form-input name="custom_icon" label="Ícone Customizado (Opcional)" x-model="selectedIcon" placeholder="Ex: heroicon-o-wifi" x-on:input.debounce.300ms="fetchCustomIcon()" />
                 <p class="text-xs text-neutral-500 leading-relaxed">
-                    Utilizamos a sintaxe do <strong>Blade UI Kit</strong> para renderização. No momento, apenas a biblioteca <a href="https://heroicons.com" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Heroicons</a> está instalada no sistema.<br>
-                    Consulte a <a href="https://blade-ui-kit.com/blade-icons" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">documentação oficial</a> para buscar ícones (lembre-se de usar o prefixo <code>heroicon-o-</code> ou <code>heroicon-s-</code>).
+                    Utilizamos a sintaxe do <strong>Blade UI Kit</strong> para renderização. Atualmente, as bibliotecas <a href="https://heroicons.com" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Heroicons</a>, <a href="https://tabler-icons.io/" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Tabler Icons</a> e <a href="https://phosphoricons.com/" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">Phosphor Icons</a> estão instaladas no sistema.<br>
+                    Consulte a <a href="https://blade-ui-kit.com/blade-icons" target="_blank" class="underline decoration-accent/30 font-medium text-accent hover:text-accent/80 transition-colors">documentação oficial</a> para buscar ícones (lembre-se de usar o prefixo correspondente, ex: <code>heroicon-o-</code>, <code>tabler-</code> ou <code>phosphor-</code>).
                 </p>
             </div>
         </div>

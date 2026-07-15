@@ -12,9 +12,11 @@
         "php": "^8.3",
         "blade-ui-kit/blade-heroicons": "^2.7",
         "blade-ui-kit/blade-icons": "^1.10",
+        "codeat3/blade-phosphor-icons": "^2.0",
         "laravel/fortify": "^1.37",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
+        "secondnetwork/blade-tabler-icons": "^3.44",
         "spatie/laravel-medialibrary": "^11.23"
     },
     "require-dev": {

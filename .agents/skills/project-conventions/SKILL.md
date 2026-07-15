@@ -15,7 +15,7 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
 4. **Textos e Traduções:** Textos nas views Blade devem ser injetados diretamente em português (Hardcoded). Não utilize o sistema de tradução (`__('texto')`), dado que o escopo é local.
 5. **TailwindCSS (Sintaxe Canônica):** Utilize a sintaxe canônica do Tailwind v4 (`!`) no final da classe ao invés de prefixá-la (Incorreto: `!text-white`, Correto: `text-white!`).
 6. **TailwindCSS (Sem Valores Arbitrários):** Utilize estritamente os utilitários de escala do Tailwind e cores semânticas (`text-neutral-500`, `bg-primary-600`). É terminantemente proibido o uso de valores arbitrários (ex: `w-[15px]`, `bg-[#333]`). **Exceções e utilitários customizados**: É permitido o uso de valores arbitrários nas definições de grid (ex: `grid-cols-[1fr_auto_1fr]`). Para textos menores que `text-xs`, utilize a classe customizada `text-xxs` (10px) já configurada.
-7. **Ícones:** Utilize exclusivamente a biblioteca Heroicons (`<x-heroicon-...>`). Não adicione SVGs manualmente nas views.
+7. **Ícones:** Utilize a biblioteca Heroicons (`<x-heroicon-...>`) por padrão. Caso sinta falta de ícones específicos (ex: itens do cotidiano para tags), é permitido o uso de outras bibliotecas via pacotes do ecossistema Blade Icons (como Tabler Icons e Phosphor Icons). Não adicione SVGs manualmente nas views.
 
 ## UI e UX
 
