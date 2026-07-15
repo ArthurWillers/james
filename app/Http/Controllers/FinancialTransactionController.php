@@ -11,12 +11,15 @@ use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\SettlementGroup;
+use App\Traits\HandlesAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
 
 class FinancialTransactionController extends Controller
 {
+    use HandlesAttachments;
+
     public function index(Request $request)
     {
         $query = FinancialTransaction::query()->with(['account', 'invoice.creditCard', 'tags']);
@@ -187,20 +190,14 @@ class FinancialTransactionController extends Controller
                 }
             }
 
-            if ($request->hasFile('attachments')) {
-                $firstTransaction = $transactions->first();
-                if ($firstTransaction) {
-                    foreach ($request->file('attachments') as $file) {
-                        $firstTransaction->addMedia($file)->toMediaCollection('attachments');
-                    }
-                }
+            $firstTransaction = $transactions->first();
+            if ($firstTransaction) {
+                $this->syncAttachments($firstTransaction, $request->all());
             }
         }
 
-        if ($mode === 'single' && isset($transaction) && $request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $transaction->addMedia($file)->toMediaCollection('attachments');
-            }
+        if ($mode === 'single' && isset($transaction)) {
+            $this->syncAttachments($transaction, $request->all());
         }
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transação criada com sucesso.');
@@ -320,17 +317,7 @@ class FinancialTransactionController extends Controller
             $transaction->items()->delete();
         }
 
-        if (! empty($validated['delete_attachments'])) {
-            $transaction->getMedia('attachments')
-                ->whereIn('id', $validated['delete_attachments'])
-                ->each(fn ($media) => $media->delete());
-        }
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $transaction->addMedia($file)->toMediaCollection('attachments');
-            }
-        }
+        $this->syncAttachments($transaction, $validated);
 
         return redirect()->route('financial.transactions.show', $transaction)->with('success', 'Transação atualizada com sucesso.');
     }

@@ -134,23 +134,8 @@
         <x-metadata-card :model="$transaction" />
     </div>
 
-    @if($transaction->getMedia('attachments')->isNotEmpty())
-        <x-card class="mb-6">
-            <h3 class="text-sm font-bold text-neutral-800 mb-4">Anexos</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                @foreach($transaction->getMedia('attachments') as $media)
-                    <a href="{{ route('financial.transactions.attachment', [$transaction, $media]) }}" target="_blank" class="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200 hover:border-accent hover:bg-accent/5 transition-colors group">
-                        <div class="w-10 h-10 rounded-lg bg-white border border-neutral-200 flex items-center justify-center shrink-0 group-hover:border-accent/30 text-neutral-400 group-hover:text-accent transition-colors">
-                            <x-heroicon-o-document class="w-6 h-6" />
-                        </div>
-                        <div class="flex flex-col overflow-hidden">
-                            <span class="text-sm font-medium text-neutral-900 truncate group-hover:text-accent transition-colors">{{ $media->file_name }}</span>
-                            <span class="text-xs text-neutral-500">{{ $media->human_readable_size }}</span>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </x-card>
+    @if($transaction->hasMedia('attachments'))
+        <x-media.manager :model="$transaction" :editable="false" class="mb-6" />
     @endif
 
     @if(isset($settlementGroup) && $settlementGroup)

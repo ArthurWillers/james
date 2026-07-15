@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -34,7 +33,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 ])]
 class FinancialTransaction extends Model implements HasMedia
 {
-    use HasFactory, Searchable, SoftDeletes, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**
      * Get the attributes that should be cast.

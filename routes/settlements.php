@@ -21,7 +21,6 @@ Route::prefix('settlements')->name('settlements.')->group(function () {
     Route::get('/groups/{settlementGroup}/edit', [SettlementGroupController::class, 'edit'])->name('groups.edit');
     Route::put('/groups/{settlementGroup}', [SettlementGroupController::class, 'update'])->name('groups.update');
     Route::delete('/groups/{settlementGroup}', [SettlementGroupController::class, 'destroy'])->name('groups.destroy');
-    Route::get('/groups/{settlementGroup}/attachments/{media}/{filename?}', [SettlementGroupController::class, 'attachment'])->name('groups.attachment');
 
     // Individual Settlements Trashed
     Route::get('/trashed', [SettlementController::class, 'trashed'])->name('trashed');
@@ -37,7 +36,6 @@ Route::prefix('settlements')->name('settlements.')->group(function () {
     Route::get('/{settlement}/edit', [SettlementController::class, 'edit'])->name('edit');
     Route::put('/{settlement}', [SettlementController::class, 'update'])->name('update');
     Route::delete('/{settlement}', [SettlementController::class, 'destroy'])->name('destroy');
-    Route::get('/{settlement}/attachments/{media}/{filename?}', [SettlementController::class, 'attachment'])->name('attachment');
 
     // Archive routes
     Route::post('/archive', [SettlementArchiveController::class, 'store'])->name('archive');

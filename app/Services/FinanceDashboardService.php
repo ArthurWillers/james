@@ -40,7 +40,7 @@ class FinanceDashboardService
                     } else {
                         $r->setRelation('financialAccount', null);
                     }
-                    
+
                     if ($r->financial_credit_card_id) {
                         $r->setRelation('financialCreditCard', $this->getCreditCards()->firstWhere('id', $r->financial_credit_card_id));
                     } else {
@@ -307,8 +307,8 @@ class FinanceDashboardService
                 } else {
                     $t->setRelation('account', null);
                 }
-                
-                if (!$t->financial_credit_card_invoice_id) {
+
+                if (! $t->financial_credit_card_invoice_id) {
                     $t->setRelation('invoice', null);
                 }
             });
