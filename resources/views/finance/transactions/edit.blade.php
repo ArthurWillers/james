@@ -15,7 +15,7 @@
         $defaultTags = $transaction->tags->pluck('id')->toArray();
         $defaultPrimaryTag = $transaction->tags->firstWhere('pivot.is_primary', true)?->id;
     @endphp
-    <form action="{{ route('financial.transactions.update', $transaction->id) }}" method="POST" id="transaction-form" x-data='{
+    <form action="{{ route('financial.transactions.update', $transaction->id) }}" method="POST" id="transaction-form" enctype="multipart/form-data" x-data='{
         type: "{{ old('type', $transaction->type) }}",
         targetType: "{{ old('targetType', $transaction->invoice ? 'card' : 'account') }}",
         amount: "{{ old('amount', number_format(abs($transaction->amount), 2, '.', '')) }}",

@@ -186,6 +186,21 @@ class FinancialTransactionController extends Controller
                     }
                 }
             }
+
+            if ($request->hasFile('attachments')) {
+                $firstTransaction = $transactions->first();
+                if ($firstTransaction) {
+                    foreach ($request->file('attachments') as $file) {
+                        $firstTransaction->addMedia($file)->toMediaCollection('attachments');
+                    }
+                }
+            }
+        }
+
+        if ($mode === 'single' && isset($transaction) && $request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $transaction->addMedia($file)->toMediaCollection('attachments');
+            }
         }
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transação criada com sucesso.');
@@ -305,6 +320,18 @@ class FinancialTransactionController extends Controller
             $transaction->items()->delete();
         }
 
+        if (! empty($validated['delete_attachments'])) {
+            $transaction->getMedia('attachments')
+                ->whereIn('id', $validated['delete_attachments'])
+                ->each(fn ($media) => $media->delete());
+        }
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $transaction->addMedia($file)->toMediaCollection('attachments');
+            }
+        }
+
         return redirect()->route('financial.transactions.show', $transaction)->with('success', 'Transação atualizada com sucesso.');
     }
 
@@ -359,5 +386,18 @@ class FinancialTransactionController extends Controller
             $syncData[$tagId] = ['is_primary' => ($tagId == $primaryId)];
         }
         $model->tags()->sync($syncData);
+    }
+
+    public function attachment(FinancialTransaction $transaction, $mediaId)
+    {
+        $media = $transaction->getMedia('attachments')->where('id', $mediaId)->first();
+
+        if (! $media) {
+            abort(404);
+        }
+
+        return response()->file($media->getPath(), [
+            'Content-Disposition' => 'inline; filename="'.$media->file_name.'"',
+        ]);
     }
 }

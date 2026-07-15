@@ -54,6 +54,8 @@ class StoreFinancialTransactionRequest extends FormRequest
             'items.*.tags' => ['nullable', 'array'],
             'items.*.tags.*' => ['exists:financial_tags,id'],
             'items.*.primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ];
     }
 

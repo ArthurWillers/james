@@ -37,9 +37,14 @@ class FinanceDashboardService
                 ->each(function ($r) {
                     if ($r->financial_account_id) {
                         $r->setRelation('financialAccount', $this->getAccounts()->firstWhere('id', $r->financial_account_id));
+                    } else {
+                        $r->setRelation('financialAccount', null);
                     }
+                    
                     if ($r->financial_credit_card_id) {
                         $r->setRelation('financialCreditCard', $this->getCreditCards()->firstWhere('id', $r->financial_credit_card_id));
+                    } else {
+                        $r->setRelation('financialCreditCard', null);
                     }
                 });
         }
@@ -52,7 +57,14 @@ class FinanceDashboardService
         if ($this->creditCardsCache === null) {
             $this->creditCardsCache = FinancialCreditCard::withUsedLimit()
                 ->with(['invoices' => fn ($q) => $q->withTotalAmount()])
-                ->get();
+                ->get()
+                ->each(function ($card) {
+                    if ($card->financial_account_id) {
+                        $card->setRelation('financialAccount', $this->getAccounts()->firstWhere('id', $card->financial_account_id));
+                    } else {
+                        $card->setRelation('financialAccount', null);
+                    }
+                });
         }
 
         return $this->creditCardsCache;
@@ -285,11 +297,20 @@ class FinanceDashboardService
         $pendingTransactions = FinancialTransaction::pending()
             ->forPeriod($referenceDate, $endDate)
             ->withoutInvoice()
+            ->expenses()
             ->withoutTransfers()
-            ->with(['tags'])
+            ->with(['tags', 'invoice.creditCard'])
             ->get()
             ->each(function ($t) {
-                $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
+                if ($t->financial_account_id) {
+                    $t->setRelation('account', $this->getAccounts()->firstWhere('id', $t->financial_account_id));
+                } else {
+                    $t->setRelation('account', null);
+                }
+                
+                if (!$t->financial_credit_card_invoice_id) {
+                    $t->setRelation('invoice', null);
+                }
             });
 
         $recurrences = $this->getActiveRecurrences()
@@ -310,7 +331,9 @@ class FinanceDashboardService
                     $fakeInvoice = new FinancialCreditCardInvoice;
                     $fakeInvoice->setRelation('creditCard', $r->relationLoaded('financialCreditCard') ? $r->financialCreditCard : null);
                     $t->setRelation('invoice', $fakeInvoice);
+                    $t->setRelation('account', null);
                 } else {
+                    $t->setRelation('invoice', null);
                     $t->setRelation('account', $r->relationLoaded('financialAccount') ? $r->financialAccount : null);
                 }
 
@@ -333,6 +356,7 @@ class FinanceDashboardService
                 $t->is_invoice = true;
                 $t->setRelation('tags', collect());
                 $t->setRelation('invoice', $inv);
+                $t->setRelation('account', null);
 
                 return $t;
             });

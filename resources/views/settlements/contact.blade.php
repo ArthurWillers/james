@@ -35,7 +35,23 @@
                         
                         async copyText() {
                             try {
-                                await navigator.clipboard.writeText(this.generatedText);
+                                if (navigator.clipboard && window.isSecureContext) {
+                                    await navigator.clipboard.writeText(this.generatedText);
+                                } else {
+                                    const textArea = document.createElement('textarea');
+                                    textArea.value = this.generatedText;
+                                    textArea.style.position = 'absolute';
+                                    textArea.style.left = '-999999px';
+                                    document.body.prepend(textArea);
+                                    textArea.select();
+                                    try {
+                                        document.execCommand('copy');
+                                    } catch (error) {
+                                        console.error('Fallback copy failed', error);
+                                    } finally {
+                                        textArea.remove();
+                                    }
+                                }
                                 this.copied = true;
                                 setTimeout(() => {
                                     this.copied = false;

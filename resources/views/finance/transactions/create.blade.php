@@ -1,5 +1,5 @@
 <x-layouts.financial>
-    <form action="{{ route('financial.transactions.store') }}" method="POST" id="transaction-form" x-data='{
+    <form action="{{ route('financial.transactions.store') }}" method="POST" id="transaction-form" enctype="multipart/form-data" x-data='{
         mode: "{{ old('mode', 'single') }}",
         type: "{{ old('type', 'expense') }}",
         targetType: "{{ old('targetType', 'account') }}",

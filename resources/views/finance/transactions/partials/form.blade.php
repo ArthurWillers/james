@@ -31,6 +31,51 @@
             </div>
         </x-card>
 
+        <x-card>
+            <h3 class="text-sm font-bold text-neutral-800 mb-4">Anexos</h3>
+
+            <x-ui.lightbox>
+            @if(isset($transaction) && $transaction->getMedia('attachments')->isNotEmpty())
+                <div class="mt-4 space-y-2">
+                    <h4 class="text-xs font-semibold text-neutral-500 uppercase">Anexos Salvos</h4>
+                    @foreach($transaction->getMedia('attachments') as $media)
+                        <div class="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                            <div class="flex items-center gap-3">
+                                <x-heroicon-o-document class="w-5 h-5 text-neutral-400" />
+                                @if(str_starts_with($media->mime_type, 'image/'))
+                                    <button type="button" @click="openLightbox('{{ route('financial.transactions.attachment', [$transaction, $media, $media->file_name]) }}', '{{ $media->file_name }}')" class="text-sm font-medium text-accent hover:underline cursor-pointer text-left">
+                                        {{ $media->file_name }}
+                                    </button>
+                                @else
+                                    <a href="{{ route('financial.transactions.attachment', [$transaction, $media, $media->file_name]) }}" target="_blank" class="text-sm font-medium text-accent hover:underline">
+                                        {{ $media->file_name }}
+                                    </a>
+                                @endif
+                            </div>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="delete_attachments[]" value="{{ $media->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500">
+                                <span class="text-xs text-red-600 font-medium">Excluir</span>
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+            </x-ui.lightbox>
+            <div class="pt-2">
+                <x-dropzone name="attachments[]" :multiple="true" label="Adicionar Anexos" sublabel="Arraste arquivos JPG, PNG ou PDF (Max 10MB)" accept=".jpeg,.jpg,.png,.pdf" />
+                @error('attachments')
+                    <p class="text-sm text-red-600 mt-2">{{ $message }}</p>
+                @enderror
+                @if($errors->has('attachments.*'))
+                    @foreach($errors->get('attachments.*') as $errorsArray)
+                        @foreach($errorsArray as $message)
+                            <p class="text-sm text-red-600 mt-2">{{ $message }}</p>
+                        @endforeach
+                    @endforeach
+                @endif
+            </div>
+        </x-card>
+
         <!-- Seção de Itens da Transação -->
         <x-finance.transaction-items :tags="$tags" />
     </div>
