@@ -27,14 +27,15 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
     - 1 botão: Deve ocupar 100% da largura no mobile (`w-full sm:w-auto`).
     - 2 botões: No mobile, cada um ocupa 50% (`flex-1 sm:flex-initial`).
     - 3+ botões: O mais à direita estica no mobile (`flex-1`) e os demais têm tamanho baseado no conteúdo. O botão Voltar sempre deve ter texto visível.
+13. **Altura de Inputs (Princípio dos 44px):** Inputs grandes (texto, data, select, etc) devem ter obrigatoriamente a altura de 44px utilizando a classe `h-11` (ou `min-h-11`). Checkboxes, radios e switches estão isentos desta regra.
 
 ## Backend e Arquitetura
 
-13. **Lógica de Negócio:** A lógica principal deve ser mantida nos Controllers. Não há necessidade de extrair para classes genéricas de Ação (Actions/Services), a menos que a complexidade seja excessivamente alta.
-14. **Validação de Formulários:** Sempre utilize FormRequests dedicados para validações no backend em vez de usar `$request->validate()` diretamente nos Controllers.
+14. **Lógica de Negócio:** A lógica principal deve ser mantida nos Controllers. Não há necessidade de extrair para classes genéricas de Ação (Actions/Services), a menos que a complexidade seja excessivamente alta.
+15. **Validação de Formulários:** Sempre utilize FormRequests dedicados para validações no backend em vez de usar `$request->validate()` diretamente nos Controllers.
 
 ## Workflow e Ferramentas
 
-15. **Documentação:** Se for solicitada a criação ou atualização de documentação, os arquivos devem ser criados DENTRO do diretório `/docs` seguindo o padrão de escrita existente.
-16. **Formatação de Código (Pint):** Sempre que arquivos PHP forem criados ou alterados, o agente DEVE rodar o formatador executando `./vendor/bin/pint` nativamente (sem usar Sail).
-17. **Evolução Contínua (Meta-regra):** Sempre que o agente identificar um padrão repetitivo não documentado ou tomar uma nova decisão importante de design com o usuário, o agente DEVE sugerir proativamente a adição desse novo mandamento neste arquivo.
+16. **Documentação:** Se for solicitada a criação ou atualização de documentação, os arquivos devem ser criados DENTRO do diretório `/docs` seguindo o padrão de escrita existente.
+17. **Formatação de Código (Pint):** Sempre que arquivos PHP forem criados ou alterados, o agente DEVE rodar o formatador executando `./vendor/bin/pint` nativamente (sem usar Sail).
+18. **Evolução Contínua (Meta-regra):** Sempre que o agente identificar um padrão repetitivo não documentado ou tomar uma nova decisão importante de design com o usuário, o agente DEVE sugerir proativamente a adição desse novo mandamento neste arquivo.

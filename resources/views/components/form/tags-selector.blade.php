@@ -88,7 +88,7 @@
                 {{ $trigger }}
             </div>
         @else
-            <div class="w-full min-h-[44px] border border-neutral-200 rounded-xl py-2 px-3 bg-white flex flex-wrap gap-2 items-center cursor-pointer hover:border-accent transition-colors" @click="openModal">
+            <div class="w-full min-h-11 border border-neutral-200 rounded-xl py-2 px-3 bg-white flex flex-wrap gap-2 items-center cursor-pointer hover:border-accent transition-colors" @click="openModal">
                 
                 <template x-if="selectedOptions.length === 0">
                     <span class="text-sm text-neutral-400">Selecionar tags...</span>

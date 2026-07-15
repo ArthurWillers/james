@@ -4,7 +4,7 @@
 ])
 
 @php
-    $baseClasses = 'w-full border text-sm rounded-xl block py-2.5 px-4 bg-white disabled:shadow-none shadow-xs focus:shadow-lg text-neutral-700 disabled:text-neutral-400 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors duration-300';
+    $baseClasses = 'h-11 w-full border text-sm rounded-xl block py-2.5 px-4 bg-white disabled:shadow-none shadow-xs focus:shadow-lg text-neutral-700 disabled:text-neutral-400 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors duration-300';
 
     $isError = $hasError || ($name && $errors->has($name));
     $errorClasses = $isError

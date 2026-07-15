@@ -11,7 +11,7 @@
 ])
 
 @php
-    $baseClasses = 'w-full border appearance-none text-sm rounded-xl block py-2.5 px-4 bg-white disabled:shadow-none shadow-xs focus:shadow-lg text-neutral-700 disabled:text-neutral-400 placeholder-neutral-400 disabled:placeholder-neutral-400/70 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors duration-300';
+    $baseClasses = 'h-11 w-full border appearance-none text-sm rounded-xl block py-2.5 px-4 bg-white disabled:shadow-none shadow-xs focus:shadow-lg text-neutral-700 disabled:text-neutral-400 placeholder-neutral-400 disabled:placeholder-neutral-400/70 outline-none focus:border-accent focus:ring-2 focus:ring-accent/40 transition-colors duration-300';
     $isError = $hasError || ($name && $errors->getBag($bag)->has($name));
     $errorClasses = $isError
         ? 'border-red-500 focus:border-red-500 focus:ring-red-400/30'
