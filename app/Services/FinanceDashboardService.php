@@ -142,7 +142,13 @@ class FinanceDashboardService
 
         // Recorrências do mês atual (ainda não materializadas)
         $recurrencesCurrent = $this->getActiveRecurrences()
-            ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endOfMonth));
+            ->filter(function ($r) use ($referenceDate, $endOfMonth) {
+                $effectiveDate = $r->financial_credit_card_id && $r->financialCreditCard
+                    ? $r->financialCreditCard->resolveInvoiceDueDate($r->next_processing_date)
+                    : $r->next_processing_date->copy();
+
+                return $effectiveDate->between($referenceDate, $endOfMonth);
+            });
 
         if (! $includeInvestments) {
             $recurrencesCurrent = $recurrencesCurrent->filter(function ($r) {
@@ -171,8 +177,12 @@ class FinanceDashboardService
         // Recorrências do próximo mês (filtradas do cache)
         $recurrencesNext = $this->getActiveRecurrences()
             ->filter(function ($r) use ($nextMonthStart, $nextMonthEnd) {
-                return $r->next_processing_date->between($nextMonthStart, $nextMonthEnd)
-                    || ($r->next_processing_date->lt($nextMonthStart)
+                $effectiveDate = $r->financial_credit_card_id && $r->financialCreditCard
+                    ? $r->financialCreditCard->resolveInvoiceDueDate($r->next_processing_date)
+                    : $r->next_processing_date->copy();
+
+                return $effectiveDate->between($nextMonthStart, $nextMonthEnd)
+                    || ($effectiveDate->lt($nextMonthStart)
                         && ($r->end_date === null || $r->end_date->gte($nextMonthEnd)));
             });
 
@@ -526,9 +536,16 @@ class FinanceDashboardService
         }
 
         foreach ($futureTransactions as $t) {
-            $dateStr = is_string($t->date) ? substr($t->date, 0, 10) : $t->date->format('Y-m-d');
+            $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();
 
-            if (Carbon::parse($dateStr)->gt($endDate)) {
+            // For credit card recurrences, shift to the invoice due date
+            if ($t->relationLoaded('invoice') && $t->invoice && $t->invoice->relationLoaded('creditCard') && $t->invoice->creditCard) {
+                $transactionDate = $t->invoice->creditCard->resolveInvoiceDueDate($transactionDate);
+            }
+
+            $dateStr = $transactionDate->format('Y-m-d');
+
+            if ($transactionDate->gt($endDate)) {
                 continue;
             }
 

@@ -32,16 +32,8 @@
     </div>
 
     <!-- Chart Container -->
-    <div class="relative w-full h-[300px]">
-        <div x-ref="chartContainer" class="w-full h-full"></div>
-        
-        <!-- Loading overlay -->
-        <div class="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg" style="display: none;" x-show="loading">
-            <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </div>
+    <div x-ref="chartWrapper">
+        <x-finance.evolution-chart-base heightClass="h-[300px]" />
     </div>
 </x-card>
 
@@ -51,7 +43,7 @@ document.addEventListener('alpine:init', () => {
         period: '1m',
         periods: ['1m', '3m', '6m', '1y', 'all'],
         loading: true,
-        chartInstance: null,
+        chartData: null,
         currentValue: 0,
         diff: 0,
         
@@ -64,21 +56,6 @@ document.addEventListener('alpine:init', () => {
         },
 
         initChart() {
-            // ECharts needs to be available via window.echarts
-            if (!window.echarts) {
-                console.error("ECharts is not loaded.");
-                return;
-            }
-            
-            this.chartInstance = window.echarts.init(this.$refs.chartContainer);
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (this.chartInstance) {
-                    this.chartInstance.resize();
-                }
-            });
-
             this.fetchData();
         },
 
@@ -112,19 +89,9 @@ document.addEventListener('alpine:init', () => {
         updateChart(data) {
             if (!data || data.length === 0) return;
 
-            const dates = data.map(item => {
-                // Parse date string securely timezone-independent
-                const parts = item.date.split('-');
-                const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                return d.toLocaleDateString('pt-BR', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: (this.period === 'all' || this.period === '1y') ? 'numeric' : undefined 
-                });
-            });
             const values = data.map(item => item.value);
 
-            // Find index of today's date or the closest upcoming date
+            // Find index of today's date
             const todayRaw = new Date();
             const todayYMD = todayRaw.getFullYear() + '-' + String(todayRaw.getMonth() + 1).padStart(2, '0') + '-' + String(todayRaw.getDate()).padStart(2, '0');
             
@@ -137,136 +104,13 @@ document.addEventListener('alpine:init', () => {
             const startValue = values[0] || 0;
             this.diff = this.currentValue - startValue;
 
-            const mainColor = this.currentValue >= 0 ? '#10b981' : '#ef4444'; // Emerald or Red
-
-            const option = {
-                grid: {
-                    top: 20,
-                    right: 20,
-                    bottom: 20,
-                    left: 20,
-                    containLabel: true
-                },
-                tooltip: {
-                    trigger: 'axis',
-                    backgroundColor: '#ffffff',
-                    padding: [12, 16],
-                    textStyle: {
-                        color: '#1f2937',
-                        fontSize: 14,
-                        fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-                    },
-                    extraCssText: 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border-radius: 0.5rem; border: 1px solid #f3f4f6;',
-                    formatter: (params) => {
-                        const item = params[0];
-                        const date = item.name;
-                        const dataIndex = item.dataIndex;
-                        const val = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value);
-                        
-                        const inc = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data[dataIndex].income);
-                        const exp = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data[dataIndex].expense);
-
-                        return `<div class="font-medium text-gray-500 text-xs mb-2 uppercase">${date}</div>
-                                <div class="font-bold text-gray-900 text-sm mb-2">${val}</div>
-                                <div class="flex justify-between items-center gap-4 text-xs">
-                                    <span class="text-emerald-600 flex items-center gap-1">↑ Receita</span>
-                                    <span class="font-medium text-emerald-600">${inc}</span>
-                                </div>
-                                <div class="flex justify-between items-center gap-4 text-xs mt-1">
-                                    <span class="text-red-600 flex items-center gap-1">↓ Despesa</span>
-                                    <span class="font-medium text-red-600">${exp}</span>
-                                </div>`;
-                    },
-                    axisPointer: {
-                        lineStyle: {
-                            color: '#d1d5db',
-                            type: 'dashed'
-                        }
-                    }
-                },
-                xAxis: {
-                    type: 'category',
-                    boundaryGap: false,
-                    data: dates,
-                    axisLine: { show: false },
-                    axisTick: { show: false },
-                    axisLabel: {
-                        color: '#9ca3af',
-                        fontSize: 11,
-                        margin: 16,
-                        showMaxLabel: true,
-                        showMinLabel: true,
-                        align: 'center'
-                    },
-                    splitLine: { show: false }
-                },
-                yAxis: {
-                    type: 'value',
-                    show: true,
-                    min: 'dataMin',
-                    scale: true,
-                    axisLabel: {
-                        color: '#9ca3af',
-                        fontSize: 11,
-                        formatter: (value) => new Intl.NumberFormat('pt-BR', { notation: 'compact', compactDisplay: 'short' }).format(value)
-                    },
-                    splitLine: { 
-                        show: true,
-                        lineStyle: {
-                            color: '#f3f4f6',
-                            type: 'dashed'
-                        }
-                    }
-                },
-                series: [
-                    {
-                        data: values,
-                        type: 'line',
-                        smooth: false,
-                        showSymbol: false,
-                        symbolSize: 8,
-                        itemStyle: {
-                            color: mainColor,
-                            borderWidth: 2
-                        },
-                        lineStyle: {
-                            color: mainColor,
-                            width: 2
-                        },
-                        areaStyle: {
-                            color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                { offset: 0, color: mainColor + '33' }, // 20% opacity
-                                { offset: 1, color: mainColor + '00' }  // 0% opacity
-                            ])
-                        },
-                        markLine: {
-                            data: [
-                                { yAxis: 0 },
-                                { 
-                                    xAxis: todayIndex, 
-                                    label: { 
-                                        show: true, 
-                                        formatter: 'Hoje', 
-                                        position: 'insideStartTop', 
-                                        color: '#9ca3af',
-                                        fontSize: 10
-                                    }, 
-                                    lineStyle: { 
-                                        color: '#9ca3af', 
-                                        type: 'dashed',
-                                        width: 1
-                                    } 
-                                }
-                            ],
-                            symbol: 'none',
-                            lineStyle: { color: '#d1d5db', type: 'solid', width: 1 },
-                            label: { show: false }
-                        }
-                    }
-                ]
-            };
-
-            this.chartInstance.setOption(option);
+            // Call render on the child evolution-chart-base component
+            this.$nextTick(() => {
+                const chartEl = this.$refs.chartWrapper?.querySelector('[x-data^="evolutionChartBase"]');
+                if (chartEl) {
+                    Alpine.$data(chartEl).render(data);
+                }
+            });
         }
     }));
 });

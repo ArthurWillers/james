@@ -357,6 +357,11 @@ class ReportsService
 
         foreach ($virtuals as $t) {
             $date = Carbon::parse($t->date);
+
+            if ($t->relationLoaded('invoice') && $t->invoice && $t->invoice->creditCard) {
+                $date = $t->invoice->creditCard->resolveInvoiceDueDate($date);
+            }
+
             $key = $this->getPeriodKey($date, $interval);
             if (isset($periods[$key])) {
                 if ($t->type === 'income') {
