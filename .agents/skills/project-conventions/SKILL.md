@@ -33,7 +33,7 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
 
 14. **Lógica de Negócio:** A lógica principal deve ser mantida nos Controllers. Não há necessidade de extrair para classes genéricas de Ação (Actions/Services), a menos que a complexidade seja excessivamente alta.
 15. **Validação de Formulários:** Sempre utilize FormRequests dedicados para validações no backend em vez de usar `$request->validate()` diretamente nos Controllers.
-16. **Auditoria e Logs (Spatie):** Utilize `spatie/laravel-activitylog` apenas para mutações de dados de negócio em Models importantes (ex: Transações, Faturas). Evite logar a execução de jobs/schedulers, registrando apenas suas mutações via Eloquent. Trate `causer_id` nulo no frontend como "Sistema/Rotina Automática".
+16. **Auditoria e Logs (Spatie v5+):** Utilize `spatie/laravel-activitylog` em todas as Models de negócio para rastreabilidade completa e vitalícia de mutações. Evite logar execuções técnicas de jobs/schedulers — apenas suas mutações via Eloquent. Trate `causer_id` nulo no frontend como "Sistema/Rotina Automática". Consulte `references/spatie-activitylog.md` para a sintaxe completa.
 17. **Soft Deletes (Padrão Obrigatório):** Todos os Models DEVEM utilizar a trait `SoftDeletes` por padrão. Exceções são permitidas apenas para tabelas auxiliares puras (ex: pivôs simples, cache, tokens temporários) ou models específicos (ex: Tags), onde a exclusão definitiva não gera risco de perda de dados de negócio. Na dúvida, aplique `SoftDeletes`.
 
 ## Workflow e Ferramentas
