@@ -17,7 +17,7 @@ class ReportsController extends Controller
 
     public function index(Request $request)
     {
-        $period = $request->input('period', 'this_month');
+        $period = $request->input('period', 'all_time');
         $interval = $request->input('interval', 'auto');
         $accountId = $request->input('account');
 
