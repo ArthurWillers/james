@@ -134,6 +134,9 @@ class FinanceDashboardService
         $nextMonthStart = $referenceDate->copy()->addMonth()->startOfMonth();
         $nextMonthEnd = $referenceDate->copy()->addMonth()->endOfMonth();
 
+        $afterNextMonthStart = $referenceDate->copy()->addMonths(2)->startOfMonth();
+        $afterNextMonthEnd = $referenceDate->copy()->addMonths(2)->endOfMonth();
+
         $accountBalance = $this->getAccountBalance($includeInvestments);
 
         // --- Mês Atual (Projeção) ---
@@ -206,9 +209,45 @@ class FinanceDashboardService
             + (float) $pendingNext->income + $recurrencesIncomeNext
             - (float) $pendingNext->expense - $openInvoicesNext - $recurrencesExpenseNext;
 
+        // --- Dois Meses à Frente (Projeção) ---
+        $pendingAfterNext = $this->getPendingTotalsForPeriod($afterNextMonthStart, $afterNextMonthEnd, $includeInvestments);
+        $openInvoicesAfterNext = $this->getOpenInvoicesTotalForPeriod($afterNextMonthStart, $afterNextMonthEnd, $includeInvestments);
+
+        $recurrencesAfterNext = $this->getActiveRecurrences()
+            ->filter(function ($r) use ($afterNextMonthStart, $afterNextMonthEnd) {
+                $effectiveDate = $r->financial_credit_card_id && $r->financialCreditCard
+                    ? $r->financialCreditCard->resolveInvoiceDueDate($r->next_processing_date)
+                    : $r->next_processing_date->copy();
+
+                return $effectiveDate->between($afterNextMonthStart, $afterNextMonthEnd)
+                    || ($effectiveDate->lt($afterNextMonthStart)
+                        && ($r->end_date === null || $r->end_date->gte($afterNextMonthEnd)));
+            });
+
+        if (! $includeInvestments) {
+            $recurrencesAfterNext = $recurrencesAfterNext->filter(function ($r) {
+                if ($r->financialAccount && $r->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        $recurrencesIncomeAfterNext = $recurrencesAfterNext->where('type', 'income')->sum('amount');
+        $recurrencesExpenseAfterNext = $recurrencesAfterNext->where('type', 'expense')->sum('amount');
+
+        $projectionAfterNextMonth = $projectionNextMonth
+            + (float) $pendingAfterNext->income + $recurrencesIncomeAfterNext
+            - (float) $pendingAfterNext->expense - $openInvoicesAfterNext - $recurrencesExpenseAfterNext;
+
         return [
             'currentMonth' => $projectionCurrentMonth,
             'nextMonth' => $projectionNextMonth,
+            'afterNextMonth' => $projectionAfterNextMonth,
         ];
     }
 
