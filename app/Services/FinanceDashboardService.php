@@ -313,8 +313,17 @@ class FinanceDashboardService
             ->map(function ($card) use ($referenceDate) {
                 $referenceMonth = $this->resolveReferenceMonth($card, $referenceDate);
 
+                // Try exact match by reference_month first
                 $currentInvoice = $card->invoices
-                    ->first(fn ($inv) => $inv->reference_month?->startOfMonth()->eq($referenceMonth));
+                    ->first(fn ($inv) => $inv->reference_month && $inv->reference_month->copy()->startOfMonth()->eq($referenceMonth));
+
+                // Fallback: pick the most recent unpaid invoice
+                if (! $currentInvoice) {
+                    $currentInvoice = $card->invoices
+                        ->filter(fn ($inv) => $inv->paid_at === null)
+                        ->sortByDesc('due_date')
+                        ->first();
+                }
 
                 $card->current_invoice_total = $currentInvoice ? $currentInvoice->total() : 0;
                 $card->current_invoice_status = $currentInvoice ? $currentInvoice->status() : 'open';

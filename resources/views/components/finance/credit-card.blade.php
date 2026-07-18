@@ -14,7 +14,6 @@
     } else {
         $currentInvoice = $card->invoices->first();
         if ($currentInvoice) {
-            // Assume scopeWithTotalAmount provides 'total_amount'
             $invoiceTotal = $currentInvoice->total_amount ?? (method_exists($currentInvoice, 'total') ? $currentInvoice->total() : 0);
             $invoiceStatus = $currentInvoice->status();
         } else {
@@ -22,6 +21,19 @@
             $invoiceStatus = 'open';
         }
     }
+
+    $statusLabel = match($invoiceStatus) {
+        'paid'           => 'Paga',
+        'closed'         => 'Fechada',
+        'overdue'        => 'Vencida',
+        'partially_paid' => 'Parcial',
+        default          => 'Aberta',
+    };
+    $statusColor = match($invoiceStatus) {
+        'paid'           => 'success',
+        'overdue'        => 'danger',
+        default          => 'warning',
+    };
 @endphp
 
 <x-card :href="route('financial.cards.show', $card->id)" class="p-4 flex flex-col justify-between group h-full">
@@ -63,8 +75,8 @@
                 </div>
             </div>
             <div class="text-right flex flex-col items-end gap-1">
-                <x-badge :color="$invoiceStatus === 'paid' ? 'success' : 'warning'" class="text-[9px] px-1.5 py-0.5 leading-none">
-                    {{ $invoiceStatus === 'paid' ? 'Paga' : 'Aberta' }}
+                <x-badge :color="$statusColor" class="text-[9px] px-1.5 py-0.5 leading-none">
+                    {{ $statusLabel }}
                 </x-badge>
             </div>
         </div>
