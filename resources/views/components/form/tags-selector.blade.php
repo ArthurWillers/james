@@ -88,7 +88,7 @@
                 {{ $trigger }}
             </div>
         @else
-            <div class="w-full min-h-[44px] border border-neutral-200 rounded-xl py-2 px-3 bg-white flex flex-wrap gap-2 items-center cursor-pointer hover:border-accent transition-colors" @click="openModal">
+            <div class="w-full min-h-11 border border-neutral-200 rounded-xl py-2 px-3 bg-white flex flex-wrap gap-2 items-center cursor-pointer hover:border-accent transition-colors" @click="openModal">
                 
                 <template x-if="selectedOptions.length === 0">
                     <span class="text-sm text-neutral-400">Selecionar tags...</span>
@@ -153,10 +153,10 @@
                     <!-- Search Bar -->
                     <div class="px-6 py-4 bg-neutral-50/50 border-b border-neutral-100 shrink-0">
                         <div class="relative">
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
                                 <x-heroicon-o-magnifying-glass class="size-5 text-neutral-400" />
                             </div>
-                            <input type="text" x-model="search" placeholder="Buscar tags pelo nome..." class="block w-full rounded-xl border-0 py-2.5 pl-10 pr-3 text-neutral-900 ring-1 ring-inset ring-neutral-300 placeholder:text-neutral-400 focus:ring-2 focus:ring-inset focus:ring-accent sm:text-sm sm:leading-6">
+                            <x-input placeholder="Buscar tags pelo nome..." x-model="search" class="pl-10" />
                         </div>
                     </div>
                     

@@ -98,38 +98,9 @@
                 </div>
             </div>
 
-            <div class="pt-6 mt-6 border-t border-neutral-100">
-                <x-dropzone name="attachments[]" :multiple="true" label="Adicionar Anexos" sublabel="Arraste arquivos JPG, PNG ou PDF (Max 10MB)" accept=".jpeg,.jpg,.png,.pdf" />
-            </div>
-            
-            @if(isset($settlementGroup) && $settlementGroup->hasMedia('attachments'))
-                <div class="mt-4 space-y-3">
-                    <h4 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Anexos Salvos</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        @foreach($settlementGroup->getMedia('attachments') as $media)
-                            <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-lg bg-neutral-50">
-                                <div class="flex items-center gap-3 overflow-hidden">
-                                    @if(in_array($media->mime_type, ['image/jpeg', 'image/png', 'image/jpg']))
-                                        <x-avatar :image="route('settlements.groups.attachment', [$settlementGroup, $media, $media->file_name])" class="w-10! h-10!" radius="md" />
-                                    @else
-                                        <x-avatar icon="heroicon-o-document" class="w-10! h-10!" radius="md" variant="white" />
-                                    @endif
-                                    <div class="truncate text-sm text-neutral-700">
-                                        <div class="truncate font-medium" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
-                                        <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
-                                    </div>
-                                </div>
-                                <div class="ml-2 shrink-0">
-                                    <x-form-checkbox name="delete_attachments[]" value="{{ $media->id }}" class="group">
-                                        <span class="text-sm font-medium text-red-600 group-hover:text-red-700">Excluir</span>
-                                    </x-form-checkbox>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
         </x-card>
+
+        <x-media.manager :model="isset($settlementGroup) ? $settlementGroup : null" class="mt-4 sm:mt-6" />
     </div>
 
     <!-- Right Column: Configurações -->

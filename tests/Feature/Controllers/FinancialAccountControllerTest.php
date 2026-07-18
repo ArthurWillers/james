@@ -3,7 +3,6 @@
 use App\Models\FinancialAccount;
 use App\Models\FinancialTag;
 use App\Models\User;
-use Carbon\Carbon;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -120,11 +119,31 @@ it('can adjust balance', function () {
 
     $account = FinancialAccount::factory()->create();
 
-    $data = [
-        'actual_balance' => 1500,
-        'date' => Carbon::now()->format('Y-m-d'),
-    ];
+    $this->post(route('financial.accounts.adjust-balance', $account), ['real_balance' => 1500])
+        ->assertRedirect(route('financial.accounts.show', $account));
 
-    $this->post(route('financial.accounts.adjust-balance', $account), $data)
-        ->assertRedirect();
+    $this->assertDatabaseHas('financial_transactions', [
+        'financial_account_id' => $account->id,
+        'description' => 'Ajuste de Saldo',
+        'is_posted' => true,
+    ]);
+});
+
+it('adjust balance creates no transaction when difference is zero', function () {
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::AJUSTE_SALDO_ID,
+        'name' => 'Ajuste de Saldo',
+        'is_protected' => true,
+    ]);
+
+    $account = FinancialAccount::factory()->create();
+
+    // Balance is 0, sending 0 — no transaction should be created
+    $this->post(route('financial.accounts.adjust-balance', $account), ['real_balance' => 0])
+        ->assertRedirect(route('financial.accounts.show', $account));
+
+    $this->assertDatabaseMissing('financial_transactions', [
+        'financial_account_id' => $account->id,
+        'description' => 'Ajuste de Saldo',
+    ]);
 });

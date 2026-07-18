@@ -11,11 +11,14 @@ use App\Models\FinancialTransaction;
 use App\Models\FinancialTransactionItem;
 use App\Models\Settlement;
 use App\Models\SettlementGroup;
+use App\Traits\HandlesAttachments;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class SettlementGroupService
 {
+    use HandlesAttachments;
+
     /**
      * Create a new settlement group with its child settlements.
      *
@@ -69,11 +72,7 @@ class SettlementGroupService
             }
 
             // 4. Attach media if provided
-            if (isset($validated['attachments'])) {
-                foreach ($validated['attachments'] as $file) {
-                    $group->addMedia($file)->toMediaCollection('attachments');
-                }
-            }
+            $this->syncAttachments($group, $validated);
 
             return $group;
         });
@@ -135,15 +134,7 @@ class SettlementGroupService
             }
 
             // 5. Handle media attachments
-            if (! empty($validated['delete_attachments'])) {
-                $group->media()->whereIn('id', $validated['delete_attachments'])->delete();
-            }
-
-            if (! empty($validated['attachments'])) {
-                foreach ($validated['attachments'] as $file) {
-                    $group->addMedia($file)->toMediaCollection('attachments');
-                }
-            }
+            $this->syncAttachments($group, $validated);
 
             return $group->fresh();
         });

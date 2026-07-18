@@ -123,7 +123,15 @@ class UpdateAppCommand extends Command
                 'Executando migrações do banco de dados...'
             );
 
-            // 7. Seeders (Opcional)
+            // 7. Storage Link
+            spin(
+                function () {
+                    $this->call('storage:link', ['--relative' => true]);
+                },
+                'Criando link simbólico do storage...'
+            );
+
+            // 8. Seeders (Opcional)
             $runSeeders = confirm(
                 label: 'Deseja rodar as seeds padrão (usuário inicial e tags)? Recomendado no 1º deploy.',
                 default: false
@@ -139,7 +147,7 @@ class UpdateAppCommand extends Command
                 info('Seeds executadas com sucesso.');
             }
 
-            // 8. Otimização do Laravel
+            // 9. Otimização do Laravel
             spin(
                 function () {
                     $this->call('optimize:clear');
@@ -148,7 +156,7 @@ class UpdateAppCommand extends Command
                 'Otimizando o Laravel (Cache)...'
             );
 
-            // 9. Restart do Supervisor
+            // 10. Restart do Supervisor
             $supervisorFailed = false;
             spin(
                 function () use (&$supervisorFailed) {

@@ -37,9 +37,14 @@ class FinanceDashboardService
                 ->each(function ($r) {
                     if ($r->financial_account_id) {
                         $r->setRelation('financialAccount', $this->getAccounts()->firstWhere('id', $r->financial_account_id));
+                    } else {
+                        $r->setRelation('financialAccount', null);
                     }
+
                     if ($r->financial_credit_card_id) {
                         $r->setRelation('financialCreditCard', $this->getCreditCards()->firstWhere('id', $r->financial_credit_card_id));
+                    } else {
+                        $r->setRelation('financialCreditCard', null);
                     }
                 });
         }
@@ -52,7 +57,14 @@ class FinanceDashboardService
         if ($this->creditCardsCache === null) {
             $this->creditCardsCache = FinancialCreditCard::withUsedLimit()
                 ->with(['invoices' => fn ($q) => $q->withTotalAmount()])
-                ->get();
+                ->get()
+                ->each(function ($card) {
+                    if ($card->financial_account_id) {
+                        $card->setRelation('financialAccount', $this->getAccounts()->firstWhere('id', $card->financial_account_id));
+                    } else {
+                        $card->setRelation('financialAccount', null);
+                    }
+                });
         }
 
         return $this->creditCardsCache;
@@ -122,6 +134,9 @@ class FinanceDashboardService
         $nextMonthStart = $referenceDate->copy()->addMonth()->startOfMonth();
         $nextMonthEnd = $referenceDate->copy()->addMonth()->endOfMonth();
 
+        $afterNextMonthStart = $referenceDate->copy()->addMonths(2)->startOfMonth();
+        $afterNextMonthEnd = $referenceDate->copy()->addMonths(2)->endOfMonth();
+
         $accountBalance = $this->getAccountBalance($includeInvestments);
 
         // --- Mês Atual (Projeção) ---
@@ -130,7 +145,13 @@ class FinanceDashboardService
 
         // Recorrências do mês atual (ainda não materializadas)
         $recurrencesCurrent = $this->getActiveRecurrences()
-            ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endOfMonth));
+            ->filter(function ($r) use ($referenceDate, $endOfMonth) {
+                $effectiveDate = $r->financial_credit_card_id && $r->financialCreditCard
+                    ? $r->financialCreditCard->resolveInvoiceDueDate($r->next_processing_date)
+                    : $r->next_processing_date->copy();
+
+                return $effectiveDate->between($referenceDate, $endOfMonth);
+            });
 
         if (! $includeInvestments) {
             $recurrencesCurrent = $recurrencesCurrent->filter(function ($r) {
@@ -159,8 +180,12 @@ class FinanceDashboardService
         // Recorrências do próximo mês (filtradas do cache)
         $recurrencesNext = $this->getActiveRecurrences()
             ->filter(function ($r) use ($nextMonthStart, $nextMonthEnd) {
-                return $r->next_processing_date->between($nextMonthStart, $nextMonthEnd)
-                    || ($r->next_processing_date->lt($nextMonthStart)
+                $effectiveDate = $r->financial_credit_card_id && $r->financialCreditCard
+                    ? $r->financialCreditCard->resolveInvoiceDueDate($r->next_processing_date)
+                    : $r->next_processing_date->copy();
+
+                return $effectiveDate->between($nextMonthStart, $nextMonthEnd)
+                    || ($effectiveDate->lt($nextMonthStart)
                         && ($r->end_date === null || $r->end_date->gte($nextMonthEnd)));
             });
 
@@ -184,9 +209,45 @@ class FinanceDashboardService
             + (float) $pendingNext->income + $recurrencesIncomeNext
             - (float) $pendingNext->expense - $openInvoicesNext - $recurrencesExpenseNext;
 
+        // --- Dois Meses à Frente (Projeção) ---
+        $pendingAfterNext = $this->getPendingTotalsForPeriod($afterNextMonthStart, $afterNextMonthEnd, $includeInvestments);
+        $openInvoicesAfterNext = $this->getOpenInvoicesTotalForPeriod($afterNextMonthStart, $afterNextMonthEnd, $includeInvestments);
+
+        $recurrencesAfterNext = $this->getActiveRecurrences()
+            ->filter(function ($r) use ($afterNextMonthStart, $afterNextMonthEnd) {
+                $effectiveDate = $r->financial_credit_card_id && $r->financialCreditCard
+                    ? $r->financialCreditCard->resolveInvoiceDueDate($r->next_processing_date)
+                    : $r->next_processing_date->copy();
+
+                return $effectiveDate->between($afterNextMonthStart, $afterNextMonthEnd)
+                    || ($effectiveDate->lt($afterNextMonthStart)
+                        && ($r->end_date === null || $r->end_date->gte($afterNextMonthEnd)));
+            });
+
+        if (! $includeInvestments) {
+            $recurrencesAfterNext = $recurrencesAfterNext->filter(function ($r) {
+                if ($r->financialAccount && $r->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+                if ($r->financialCreditCard && $r->financialCreditCard->financialAccount && $r->financialCreditCard->financialAccount->type === FinancialAccountType::Investment) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        $recurrencesIncomeAfterNext = $recurrencesAfterNext->where('type', 'income')->sum('amount');
+        $recurrencesExpenseAfterNext = $recurrencesAfterNext->where('type', 'expense')->sum('amount');
+
+        $projectionAfterNextMonth = $projectionNextMonth
+            + (float) $pendingAfterNext->income + $recurrencesIncomeAfterNext
+            - (float) $pendingAfterNext->expense - $openInvoicesAfterNext - $recurrencesExpenseAfterNext;
+
         return [
             'currentMonth' => $projectionCurrentMonth,
             'nextMonth' => $projectionNextMonth,
+            'afterNextMonth' => $projectionAfterNextMonth,
         ];
     }
 
@@ -252,8 +313,17 @@ class FinanceDashboardService
             ->map(function ($card) use ($referenceDate) {
                 $referenceMonth = $this->resolveReferenceMonth($card, $referenceDate);
 
+                // Try exact match by reference_month first
                 $currentInvoice = $card->invoices
-                    ->first(fn ($inv) => $inv->reference_month?->startOfMonth()->eq($referenceMonth));
+                    ->first(fn ($inv) => $inv->reference_month && $inv->reference_month->copy()->startOfMonth()->eq($referenceMonth));
+
+                // Fallback: pick the most recent unpaid invoice
+                if (! $currentInvoice) {
+                    $currentInvoice = $card->invoices
+                        ->filter(fn ($inv) => $inv->paid_at === null)
+                        ->sortByDesc('due_date')
+                        ->first();
+                }
 
                 $card->current_invoice_total = $currentInvoice ? $currentInvoice->total() : 0;
                 $card->current_invoice_status = $currentInvoice ? $currentInvoice->status() : 'open';
@@ -285,11 +355,20 @@ class FinanceDashboardService
         $pendingTransactions = FinancialTransaction::pending()
             ->forPeriod($referenceDate, $endDate)
             ->withoutInvoice()
+            ->expenses()
             ->withoutTransfers()
-            ->with(['tags'])
+            ->with(['tags', 'invoice.creditCard'])
             ->get()
             ->each(function ($t) {
-                $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
+                if ($t->financial_account_id) {
+                    $t->setRelation('account', $this->getAccounts()->firstWhere('id', $t->financial_account_id));
+                } else {
+                    $t->setRelation('account', null);
+                }
+
+                if (! $t->financial_credit_card_invoice_id) {
+                    $t->setRelation('invoice', null);
+                }
             });
 
         $recurrences = $this->getActiveRecurrences()
@@ -310,7 +389,9 @@ class FinanceDashboardService
                     $fakeInvoice = new FinancialCreditCardInvoice;
                     $fakeInvoice->setRelation('creditCard', $r->relationLoaded('financialCreditCard') ? $r->financialCreditCard : null);
                     $t->setRelation('invoice', $fakeInvoice);
+                    $t->setRelation('account', null);
                 } else {
+                    $t->setRelation('invoice', null);
                     $t->setRelation('account', $r->relationLoaded('financialAccount') ? $r->financialAccount : null);
                 }
 
@@ -333,6 +414,7 @@ class FinanceDashboardService
                 $t->is_invoice = true;
                 $t->setRelation('tags', collect());
                 $t->setRelation('invoice', $inv);
+                $t->setRelation('account', null);
 
                 return $t;
             });
@@ -502,9 +584,16 @@ class FinanceDashboardService
         }
 
         foreach ($futureTransactions as $t) {
-            $dateStr = is_string($t->date) ? substr($t->date, 0, 10) : $t->date->format('Y-m-d');
+            $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();
 
-            if (Carbon::parse($dateStr)->gt($endDate)) {
+            // For credit card recurrences, shift to the invoice due date
+            if ($t->relationLoaded('invoice') && $t->invoice && $t->invoice->relationLoaded('creditCard') && $t->invoice->creditCard) {
+                $transactionDate = $t->invoice->creditCard->resolveInvoiceDueDate($transactionDate);
+            }
+
+            $dateStr = $transactionDate->format('Y-m-d');
+
+            if ($transactionDate->gt($endDate)) {
                 continue;
             }
 

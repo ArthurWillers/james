@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 #[Fillable([
     'financial_account_id',
@@ -29,9 +31,9 @@ use Illuminate\Support\Collection;
     'installment_total',
     'financial_recurrence_id',
 ])]
-class FinancialTransaction extends Model
+class FinancialTransaction extends Model implements HasMedia
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**
      * Get the attributes that should be cast.
@@ -45,6 +47,12 @@ class FinancialTransaction extends Model
             'date' => 'date',
             'is_posted' => 'boolean',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments')
+            ->useDisk('attachments');
     }
 
     /**

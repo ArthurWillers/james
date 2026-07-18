@@ -6,13 +6,19 @@
     'filters' => ['search'],
     'showSearch' => true,
     'buttonClass' => 'sm:w-8 h-8',
+    'align' => 'center',
 ])
 
 @php
     $hasFilters = collect($filters)->contains(fn ($filter) => request()->filled($filter));
+    $alignClass = match($align) {
+        'end' => 'sm:items-end',
+        'start' => 'sm:items-start',
+        default => 'sm:items-center',
+    };
 @endphp
 
-<form {{ $attributes->merge(['action' => $action, 'method' => 'GET', 'class' => 'flex flex-col sm:flex-row items-stretch sm:items-center gap-0 sm:gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40']) }}
+<form {{ $attributes->merge(['action' => $action, 'method' => 'GET', 'class' => "flex flex-col sm:flex-row items-stretch {$alignClass} gap-0 sm:gap-1 mb-8 bg-white p-1 rounded-xl border border-neutral-200 shadow-sm w-full sm:w-fit transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/40"]) }}
     x-data="{ loading: false, expanded: false }" @submit="loading = true">
     
     <!-- Top Bar (Mobile + Desktop) -->
@@ -43,7 +49,7 @@
     </div>
     
     <!-- Collapsible Area (Mobile) / Inline Area (Desktop) -->
-    <div class="w-full sm:w-auto flex-col sm:flex-row items-stretch sm:items-center mt-2 sm:mt-0 pt-2 sm:pt-0 border-t border-neutral-100 sm:border-0 sm:!flex" 
+    <div class="w-full sm:w-auto flex-col sm:flex-row items-stretch {{ $alignClass }} mt-2 sm:mt-0 pt-2 sm:pt-0 border-t border-neutral-100 sm:border-0 sm:!flex" 
          x-show="expanded"
          x-transition:enter="transition ease-out duration-200 origin-top"
          x-transition:enter-start="opacity-0 -translate-y-2 scale-y-95"

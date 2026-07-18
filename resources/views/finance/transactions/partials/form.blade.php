@@ -31,6 +31,8 @@
             </div>
         </x-card>
 
+        <x-media.manager :model="isset($transaction) ? $transaction : null" class="mb-6" />
+
         <!-- Seção de Itens da Transação -->
         <x-finance.transaction-items :tags="$tags" />
     </div>

@@ -11,12 +11,15 @@ use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\SettlementGroup;
+use App\Traits\HandlesAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
 
 class FinancialTransactionController extends Controller
 {
+    use HandlesAttachments;
+
     public function index(Request $request)
     {
         $query = FinancialTransaction::query()->with(['account', 'invoice.creditCard', 'tags']);
@@ -186,6 +189,15 @@ class FinancialTransactionController extends Controller
                     }
                 }
             }
+
+            $firstTransaction = $transactions->first();
+            if ($firstTransaction) {
+                $this->syncAttachments($firstTransaction, $request->all());
+            }
+        }
+
+        if ($mode === 'single' && isset($transaction)) {
+            $this->syncAttachments($transaction, $request->all());
         }
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transação criada com sucesso.');
@@ -305,6 +317,8 @@ class FinancialTransactionController extends Controller
             $transaction->items()->delete();
         }
 
+        $this->syncAttachments($transaction, $validated);
+
         return redirect()->route('financial.transactions.show', $transaction)->with('success', 'Transação atualizada com sucesso.');
     }
 
@@ -359,5 +373,18 @@ class FinancialTransactionController extends Controller
             $syncData[$tagId] = ['is_primary' => ($tagId == $primaryId)];
         }
         $model->tags()->sync($syncData);
+    }
+
+    public function attachment(FinancialTransaction $transaction, $mediaId)
+    {
+        $media = $transaction->getMedia('attachments')->where('id', $mediaId)->first();
+
+        if (! $media) {
+            abort(404);
+        }
+
+        return response()->file($media->getPath(), [
+            'Content-Disposition' => 'inline; filename="'.$media->file_name.'"',
+        ]);
     }
 }

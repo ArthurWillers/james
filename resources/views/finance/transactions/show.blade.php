@@ -134,6 +134,10 @@
         <x-metadata-card :model="$transaction" />
     </div>
 
+    @if($transaction->hasMedia('attachments'))
+        <x-media.manager :model="$transaction" :editable="false" class="mb-6" />
+    @endif
+
     @if(isset($settlementGroup) && $settlementGroup)
         <x-related-resource 
             class="mb-6"

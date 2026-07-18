@@ -105,6 +105,29 @@ class FinancialCreditCard extends Model
     }
 
     /**
+     * Resolve the invoice due date for a given purchase/processing date.
+     *
+     * Given a date (e.g., a recurrence's next_processing_date), determines
+     * which invoice it falls into based on the closing day, then returns the
+     * due date of that invoice. Pure calculation — no database queries.
+     */
+    public function resolveInvoiceDueDate(Carbon $purchaseDate): Carbon
+    {
+        $candidateMonth = $purchaseDate->copy()->startOfMonth();
+        $closingDate = $candidateMonth->copy()->day((int) min($this->closing_day, $candidateMonth->daysInMonth));
+
+        $referenceMonth = $purchaseDate->copy()->startOfDay()->lte($closingDate)
+            ? $candidateMonth
+            : $candidateMonth->copy()->addMonth()->startOfMonth();
+
+        $dueMonth = $this->due_day <= $this->closing_day
+            ? $referenceMonth->copy()->addMonth()
+            : $referenceMonth->copy();
+
+        return $dueMonth->day((int) min($this->due_day, $dueMonth->daysInMonth));
+    }
+
+    /**
      * Update closing schedule and recalculate affected open invoices.
      */
     public function updateClosingSchedule(int $closingDay, int $dueDay): void

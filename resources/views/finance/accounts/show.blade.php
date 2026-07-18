@@ -27,7 +27,7 @@
                     <x-form-input
                         label="Saldo Real (R$)"
                         name="real_balance"
-                        :numeric="true"
+                        :currency="true"
                         placeholder="0,00"
                         autofocus
                     />

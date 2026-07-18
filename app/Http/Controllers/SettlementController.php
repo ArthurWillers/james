@@ -15,12 +15,15 @@ use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\Settlement;
 use App\Models\SettlementGroup;
+use App\Traits\HandlesAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class SettlementController extends Controller
 {
+    use HandlesAttachments;
+
     /**
      * Display a listing of the resource.
      */
@@ -240,11 +243,7 @@ class SettlementController extends Controller
 
         $settlement->save();
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $settlement->addMedia($file)->toMediaCollection('attachments');
-            }
-        }
+        $this->syncAttachments($settlement, $request->all());
 
         return redirect()->route('settlements.contact.show', $contact)
             ->with('success', 'Lançamento registrado com sucesso.');
@@ -292,20 +291,9 @@ class SettlementController extends Controller
 
         $settlement->save();
 
-        if (! empty($validated['delete_attachments'])) {
-            $settlement->getMedia('attachments')
-                ->whereIn('id', $validated['delete_attachments'])
-                ->each(fn ($media) => $media->delete());
-        }
+        $this->syncAttachments($settlement, $validated);
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $settlement->addMedia($file)->toMediaCollection('attachments');
-            }
-        }
-
-        return redirect()->route('settlements.contact.show', $settlement->contact_id)
-            ->with('success', 'Lançamento atualizado com sucesso.');
+        return redirect()->route('settlements.contact.show', $settlement->contact_id)->with('success', 'Acerto atualizado com sucesso.');
     }
 
     /**
