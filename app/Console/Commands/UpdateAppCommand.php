@@ -118,7 +118,7 @@ class UpdateAppCommand extends Command
             // 6. Migrations
             spin(
                 function () {
-                    $this->call('migrate', ['--force' => true]);
+                    $this->callSilent('migrate', ['--force' => true]);
                 },
                 'Executando migrações do banco de dados...'
             );
@@ -126,7 +126,9 @@ class UpdateAppCommand extends Command
             // 7. Storage Link
             spin(
                 function () {
-                    $this->call('storage:link', ['--relative' => true]);
+                    if (! is_link(public_path('storage'))) {
+                        $this->callSilent('storage:link', ['--relative' => true]);
+                    }
                 },
                 'Criando link simbólico do storage...'
             );
@@ -140,7 +142,7 @@ class UpdateAppCommand extends Command
             if ($runSeeders) {
                 spin(
                     function () {
-                        $this->call('db:seed', ['--force' => true]);
+                        $this->callSilent('db:seed', ['--force' => true]);
                     },
                     'Populando o banco de dados...'
                 );
@@ -150,8 +152,8 @@ class UpdateAppCommand extends Command
             // 9. Otimização do Laravel
             spin(
                 function () {
-                    $this->call('optimize:clear');
-                    $this->call('optimize');
+                    $this->callSilent('optimize:clear');
+                    $this->callSilent('optimize');
                 },
                 'Otimizando o Laravel (Cache)...'
             );
