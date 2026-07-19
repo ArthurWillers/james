@@ -11,32 +11,45 @@ Utilizamos o pacote `spatie/laravel-activitylog` para **Auditoria de Negócio** 
 - **Logue Todas as Models de Negócio:** O pacote deve ser utilizado em praticamente todas as Models do domínio (ex: Transações, Faturas, Acertos, Contatos, Contas Bancárias, Tags, Categorias, etc.) para rastrear mutações (`created`, `updated`, `deleted`).
 - **NÃO logue tabelas e execuções técnicas:** Nunca crie logs para registrar que um Job, Queue ou Scheduler rodou. Modelos de infraestrutura (como `sessions`, `jobs`, `personal_access_tokens`) estão estritamente fora do escopo de auditoria.
 
-## 2. Configuração nas Models (Sintaxe v5+)
-Sempre que adicionar logs a uma Model, utilize a trait `LogsActivity` e a classe `LogOptions`. Aplique as restrições abaixo obrigatoriamente para evitar inchaço do banco de dados com logs vazios:
+## 2. Configuração nas Models (Regras Inegociáveis)
+Sempre que adicionar logs a uma Model, você DEVE seguir as restrições abaixo obrigatoriamente para evitar inchaço do banco de dados com logs vazios e prevenir loops infinitos:
+
+1. **Mass-assignment EXCLUSIVO:** A proteção de mass-assignment deve ser feita EXCLUSIVAMENTE com a propriedade clássica `protected $fillable = [...]` nas classes de Model, e NÃO com o atributo PHP 8 `#[Fillable]`.
+2. **LogsActivity e LogOptions:** Utilize a trait `LogsActivity` e o método `getActivitylogOptions()`. Dentro deste método, a configuração DEVE usar `->logFillable()` para registrar apenas os campos permitidos, `->logOnlyDirty()` e `->dontSubmitEmptyLogs()` (também conhecido como `dontLogEmptyChanges()`). NUNCA use `logAll()`.
+3. **Eventos Explícitos:** Os models devem especificar explicitamente os eventos a serem registrados através da propriedade `protected static array $recordEvents`.
+4. **REGRA CRÍTICA DE SOFTDELETES:** A propriedade `$recordEvents` só pode conter `'restored'` e `'forceDeleted'` se o model utilizar explicitamente a trait `Illuminate\Database\Eloquent\SoftDeletes`. Models sem SoftDeletes devem usar apenas `['created', 'updated', 'deleted']`. (O desrespeito a isso causa um loop infinito no boot do Laravel).
 
 ```php
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExemploModel extends Model
 {
-    use LogsActivity;
+    use LogsActivity, SoftDeletes; // Exemplo COM SoftDeletes
 
+    // REGRA 1: array clássico
+    protected $fillable = ['nome', 'valor']; 
+    
+    // REGRA 3 e 4: especificar os eventos. Se não tivesse SoftDeletes, remova 'restored' e 'forceDeleted'.
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted']; 
+
+    // REGRA 2: LogOptions
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable() // Loga apenas os campos mutáveis
-            ->logOnlyDirty() // Evita logar se o model foi salvo sem alterações reais
-            ->dontSubmitEmptyLogs(); // Não cria registro se nenhum dado mudou
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
 ```
 
-## 3. Ações de Sistema e Causer_id
+## 3. Frontend e Exibição do Histórico
 
-* Ações na interface web registrarão automaticamente o `Auth::user()` como autor (`causer_id`).
-* Mutações geradas por processos em background (Filas, Schedulers) criarão o log com `causer_id` nulo.
-* **Regra de Frontend:** Ao exibir o histórico, trate os logs sem autor. Se `causer_id` for null, exiba uma label como "Sistema" ou "Rotina Automática".
+* **Ações de Sistema e Causer_id:** Ações na interface web registrarão automaticamente o `Auth::user()` como autor (`causer_id`). Mutações geradas por processos em background (Filas, Schedulers) criarão o log com `causer_id` nulo. Ao exibir o histórico, trate os logs sem autor. Se `causer_id` for null, exiba uma label como "Sistema" ou "Rotina Automática".
+* **Atributos Antigos e Novos (v4+):** Lembre-se que a partir do Spatie Activitylog v4, as diferenças de atributos automáticos (`old` e `attributes`) ficam armazenadas na propriedade `$activity->attribute_changes`, e NÃO na propriedade `$activity->properties`. Considere isso ao exibir o detalhe do log no front-end.
 
 ## 4. Retenção Vitalícia (Full Audit Trail)
 
