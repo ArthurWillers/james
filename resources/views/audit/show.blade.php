@@ -30,9 +30,9 @@
                             <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">AÇÃO REALIZADA</p>
                             <div>
                                 @php
-                                    $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'];
+                                    $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Definitivamente'];
                                     $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
-                                    $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow'];
+                                    $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
                                     $color = $actionColors[$activity->description] ?? 'neutral';
                                 @endphp
                                 <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>
