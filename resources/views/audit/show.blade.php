@@ -29,11 +29,6 @@
                         </div>
                         
                         <div class="px-5 py-4">
-                            <dt class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">DESCRIÇÃO</dt>
-                            <dd class="text-sm font-medium text-neutral-900">{{ $activity->description }}</dd>
-                        </div>
-                        
-                        <div class="px-5 py-4">
                             <dt class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-3">CAUSADOR</dt>
                             <dd>
                                 @if($activity->causer)

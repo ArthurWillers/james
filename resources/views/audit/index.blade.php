@@ -3,16 +3,15 @@
 
     <div class="mt-6">
         <x-table>
-            <x-table.header class="grid-cols-[160px_1.5fr_1fr_120px_1fr] hidden sm:grid">
+            <x-table.header class="grid-cols-[160px_1.5fr_1fr_120px] hidden sm:grid">
                 <x-table.column>DATA/HORA</x-table.column>
                 <x-table.column>USUÁRIO</x-table.column>
                 <x-table.column>MÓDULO</x-table.column>
                 <x-table.column>AÇÃO</x-table.column>
-                <x-table.column>DESCRIÇÃO</x-table.column>
             </x-table.header>
             <div class="divide-y divide-neutral-100">
                 @forelse($activities as $activity)
-                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[160px_1.5fr_1fr_120px_1fr] hidden sm:grid items-center">
+                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[160px_1.5fr_1fr_120px] hidden sm:grid items-center">
                         <x-table.cell class="text-neutral-600 text-sm font-medium">{{ formatDateTime($activity->created_at) }}</x-table.cell>
                         <x-table.cell>
                             @if($activity->causer)
@@ -32,7 +31,6 @@
                             @endphp
                             <x-badge :color="$color" size="sm">{{ ucfirst($activity->description) }}</x-badge>
                         </x-table.cell>
-                        <x-table.cell class="text-neutral-600 truncate">{{ $activity->description }}</x-table.cell>
                         
                         <x-slot:mobile>
                             <div class="flex justify-between items-start">
