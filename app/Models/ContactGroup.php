@@ -2,14 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['name', 'notes'])]
 class ContactGroup extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = ['name', 'notes'];
+
     use HasFactory;
 
     /**
@@ -18,5 +22,16 @@ class ContactGroup extends Model
     public function contacts(): BelongsToMany
     {
         return $this->belongsToMany(Contact::class);
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('contact_group');
     }
 }

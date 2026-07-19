@@ -3,25 +3,29 @@
 namespace App\Models;
 
 use App\Enums\SettlementType;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable([
-    'contact_id',
-    'financial_transaction_id',
-    'settlement_group_id',
-    'type',
-    'amount',
-    'description',
-    'date',
-])]
 class Settlement extends Model implements HasMedia
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'contact_id',
+        'financial_transaction_id',
+        'settlement_group_id',
+        'type',
+        'amount',
+        'description',
+        'date',
+    ];
+
     use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected function casts(): array
@@ -52,5 +56,16 @@ class Settlement extends Model implements HasMedia
     public function group(): BelongsTo
     {
         return $this->belongsTo(SettlementGroup::class, 'settlement_group_id');
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('settlement');
     }
 }

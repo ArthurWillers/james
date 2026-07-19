@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,16 +11,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable([
-    'name',
-    'financial_account_id',
-    'credit_limit',
-    'closing_day',
-    'due_day',
-])]
 class FinancialCreditCard extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'name',
+        'financial_account_id',
+        'credit_limit',
+        'closing_day',
+        'due_day',
+    ];
+
     use HasFactory, Searchable, SoftDeletes;
 
     /**
@@ -186,5 +190,16 @@ class FinancialCreditCard extends Model
         }
 
         return $transactions;
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_credit_card');
     }
 }

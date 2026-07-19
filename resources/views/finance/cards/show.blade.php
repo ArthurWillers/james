@@ -77,79 +77,94 @@
         <h2 class="text-lg font-bold text-neutral-900">Faturas</h2>
     </div>
 
-    <x-card class="overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-neutral-200">
-                <thead class="bg-neutral-50/50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Mês/Ano</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fechamento</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Vencimento</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wider">Valor</th>
-                        <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-neutral-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Ver</span></th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-neutral-200">
-                    @forelse($invoices as $invoice)
-                        <tr class="hover:bg-neutral-50/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-neutral-900">
-                                    {{ formatMonthYearFull($invoice->reference_month) }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                                {{ formatShort($invoice->closing_date) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                                {{ formatShort($invoice->due_date) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                @php $total = $invoice->total(); @endphp
-                                <div class="font-medium {{ $total < 0 ? 'text-green-600' : 'text-neutral-900' }}">
-                                    {{ formatCurrency($total) }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @php
-                                    $status = $invoice->status();
-                                    $badgeColor = match($status) {
-                                        'paid' => 'success',
-                                        'partially_paid' => 'warning',
-                                        'open' => 'primary',
-                                        'overdue' => 'danger',
-                                        'closed' => 'neutral',
-                                        default => 'neutral'
-                                    };
-                                    $statusLabels = [
-                                        'paid' => 'Paga',
-                                        'partially_paid' => 'Parcial',
-                                        'open' => 'Aberta',
-                                        'overdue' => 'Atrasada',
-                                        'closed' => 'Fechada',
-                                    ];
-                                @endphp
-                                <x-badge :color="$badgeColor" size="sm">
-                                    {{ $statusLabels[$status] ?? 'Desconhecido' }}
-                                </x-badge>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ route('financial.cards.invoices.show', [$card, $invoice]) }}" class="text-primary-600 hover:text-primary-900 flex items-center justify-end gap-1">
-                                    Detalhes <x-heroicon-o-chevron-right class="size-4" />
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-neutral-500">
-                                Nenhuma fatura gerada para este cartão.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <x-table class="overflow-hidden">
+        <x-table.header class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid">
+            <x-table.column>Mês/Ano</x-table.column>
+            <x-table.column>Fechamento</x-table.column>
+            <x-table.column>Vencimento</x-table.column>
+            <x-table.column>Valor</x-table.column>
+            <x-table.column class="text-center">Status</x-table.column>
+            <x-table.column><span class="sr-only">Ver</span></x-table.column>
+        </x-table.header>
+        <div class="divide-y divide-neutral-100">
+            @forelse($invoices as $invoice)
+                @php 
+                    $total = $invoice->total(); 
+                    $status = $invoice->status();
+                    $badgeColor = match($status) {
+                        'paid' => 'success',
+                        'partially_paid' => 'warning',
+                        'open' => 'primary',
+                        'overdue' => 'danger',
+                        'closed' => 'neutral',
+                        default => 'neutral'
+                    };
+                    $statusLabels = [
+                        'paid' => 'Paga',
+                        'partially_paid' => 'Parcial',
+                        'open' => 'Aberta',
+                        'overdue' => 'Atrasada',
+                        'closed' => 'Fechada',
+                    ];
+                @endphp
+                <x-table.row class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid items-center hover:bg-neutral-50/50">
+                    <x-table.cell class="font-medium text-neutral-900">
+                        {{ formatMonthYearFull($invoice->reference_month) }}
+                    </x-table.cell>
+                    <x-table.cell class="text-sm text-neutral-500">
+                        {{ formatShort($invoice->closing_date) }}
+                    </x-table.cell>
+                    <x-table.cell class="text-sm text-neutral-500">
+                        {{ formatShort($invoice->due_date) }}
+                    </x-table.cell>
+                    <x-table.cell>
+                        <div class="font-medium {{ $total < 0 ? 'text-green-600' : 'text-neutral-900' }}">
+                            {{ formatCurrency($total) }}
+                        </div>
+                    </x-table.cell>
+                    <x-table.cell class="text-center flex justify-center">
+                        <x-badge :color="$badgeColor" size="sm">
+                            {{ $statusLabels[$status] ?? 'Desconhecido' }}
+                        </x-badge>
+                    </x-table.cell>
+                    <x-table.cell class="flex justify-end">
+                        <a href="{{ route('financial.cards.invoices.show', [$card, $invoice]) }}" class="text-neutral-400 hover:text-neutral-600 flex items-center justify-end p-2 -mr-2">
+                            <x-heroicon-o-chevron-right class="size-5" />
+                        </a>
+                    </x-table.cell>
+
+                    <x-slot:mobile>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-medium text-neutral-900">
+                                {{ formatMonthYearFull($invoice->reference_month) }}
+                            </div>
+                            <x-badge :color="$badgeColor" size="sm">
+                                {{ $statusLabels[$status] ?? 'Desconhecido' }}
+                            </x-badge>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <div class="text-neutral-500">
+                                Venc: {{ formatShort($invoice->due_date) }}
+                            </div>
+                            <div class="font-medium {{ $total < 0 ? 'text-green-600' : 'text-neutral-900' }}">
+                                {{ formatCurrency($total) }}
+                            </div>
+                        </div>
+                        <div class="mt-3 flex justify-end">
+                            <a href="{{ route('financial.cards.invoices.show', [$card, $invoice]) }}" class="text-primary-600 hover:text-primary-900 text-sm font-medium flex items-center gap-1">
+                                Ver Fatura <x-heroicon-o-chevron-right class="size-4" />
+                            </a>
+                        </div>
+                    </x-slot:mobile>
+                </x-table.row>
+            @empty
+                <x-empty-state 
+                    icon="heroicon-o-document-text" 
+                    message="Nenhuma fatura gerada para este cartão." 
+                />
+            @endforelse
         </div>
-    </x-card>
+    </x-table>
 
     <div class="flex justify-start lg:justify-end mt-8">
         <x-ui.metadata-card :model="$card" class="w-full lg:max-w-sm mb-4" />

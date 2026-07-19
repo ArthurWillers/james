@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * Nota de Implementação (Validação):
@@ -19,20 +20,23 @@ use Illuminate\Support\Carbon;
  * deve-se garantir a validação lógica XOR entre `financial_account_id` e `financial_credit_card_id`.
  * Ou seja, exatamente UM dos dois campos deve estar preenchido (usando `required_without` / `prohibits`).
  */
-#[Fillable([
-    'title',
-    'amount',
-    'type',
-    'frequency',
-    'financial_account_id',
-    'financial_credit_card_id',
-    'start_date',
-    'end_date',
-    'next_processing_date',
-    'is_active',
-])]
 class FinancialRecurrence extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'title',
+        'amount',
+        'type',
+        'frequency',
+        'financial_account_id',
+        'financial_credit_card_id',
+        'start_date',
+        'end_date',
+        'next_processing_date',
+        'is_active',
+    ];
+
     use HasFactory, Searchable, SoftDeletes;
 
     /**
@@ -146,5 +150,16 @@ class FinancialRecurrence extends Model
                     $q2->whereIn('financial_account_id', $accountIds);
                 });
         });
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_recurrence');
     }
 }

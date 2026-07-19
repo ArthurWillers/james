@@ -98,39 +98,33 @@
         :filters="['search', 'account_id', 'tag_id', 'type', 'is_posted', 'date']">
         
         <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
-            <select name="account_id" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+            <x-filter-bar.select name="account_id">
                 <option value="">Todas as Contas</option>
                 @foreach($accounts as $account)
                     <option value="{{ $account->id }}" @selected(request('account_id') == $account->id)>{{ $account->name }}</option>
                 @endforeach
-            </select>
+            </x-filter-bar.select>
             
-            <select name="tag_id" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+            <x-filter-bar.select name="tag_id">
                 <option value="">Todas as Tags</option>
                 @foreach($tags as $tag)
                     <option value="{{ $tag->id }}" @selected(request('tag_id') == $tag->id)>{{ $tag->name }}</option>
                 @endforeach
-            </select>
+            </x-filter-bar.select>
             
-            <select name="type" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+            <x-filter-bar.select name="type">
                 <option value="">Todos os Tipos</option>
                 <option value="income" @selected(request('type') == 'income')>Receita</option>
                 <option value="expense" @selected(request('type') == 'expense')>Despesa</option>
-            </select>
+            </x-filter-bar.select>
 
-            <select name="is_posted" 
-                    class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 pl-3 pr-8 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors">
+            <x-filter-bar.select name="is_posted">
                 <option value="">Todos os Status</option>
                 <option value="1" @selected(request('is_posted') === '1')>Efetivadas</option>
                 <option value="0" @selected(request('is_posted') === '0')>Pendentes</option>
-            </select>
+            </x-filter-bar.select>
 
-            <input type="date" name="date" value="{{ request('date') }}" 
-                   class="w-full sm:w-auto bg-transparent border-0 py-2 sm:py-1.5 px-3 text-sm text-neutral-600 focus:outline-none focus:ring-0 focus:bg-neutral-100 rounded-md cursor-pointer transition-colors"
-                   title="Filtrar por data específica">
+            <x-filter-bar.date name="date" value="{{ request('date') }}" title="Filtrar por data específica" />
         </div>
     </x-filter-bar>
 

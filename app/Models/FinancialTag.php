@@ -3,18 +3,22 @@
 namespace App\Models;
 
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable([
-    'name',
-    'icon',
-    'color_hex',
-])]
 class FinancialTag extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'name',
+        'icon',
+        'color_hex',
+    ];
+
     use HasFactory, Searchable;
 
     public const REEMBOLSO_ID = 1;
@@ -59,5 +63,16 @@ class FinancialTag extends Model
             'financial_tag_id',
             'financial_taggable_id'
         );
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_tag');
     }
 }

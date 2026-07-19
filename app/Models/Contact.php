@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Traits\HasInitials;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,21 +15,26 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Override;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable([
-    'name',
-    'relationship_category',
-    'birthdate',
-    'phones',
-    'emails',
-    'notes',
-])]
 class Contact extends Model implements HasMedia
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'name',
+        'relationship_category',
+        'birthdate',
+        'phones',
+        'emails',
+        'notes',
+    ];
+
     use HasFactory, HasInitials, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**
@@ -130,5 +134,16 @@ class Contact extends Model implements HasMedia
             ->distinct()
             ->orderBy('relationship_category', 'asc')
             ->pluck('relationship_category');
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('contact');
     }
 }

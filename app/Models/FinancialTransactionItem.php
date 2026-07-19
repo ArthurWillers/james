@@ -2,21 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable([
-    'financial_transaction_id',
-    'description',
-    'quantity',
-    'unit_price',
-    'total',
-])]
 class FinancialTransactionItem extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'financial_transaction_id',
+        'description',
+        'quantity',
+        'unit_price',
+        'total',
+    ];
+
     use HasFactory;
 
     /**
@@ -57,5 +61,16 @@ class FinancialTransactionItem extends Model
             'financial_taggable_id',
             'financial_tag_id'
         )->withPivot('is_primary');
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_transaction_item');
     }
 }

@@ -4,20 +4,24 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable([
-    'name',
-    'type',
-    'pix_keys',
-])]
 class FinancialAccount extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'name',
+        'type',
+        'pix_keys',
+    ];
+
     use HasFactory, Searchable, SoftDeletes;
 
     /**
@@ -81,5 +85,16 @@ class FinancialAccount extends Model
     public function scopeWithoutInvestments(Builder $query): void
     {
         $query->where('type', '!=', FinancialAccountType::Investment);
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_account');
     }
 }

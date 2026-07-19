@@ -3,26 +3,30 @@
 namespace App\Models;
 
 use App\Enums\FinancialAccountType;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable([
-    'financial_credit_card_id',
-    'reference_month',
-    'closing_date',
-    'due_date',
-    'paid_at',
-    'notes',
-    'interest_transaction_id',
-    'payment_transaction_id',
-])]
 class FinancialCreditCardInvoice extends Model
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'financial_credit_card_id',
+        'reference_month',
+        'closing_date',
+        'due_date',
+        'paid_at',
+        'notes',
+        'interest_transaction_id',
+        'payment_transaction_id',
+    ];
+
     use HasFactory;
 
     /**
@@ -320,5 +324,16 @@ class FinancialCreditCardInvoice extends Model
                 'due_date' => $dueDate,
             ]
         );
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_credit_card_invoice');
     }
 }

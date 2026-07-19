@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,24 +14,29 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable([
-    'financial_account_id',
-    'financial_credit_card_invoice_id',
-    'type',
-    'amount',
-    'description',
-    'date',
-    'is_posted',
-    'transfer_pair_id',
-    'installment_current',
-    'installment_total',
-    'financial_recurrence_id',
-])]
 class FinancialTransaction extends Model implements HasMedia
 {
+    use LogsActivity;
+
+    protected $fillable = [
+        'financial_account_id',
+        'financial_credit_card_invoice_id',
+        'type',
+        'amount',
+        'description',
+        'date',
+        'is_posted',
+        'transfer_pair_id',
+        'installment_current',
+        'installment_total',
+        'financial_recurrence_id',
+    ];
+
     use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**
@@ -355,5 +359,16 @@ class FinancialTransaction extends Model implements HasMedia
         }
 
         return $transactions;
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_transaction');
     }
 }
