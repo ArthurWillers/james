@@ -30,8 +30,8 @@
         </x-nav-link>
 
         <x-nav-link :href="route('audit.index')" :current="request()->routeIs('audit.*')" class="hidden! lg:flex!">
-            <x-heroicon-o-document-magnifying-glass class="w-4 h-4" />
-            Auditoria
+            <x-heroicon-o-document-text class="w-4 h-4" />
+            Logs do Sistema
         </x-nav-link>
     </x-sidebar>
 

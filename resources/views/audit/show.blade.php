@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <x-page-header title="Detalhes da Auditoria #{{ $activity->id }}" :backRoute="url()->previous()" />
+    <x-page-header title="Detalhes do Log #{{ $activity->id }}" :backRoute="url()->previous()" />
 
     <div class="mt-6">
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">

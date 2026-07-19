@@ -1,9 +1,9 @@
 <x-layouts.app>
-    <x-page-header title="Log de Auditoria" />
+    <x-page-header title="Logs do Sistema" />
 
     <div class="mt-6">
         <x-table>
-            <x-table.header class="grid-cols-[160px_1.5fr_1fr_120px] hidden sm:grid">
+            <x-table.header class="grid-cols-[200px_1fr_1.5fr_120px] hidden sm:grid">
                 <x-table.column>DATA/HORA</x-table.column>
                 <x-table.column>USUÁRIO</x-table.column>
                 <x-table.column>MÓDULO</x-table.column>
@@ -11,7 +11,7 @@
             </x-table.header>
             <div class="divide-y divide-neutral-100">
                 @forelse($activities as $activity)
-                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[160px_1.5fr_1fr_120px] hidden sm:grid items-center">
+                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[200px_1fr_1.5fr_120px] hidden sm:grid items-center">
                         <x-table.cell class="text-neutral-600 text-sm font-medium">{{ formatDateTime($activity->created_at) }}</x-table.cell>
                         <x-table.cell>
                             @if($activity->causer)
@@ -59,7 +59,7 @@
                     </x-table.row>
                 @empty
                     <x-empty-state 
-                        icon="heroicon-o-document-magnifying-glass" 
+                        icon="heroicon-o-document-text" 
                         title="Nenhum log encontrado" 
                         description="Não há registros de auditoria no sistema no momento." 
                     />
