@@ -7,32 +7,32 @@ namespace App\Helpers {
     {
         public static function format(string|Carbon $date): string
         {
-            return Carbon::parse($date)->isoFormat('D [de] MMMM [de] YYYY');
+            return Carbon::parse($date)->timezone(config('app.timezone'))->isoFormat('D [de] MMMM [de] YYYY');
         }
 
         public static function formatShort(string|Carbon $date): string
         {
-            return Carbon::parse($date)->isoFormat('DD/MM/YYYY');
+            return Carbon::parse($date)->timezone(config('app.timezone'))->isoFormat('DD/MM/YYYY');
         }
 
         public static function formatRelative(string|Carbon $date): string
         {
-            return Carbon::parse($date)->diffForHumans();
+            return Carbon::parse($date)->timezone(config('app.timezone'))->diffForHumans();
         }
 
         public static function formatDateTime(string|Carbon $date): string
         {
-            return Carbon::parse($date)->format('d/m/Y \à\s H:i');
+            return Carbon::parse($date)->timezone(config('app.timezone'))->format('d/m/Y \à\s H:i');
         }
 
         public static function formatMonthYear(string|Carbon $date): string
         {
-            return Carbon::parse($date)->isoFormat('MM/YYYY');
+            return Carbon::parse($date)->timezone(config('app.timezone'))->isoFormat('MM/YYYY');
         }
 
         public static function formatMonthYearFull(string|Carbon $date): string
         {
-            return \Str::title(Carbon::parse($date)->isoFormat('MMMM YYYY'));
+            return \Str::title(Carbon::parse($date)->timezone(config('app.timezone'))->isoFormat('MMMM YYYY'));
         }
     }
 }

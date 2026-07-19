@@ -72,7 +72,6 @@
 
             <!-- Painel de Alterações -->
             <div class="xl:col-span-2">
-                <h3 class="text-sm font-bold text-neutral-900 mb-4">Alterações de Dados</h3>
                 
                 @php
                     // Regra Spatie v5: Buscar primeiro em attribute_changes, fallback para properties
@@ -87,6 +86,8 @@
                     $attributes = is_object($attributes) ? (array) $attributes : $attributes;
                     
                     $keys = collect(array_keys($old))->merge(array_keys($attributes))->unique();
+                    $hasOld = count($old) > 0;
+                    $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
                 @endphp
 
                 @if($keys->isEmpty())
@@ -97,15 +98,17 @@
                     />
                 @else
                     <x-table>
-                        <x-table.header class="grid-cols-[1fr_1.5fr_1.5fr] hidden sm:grid">
+                        <x-table.header class="{{ $gridClass }} hidden sm:grid">
                             <x-table.column>Campo</x-table.column>
-                            <x-table.column>Anterior (Old)</x-table.column>
-                            <x-table.column>Atual (New)</x-table.column>
+                            @if($hasOld)
+                                <x-table.column>Anterior</x-table.column>
+                            @endif
+                            <x-table.column>Atual</x-table.column>
                         </x-table.header>
                         <div class="divide-y divide-neutral-100">
                             @foreach($keys as $key)
                                 @php
-                                    $isDate = str_ends_with($key, '_at') || str_ends_with($key, '_date');
+                                    $isDate = str_ends_with($key, '_at') || str_ends_with($key, '_date') || $key === 'date';
                                     
                                     $formatValue = function($val) use ($isDate) {
                                         if (is_array($val) || is_object($val)) return json_encode($val);
@@ -119,15 +122,17 @@
                                         return $val ?? 'Nulo';
                                     };
                                 @endphp
-                                <x-table.row class="grid-cols-[1fr_1.5fr_1.5fr] hidden sm:grid">
-                                    <x-table.cell class="font-medium text-neutral-900">{{ $key }}</x-table.cell>
-                                    <x-table.cell class="text-red-600 font-medium break-all">
-                                        @if(array_key_exists($key, $old))
-                                            {{ $formatValue($old[$key]) }}
-                                        @else
-                                            <span class="text-neutral-400 font-normal">-</span>
-                                        @endif
-                                    </x-table.cell>
+                                <x-table.row class="{{ $gridClass }} hidden sm:grid">
+                                    <x-table.cell class="font-medium text-neutral-900 whitespace-normal break-words">{{ $key }}</x-table.cell>
+                                    @if($hasOld)
+                                        <x-table.cell class="text-red-600 font-medium break-all">
+                                            @if(array_key_exists($key, $old))
+                                                {{ $formatValue($old[$key]) }}
+                                            @else
+                                                <span class="text-neutral-400 font-normal">-</span>
+                                            @endif
+                                        </x-table.cell>
+                                    @endif
                                     <x-table.cell class="text-green-600 font-medium break-all">
                                         @if(array_key_exists($key, $attributes))
                                             {{ $formatValue($attributes[$key]) }}
@@ -137,16 +142,18 @@
                                     </x-table.cell>
                                     
                                     <x-slot:mobile>
-                                        <div class="font-medium text-neutral-900 mb-2">{{ $key }}</div>
-                                        <div class="grid grid-cols-2 gap-2 text-sm">
-                                            <div class="text-red-600 font-medium break-all">
-                                                <span class="text-neutral-400 font-normal block text-xs mb-0.5">Anterior:</span>
-                                                @if(array_key_exists($key, $old))
-                                                    {{ $formatValue($old[$key]) }}
-                                                @else
-                                                    <span class="text-neutral-400 font-normal">-</span>
-                                                @endif
-                                            </div>
+                                        <div class="font-medium text-neutral-900 mb-2 whitespace-normal break-words">{{ $key }}</div>
+                                        <div class="grid {{ $hasOld ? 'grid-cols-2' : 'grid-cols-1' }} gap-2 text-sm">
+                                            @if($hasOld)
+                                                <div class="text-red-600 font-medium break-all">
+                                                    <span class="text-neutral-400 font-normal block text-xs mb-0.5">Anterior:</span>
+                                                    @if(array_key_exists($key, $old))
+                                                        {{ $formatValue($old[$key]) }}
+                                                    @else
+                                                        <span class="text-neutral-400 font-normal">-</span>
+                                                    @endif
+                                                </div>
+                                            @endif
                                             <div class="text-green-600 font-medium break-all">
                                                 <span class="text-neutral-400 font-normal block text-xs mb-0.5">Atual:</span>
                                                 @if(array_key_exists($key, $attributes))
