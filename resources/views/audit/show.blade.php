@@ -16,10 +16,12 @@
                             <dt class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">AÇÃO REALIZADA</dt>
                             <dd>
                                 @php
+                                    $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'];
+                                    $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
                                     $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow'];
                                     $color = $actionColors[$activity->description] ?? 'neutral';
                                 @endphp
-                                <x-badge :color="$color" size="sm">{{ ucfirst($activity->description) }}</x-badge>
+                                <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>
                             </dd>
                         </div>
                         
@@ -40,7 +42,13 @@
                                         </div>
                                     </div>
                                 @else
-                                    <span class="text-sm font-medium text-neutral-500">Sistema / Rotina Automática</span>
+                                    <div class="flex items-center gap-3">
+                                        <x-avatar icon="heroicon-o-cpu-chip" size="md" />
+                                        <div>
+                                            <div class="text-sm font-medium text-neutral-900">Sistema</div>
+                                            <div class="text-xs text-neutral-500">Rotina Automática</div>
+                                        </div>
+                                    </div>
                                 @endif
                             </dd>
                         </div>

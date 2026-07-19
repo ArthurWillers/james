@@ -2,10 +2,43 @@
     <x-page-header title="Logs do Sistema" />
 
     <div class="mt-6">
+        <x-filter-bar action="{{ route('audit.index') }}" :showSearch="false" :filters="['module', 'action', 'user', 'date_start', 'date_end', 'sort']">
+            <select name="module" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
+                <option value="">Todos os módulos</option>
+                @foreach($modules as $module)
+                    <option value="{{ $module }}" @selected(request('module') == $module)>{{ class_basename($module) }}</option>
+                @endforeach
+            </select>
+            
+            <select name="action" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
+                <option value="">Todas as ações</option>
+                @foreach($actions as $action)
+                    <option value="{{ $action }}" @selected(request('action') == $action)>
+                        {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'][$action] ?? ucfirst($action) }}
+                    </option>
+                @endforeach
+            </select>
+            
+            <select name="user" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
+                <option value="">Todos os usuários</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" @selected(request('user') == $user->id)>{{ $user->name }}</option>
+                @endforeach
+            </select>
+            
+            <input type="date" name="date_start" value="{{ request('date_start') }}" class="border-0 bg-transparent py-1.5 px-3 text-sm text-neutral-500 focus:ring-0 w-36" title="Data Inicial">
+            <input type="date" name="date_end" value="{{ request('date_end') }}" class="border-0 bg-transparent py-1.5 px-3 text-sm text-neutral-500 focus:ring-0 w-36" title="Data Final">
+            
+            <select name="sort" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
+                <option value="newest" @selected(request('sort', 'newest') == 'newest')>Mais recentes</option>
+                <option value="oldest" @selected(request('sort') == 'oldest')>Mais antigos</option>
+            </select>
+        </x-filter-bar>
+
         <x-table>
             <x-table.header class="grid-cols-[200px_1fr_1.5fr_120px] hidden sm:grid">
                 <x-table.column>DATA/HORA</x-table.column>
-                <x-table.column>USUÁRIO</x-table.column>
+                <x-table.column>CAUSADOR</x-table.column>
                 <x-table.column>MÓDULO</x-table.column>
                 <x-table.column>AÇÃO</x-table.column>
             </x-table.header>
@@ -20,16 +53,21 @@
                                     <span class="font-medium text-neutral-900">{{ $activity->causer->name }}</span>
                                 </div>
                             @else
-                                <span class="text-neutral-500 font-medium">Sistema</span>
+                                <div class="flex items-center gap-2">
+                                    <x-avatar icon="heroicon-o-cpu-chip" size="sm" />
+                                    <span class="text-neutral-500 font-medium">Sistema</span>
+                                </div>
                             @endif
                         </x-table.cell>
                         <x-table.cell class="font-medium text-neutral-700">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</x-table.cell>
                         <x-table.cell>
                             @php
+                                $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'];
+                                $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
                                 $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow'];
                                 $color = $actionColors[$activity->description] ?? 'neutral';
                             @endphp
-                            <x-badge :color="$color" size="sm">{{ ucfirst($activity->description) }}</x-badge>
+                            <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>
                         </x-table.cell>
                         
                         <x-slot:mobile>
@@ -37,10 +75,12 @@
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center gap-2">
                                         @php
+                                            $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'];
+                                            $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
                                             $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow'];
                                             $color = $actionColors[$activity->description] ?? 'neutral';
                                         @endphp
-                                        <x-badge :color="$color" size="sm">{{ ucfirst($activity->description) }}</x-badge>
+                                        <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>
                                         <span class="text-sm font-medium text-neutral-900">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</span>
                                     </div>
                                     <div class="text-xs text-neutral-500">
