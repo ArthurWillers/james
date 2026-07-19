@@ -3,36 +3,38 @@
 
     <div class="mt-6">
         <x-filter-bar action="{{ route('audit.index') }}" :showSearch="false" :filters="['module', 'action', 'user', 'date_start', 'date_end', 'sort']">
-            <select name="module" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
-                <option value="">Todos os módulos</option>
-                @foreach($modules as $module)
-                    <option value="{{ $module }}" @selected(request('module') == $module)>{{ class_basename($module) }}</option>
-                @endforeach
-            </select>
-            
-            <select name="action" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
-                <option value="">Todas as ações</option>
-                @foreach($actions as $action)
-                    <option value="{{ $action }}" @selected(request('action') == $action)>
-                        {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'][$action] ?? ucfirst($action) }}
-                    </option>
-                @endforeach
-            </select>
-            
-            <select name="user" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
-                <option value="">Todos os usuários</option>
-                @foreach($users as $user)
-                    <option value="{{ $user->id }}" @selected(request('user') == $user->id)>{{ $user->name }}</option>
-                @endforeach
-            </select>
-            
-            <input type="date" name="date_start" value="{{ request('date_start') }}" class="border-0 bg-transparent py-1.5 px-3 text-sm text-neutral-500 focus:ring-0 w-36" title="Data Inicial">
-            <input type="date" name="date_end" value="{{ request('date_end') }}" class="border-0 bg-transparent py-1.5 px-3 text-sm text-neutral-500 focus:ring-0 w-36" title="Data Final">
-            
-            <select name="sort" class="border-0 bg-transparent py-1.5 pl-3 pr-8 text-sm text-neutral-900 focus:ring-0">
-                <option value="newest" @selected(request('sort', 'newest') == 'newest')>Mais recentes</option>
-                <option value="oldest" @selected(request('sort') == 'oldest')>Mais antigos</option>
-            </select>
+            <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
+                <x-filter-bar.select name="module">
+                    <option value="">Todos os módulos</option>
+                    @foreach($modules as $module)
+                        <option value="{{ $module }}" @selected(request('module') == $module)>{{ class_basename($module) }}</option>
+                    @endforeach
+                </x-filter-bar.select>
+                
+                <x-filter-bar.select name="action">
+                    <option value="">Todas as ações</option>
+                    @foreach($actions as $action)
+                        <option value="{{ $action }}" @selected(request('action') == $action)>
+                            {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado'][$action] ?? ucfirst($action) }}
+                        </option>
+                    @endforeach
+                </x-filter-bar.select>
+                
+                <x-filter-bar.select name="user">
+                    <option value="">Todos os usuários</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}" @selected(request('user') == $user->id)>{{ $user->name }}</option>
+                    @endforeach
+                </x-filter-bar.select>
+                
+                <x-filter-bar.date name="date_start" value="{{ request('date_start') }}" title="Data Inicial" />
+                <x-filter-bar.date name="date_end" value="{{ request('date_end') }}" title="Data Final" />
+                
+                <x-filter-bar.select name="sort">
+                    <option value="newest" @selected(request('sort', 'newest') == 'newest')>Mais recentes</option>
+                    <option value="oldest" @selected(request('sort') == 'oldest')>Mais antigos</option>
+                </x-filter-bar.select>
+            </div>
         </x-filter-bar>
 
         <x-table>
