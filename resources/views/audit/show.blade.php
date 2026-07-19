@@ -70,40 +70,56 @@
                                     <p class="text-neutral-500">Nenhuma alteração de atributos registrada neste evento.</p>
                                 </div>
                             @else
-                                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                                    <table class="min-w-full divide-y divide-neutral-300">
-                                        <thead class="bg-neutral-50">
-                                            <tr>
-                                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 sm:pl-6">Campo</th>
-                                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900">Anterior (Old)</th>
-                                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900">Atual (New)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-neutral-200 bg-white">
-                                            @foreach($keys as $key)
-                                                <tr>
-                                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-neutral-900 sm:pl-6">
-                                                        {{ $key }}
-                                                    </td>
-                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-red-600 font-medium">
-                                                        @if(array_key_exists($key, $old))
-                                                            {{ is_array($old[$key]) || is_object($old[$key]) ? json_encode($old[$key]) : ($old[$key] ?? 'Nulo') }}
-                                                        @else
-                                                            <span class="text-neutral-400 font-normal">-</span>
-                                                        @endif
-                                                    </td>
-                                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-green-600 font-medium">
-                                                        @if(array_key_exists($key, $attributes))
-                                                            {{ is_array($attributes[$key]) || is_object($attributes[$key]) ? json_encode($attributes[$key]) : ($attributes[$key] ?? 'Nulo') }}
-                                                        @else
-                                                            <span class="text-neutral-400 font-normal">-</span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <x-table>
+                                    <x-table.header class="grid-cols-[1fr_1.5fr_1.5fr] hidden sm:grid">
+                                        <x-table.column>Campo</x-table.column>
+                                        <x-table.column>Anterior (Old)</x-table.column>
+                                        <x-table.column>Atual (New)</x-table.column>
+                                    </x-table.header>
+                                    <div class="divide-y divide-neutral-100">
+                                        @foreach($keys as $key)
+                                            <x-table.row class="grid-cols-[1fr_1.5fr_1.5fr] hidden sm:grid">
+                                                <x-table.cell class="font-medium text-neutral-900">{{ $key }}</x-table.cell>
+                                                <x-table.cell class="text-red-600 font-medium break-all">
+                                                    @if(array_key_exists($key, $old))
+                                                        {{ is_array($old[$key]) || is_object($old[$key]) ? json_encode($old[$key]) : ($old[$key] ?? 'Nulo') }}
+                                                    @else
+                                                        <span class="text-neutral-400 font-normal">-</span>
+                                                    @endif
+                                                </x-table.cell>
+                                                <x-table.cell class="text-green-600 font-medium break-all">
+                                                    @if(array_key_exists($key, $attributes))
+                                                        {{ is_array($attributes[$key]) || is_object($attributes[$key]) ? json_encode($attributes[$key]) : ($attributes[$key] ?? 'Nulo') }}
+                                                    @else
+                                                        <span class="text-neutral-400 font-normal">-</span>
+                                                    @endif
+                                                </x-table.cell>
+                                                
+                                                <x-slot:mobile>
+                                                    <div class="font-medium text-neutral-900 mb-2">{{ $key }}</div>
+                                                    <div class="grid grid-cols-2 gap-2 text-sm">
+                                                        <div class="text-red-600 font-medium break-all">
+                                                            <span class="text-neutral-400 font-normal block text-xs mb-0.5">Anterior:</span>
+                                                            @if(array_key_exists($key, $old))
+                                                                {{ is_array($old[$key]) || is_object($old[$key]) ? json_encode($old[$key]) : ($old[$key] ?? 'Nulo') }}
+                                                            @else
+                                                                <span class="text-neutral-400 font-normal">-</span>
+                                                            @endif
+                                                        </div>
+                                                        <div class="text-green-600 font-medium break-all">
+                                                            <span class="text-neutral-400 font-normal block text-xs mb-0.5">Atual:</span>
+                                                            @if(array_key_exists($key, $attributes))
+                                                                {{ is_array($attributes[$key]) || is_object($attributes[$key]) ? json_encode($attributes[$key]) : ($attributes[$key] ?? 'Nulo') }}
+                                                            @else
+                                                                <span class="text-neutral-400 font-normal">-</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </x-slot:mobile>
+                                            </x-table.row>
+                                        @endforeach
+                                    </div>
+                                </x-table>
                             @endif
                         </div>
                     </x-card>
