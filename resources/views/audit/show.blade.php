@@ -1,11 +1,10 @@
 <x-layouts.app>
     <x-page-header title="Detalhes da Auditoria #{{ $activity->id }}" :backRoute="url()->previous()" />
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <!-- Painel de Informações -->
-                <div class="md:col-span-1 space-y-6">
+    <div class="mt-6">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Painel de Informações -->
+            <div class="xl:col-span-1 space-y-6">
                     <x-card>
                         <div class="p-5">
                             <h3 class="text-lg font-medium text-neutral-900 mb-4">Informações Gerais</h3>
@@ -44,11 +43,7 @@
                 </div>
 
                 <!-- Painel de Alterações -->
-                <div class="md:col-span-2">
-                    <x-card>
-                        <div class="p-5">
-                            <h3 class="text-lg font-medium text-neutral-900 mb-4">Alterações de Atributos</h3>
-                            
+            <div class="xl:col-span-2">
                             @php
                                 // Regra Spatie v5: Buscar primeiro em attribute_changes, fallback para properties
                                 $changes = $activity->attribute_changes ?? $activity->properties;
@@ -65,10 +60,13 @@
                             @endphp
 
                             @if($keys->isEmpty())
-                                <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-8 text-center">
-                                    <x-heroicon-o-document-magnifying-glass class="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                                    <p class="text-neutral-500">Nenhuma alteração de atributos registrada neste evento.</p>
-                                </div>
+                                <x-card>
+                                    <x-empty-state 
+                                        icon="heroicon-o-document-magnifying-glass" 
+                                        title="Nenhuma alteração" 
+                                        description="Nenhuma alteração de atributos registrada neste evento." 
+                                    />
+                                </x-card>
                             @else
                                 <x-table>
                                     <x-table.header class="grid-cols-[1fr_1.5fr_1.5fr] hidden sm:grid">
@@ -121,9 +119,6 @@
                                     </div>
                                 </x-table>
                             @endif
-                        </div>
-                    </x-card>
-                </div>
             </div>
         </div>
     </div>

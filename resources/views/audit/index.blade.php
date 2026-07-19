@@ -1,10 +1,8 @@
 <x-layouts.app>
     <x-page-header title="Log de Auditoria" />
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <x-card>
-            <x-table>
+    <div class="mt-6">
+        <x-table>
                 <x-table.header class="grid-cols-[80px_1fr_1.5fr_1.5fr_1fr_40px] hidden sm:grid">
                     <x-table.column>ID</x-table.column>
                     <x-table.column>Ação</x-table.column>
@@ -40,19 +38,18 @@
                             </x-slot:mobile>
                         </x-table.row>
                     @empty
-                        <div class="px-6 py-12 text-center text-neutral-500">
-                            Nenhum log de auditoria encontrado.
-                        </div>
+                        <x-empty-state 
+                            icon="heroicon-o-document-magnifying-glass" 
+                            title="Nenhum log encontrado" 
+                            description="Não há registros de auditoria no sistema no momento." 
+                        />
                     @endforelse
-                </div>
-            </x-table>
-                
-                @if(method_exists($activities, 'links'))
-                    <div class="p-4 border-t border-neutral-200">
-                        {{ $activities->links() }}
-                    </div>
-                @endif
-            </x-card>
-        </div>
+        </x-table>
+        
+        @if(method_exists($activities, 'links'))
+            <div class="mt-4">
+                {{ $activities->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.app>
