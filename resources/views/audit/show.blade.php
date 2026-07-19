@@ -73,24 +73,7 @@
             <!-- Painel de Alterações -->
             <div class="xl:col-span-2">
                 
-                @php
-                    // Regra Spatie v5: Buscar primeiro em attribute_changes, fallback para properties
-                    $changes = $activity->attribute_changes ?? $activity->properties;
-                    $changesArray = is_object($changes) && method_exists($changes, 'toArray') ? $changes->toArray() : (array) $changes;
-                    
-                    $old = $changesArray['old'] ?? [];
-                    $attributes = $changesArray['attributes'] ?? [];
-                    
-                    // Converter objetos para array caso existam (ex: casts JSON)
-                    $old = is_object($old) ? (array) $old : $old;
-                    $attributes = is_object($attributes) ? (array) $attributes : $attributes;
-                    
-                    $keys = collect(array_keys($old))->merge(array_keys($attributes))->unique();
-                    $hasOld = count($old) > 0;
-                    $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
-                @endphp
-
-                @if($keys->isEmpty())
+                @if($parsedChanges->isEmpty())
                     <x-empty-state 
                         icon="heroicon-o-code-bracket" 
                         title="Nenhum dado alterado"
@@ -106,49 +89,34 @@
                             <x-table.column>Atual</x-table.column>
                         </x-table.header>
                         <div class="divide-y divide-neutral-100">
-                            @foreach($keys as $key)
-                                @php
-                                    $isDate = str_ends_with($key, '_at') || str_ends_with($key, '_date') || $key === 'date';
-                                    
-                                    $formatValue = function($val) use ($isDate) {
-                                        if (is_array($val) || is_object($val)) return json_encode($val);
-                                        if ($isDate && !empty($val)) {
-                                            try {
-                                                return formatDateTime($val);
-                                            } catch (\Exception $e) {
-                                                return $val;
-                                            }
-                                        }
-                                        return $val ?? 'Nulo';
-                                    };
-                                @endphp
+                            @foreach($parsedChanges as $change)
                                 <x-table.row class="{{ $gridClass }} hidden sm:grid">
-                                    <x-table.cell class="font-medium text-neutral-900 whitespace-normal break-words">{{ $key }}</x-table.cell>
+                                    <x-table.cell class="font-medium text-neutral-900 whitespace-normal break-words">{{ $change['key'] }}</x-table.cell>
                                     @if($hasOld)
                                         <x-table.cell class="text-red-600 font-medium break-all">
-                                            @if(array_key_exists($key, $old))
-                                                {{ $formatValue($old[$key]) }}
+                                            @if($change['old'] !== '-')
+                                                {{ $change['old'] }}
                                             @else
                                                 <span class="text-neutral-400 font-normal">-</span>
                                             @endif
                                         </x-table.cell>
                                     @endif
                                     <x-table.cell class="text-green-600 font-medium break-all">
-                                        @if(array_key_exists($key, $attributes))
-                                            {{ $formatValue($attributes[$key]) }}
+                                        @if($change['new'] !== '-')
+                                            {{ $change['new'] }}
                                         @else
                                             <span class="text-neutral-400 font-normal">-</span>
                                         @endif
                                     </x-table.cell>
                                     
                                     <x-slot:mobile>
-                                        <div class="font-medium text-neutral-900 mb-2 whitespace-normal break-words">{{ $key }}</div>
+                                        <div class="font-medium text-neutral-900 mb-2 whitespace-normal break-words">{{ $change['key'] }}</div>
                                         <div class="grid {{ $hasOld ? 'grid-cols-2' : 'grid-cols-1' }} gap-2 text-sm">
                                             @if($hasOld)
                                                 <div class="text-red-600 font-medium break-all">
                                                     <span class="text-neutral-400 font-normal block text-xs mb-0.5">Anterior:</span>
-                                                    @if(array_key_exists($key, $old))
-                                                        {{ $formatValue($old[$key]) }}
+                                                    @if($change['old'] !== '-')
+                                                        {{ $change['old'] }}
                                                     @else
                                                         <span class="text-neutral-400 font-normal">-</span>
                                                     @endif
@@ -156,8 +124,8 @@
                                             @endif
                                             <div class="text-green-600 font-medium break-all">
                                                 <span class="text-neutral-400 font-normal block text-xs mb-0.5">Atual:</span>
-                                                @if(array_key_exists($key, $attributes))
-                                                    {{ $formatValue($attributes[$key]) }}
+                                                @if($change['new'] !== '-')
+                                                    {{ $change['new'] }}
                                                 @else
                                                     <span class="text-neutral-400 font-normal">-</span>
                                                 @endif

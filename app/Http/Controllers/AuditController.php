@@ -58,6 +58,50 @@ class AuditController extends Controller
     {
         $activity->load('causer');
 
-        return view('audit.show', compact('activity'));
+        $changes = $activity->attribute_changes ?? $activity->properties;
+        $changesArray = is_object($changes) && method_exists($changes, 'toArray') ? $changes->toArray() : (array) $changes;
+        
+        $old = $changesArray['old'] ?? [];
+        $attributes = $changesArray['attributes'] ?? [];
+        
+        $old = is_object($old) ? (array) $old : $old;
+        $attributes = is_object($attributes) ? (array) $attributes : $attributes;
+        
+        $keys = collect(array_keys($old))->merge(array_keys($attributes))->unique();
+        $hasOld = count($old) > 0;
+        
+        $parsedChanges = $keys->map(function ($key) use ($old, $attributes) {
+            $isDate = str_ends_with($key, '_at') || str_ends_with($key, '_date') || $key === 'date';
+            
+            $formatValue = function ($val) use ($isDate) {
+                if (is_array($val) || is_object($val)) {
+                    return json_encode($val);
+                }
+                
+                if ($isDate && !empty($val)) {
+                    try {
+                        $carbon = \Carbon\Carbon::parse($val)->timezone(config('app.timezone'));
+                        if ($carbon->format('H:i:s') === '00:00:00') {
+                            return formatShort($val);
+                        }
+                        return formatDateTime($val);
+                    } catch (\Exception $e) {
+                        return $val;
+                    }
+                }
+                
+                return $val ?? 'Nulo';
+            };
+
+            return [
+                'key' => $key,
+                'old' => array_key_exists($key, $old) ? $formatValue($old[$key]) : '-',
+                'new' => array_key_exists($key, $attributes) ? $formatValue($attributes[$key]) : '-',
+            ];
+        });
+
+        $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
+
+        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass'));
     }
 }
