@@ -3,47 +3,70 @@
 
     <div class="mt-6">
         <x-table>
-                <x-table.header class="grid-cols-[80px_1fr_1.5fr_1.5fr_1fr_40px] hidden sm:grid">
-                    <x-table.column>ID</x-table.column>
-                    <x-table.column>Ação</x-table.column>
-                    <x-table.column>Entidade</x-table.column>
-                    <x-table.column>Autor</x-table.column>
-                    <x-table.column>Data</x-table.column>
-                    <x-table.column></x-table.column>
-                </x-table.header>
-                <div class="divide-y divide-neutral-100">
-                    @forelse($activities as $activity)
-                        <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[80px_1fr_1.5fr_1.5fr_1fr_40px] hidden sm:grid">
-                            <x-table.cell class="text-neutral-500 font-mono text-sm">#{{ $activity->id }}</x-table.cell>
-                            <x-table.cell class="font-medium text-neutral-900">{{ ucfirst($activity->description) }}</x-table.cell>
-                            <x-table.cell class="text-neutral-500">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</x-table.cell>
-                            <x-table.cell class="text-neutral-500">{{ $activity->causer_id ? ($activity->causer->name ?? 'Usuário #'.$activity->causer_id) : 'Sistema' }}</x-table.cell>
-                            <x-table.cell class="text-neutral-500">{{ formatDateTime($activity->created_at) }}</x-table.cell>
-                            <x-table.cell align="right">
-                                <x-heroicon-m-chevron-right class="w-5 h-5 text-neutral-400 group-hover/row:text-primary-600 transition-colors" />
-                            </x-table.cell>
-                            
-                            <x-slot:mobile>
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <div class="font-medium text-neutral-900">{{ ucfirst($activity->description) }}</div>
-                                        <div class="text-sm text-neutral-500 mt-1">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</div>
-                                        <div class="text-xs text-neutral-500 mt-1">{{ $activity->causer_id ? ($activity->causer->name ?? 'Usuário #'.$activity->causer_id) : 'Sistema' }}</div>
+            <x-table.header class="grid-cols-[160px_1.5fr_1fr_120px_1fr] hidden sm:grid">
+                <x-table.column>DATA/HORA</x-table.column>
+                <x-table.column>USUÁRIO</x-table.column>
+                <x-table.column>MÓDULO</x-table.column>
+                <x-table.column>AÇÃO</x-table.column>
+                <x-table.column>DESCRIÇÃO</x-table.column>
+            </x-table.header>
+            <div class="divide-y divide-neutral-100">
+                @forelse($activities as $activity)
+                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[160px_1.5fr_1fr_120px_1fr] hidden sm:grid items-center">
+                        <x-table.cell class="text-neutral-600 text-sm font-medium">{{ formatDateTime($activity->created_at) }}</x-table.cell>
+                        <x-table.cell>
+                            @if($activity->causer)
+                                <div class="flex items-center gap-2">
+                                    <x-avatar :model="$activity->causer" size="sm" />
+                                    <span class="font-medium text-neutral-900">{{ $activity->causer->name }}</span>
+                                </div>
+                            @else
+                                <span class="text-neutral-500 font-medium">Sistema</span>
+                            @endif
+                        </x-table.cell>
+                        <x-table.cell class="font-medium text-neutral-700">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</x-table.cell>
+                        <x-table.cell>
+                            @php
+                                $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow'];
+                                $color = $actionColors[$activity->description] ?? 'neutral';
+                            @endphp
+                            <x-badge :color="$color" size="sm">{{ ucfirst($activity->description) }}</x-badge>
+                        </x-table.cell>
+                        <x-table.cell class="text-neutral-600 truncate">{{ $activity->description }}</x-table.cell>
+                        
+                        <x-slot:mobile>
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center gap-2">
+                                        @php
+                                            $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow'];
+                                            $color = $actionColors[$activity->description] ?? 'neutral';
+                                        @endphp
+                                        <x-badge :color="$color" size="sm">{{ ucfirst($activity->description) }}</x-badge>
+                                        <span class="text-sm font-medium text-neutral-900">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</span>
                                     </div>
-                                    <div class="text-right text-sm">
-                                        <div class="text-neutral-900">{{ formatDateTime($activity->created_at) }}</div>
-                                        <div class="text-neutral-400 text-xs font-mono mt-1">#{{ $activity->id }}</div>
+                                    <div class="text-xs text-neutral-500">
+                                        @if($activity->causer)
+                                            {{ $activity->causer->name }}
+                                        @else
+                                            Sistema
+                                        @endif
                                     </div>
                                 </div>
-                            </x-slot:mobile>
-                        </x-table.row>
-                    @empty
-                        <x-empty-state 
-                            icon="heroicon-o-document-magnifying-glass" 
-                            title="Nenhum log encontrado" 
-                            description="Não há registros de auditoria no sistema no momento." 
-                        />
-                    @endforelse
+                                <div class="text-right text-sm">
+                                    <div class="text-neutral-900 font-medium">{{ formatDateTime($activity->created_at) }}</div>
+                                </div>
+                            </div>
+                        </x-slot:mobile>
+                    </x-table.row>
+                @empty
+                    <x-empty-state 
+                        icon="heroicon-o-document-magnifying-glass" 
+                        title="Nenhum log encontrado" 
+                        description="Não há registros de auditoria no sistema no momento." 
+                    />
+                @endforelse
+            </div>
         </x-table>
         
         @if(method_exists($activities, 'links'))
