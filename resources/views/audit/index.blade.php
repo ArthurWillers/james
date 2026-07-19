@@ -15,7 +15,7 @@
                     <option value="">Todas as ações</option>
                     @foreach($actions as $action)
                         <option value="{{ $action }}" @selected(request('action') == $action)>
-                            {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Definitivamente'][$action] ?? ucfirst($action) }}
+                            {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'][$action] ?? ucfirst($action) }}
                         </option>
                     @endforeach
                 </x-filter-bar.select>
@@ -77,7 +77,7 @@
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center gap-2">
                                         @php
-                                            $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Definitivamente'];
+                                            $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
                                             $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
                                             $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
                                             $color = $actionColors[$activity->description] ?? 'neutral';
