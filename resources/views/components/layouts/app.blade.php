@@ -28,6 +28,11 @@
             <x-heroicon-o-scale class="w-4 h-4" />
             Acertos
         </x-nav-link>
+
+        <x-nav-link :href="route('audit.index')" :current="request()->routeIs('audit.*')" class="hidden! lg:flex!">
+            <x-heroicon-o-document-magnifying-glass class="w-4 h-4" />
+            Auditoria
+        </x-nav-link>
     </x-sidebar>
 
     <main class="lg:ml-64 p-3 pb-12 sm:p-6 lg:pt-8 lg:px-8">
