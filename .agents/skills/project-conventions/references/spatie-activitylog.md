@@ -20,8 +20,8 @@ Sempre que adicionar logs a uma Model, você DEVE seguir as restrições abaixo 
 4. **REGRA CRÍTICA DE SOFTDELETES:** A propriedade `$recordEvents` só pode conter `'restored'` e `'forceDeleted'` se o model utilizar explicitamente a trait `Illuminate\Database\Eloquent\SoftDeletes`. Models sem SoftDeletes devem usar apenas `['created', 'updated', 'deleted']`. (O desrespeito a isso causa um loop infinito no boot do Laravel).
 
 ```php
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
