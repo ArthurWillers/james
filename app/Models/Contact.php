@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Traits\HasInitials;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,16 +20,17 @@ use Spatie\Image\Image;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable([
-    'name',
-    'relationship_category',
-    'birthdate',
-    'phones',
-    'emails',
-    'notes',
-])]
 class Contact extends Model implements HasMedia
 {
+    protected $fillable = [
+        'name',
+        'relationship_category',
+        'birthdate',
+        'phones',
+        'emails',
+        'notes',
+    ];
+
     use HasFactory, HasInitials, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**

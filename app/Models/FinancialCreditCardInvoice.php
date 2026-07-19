@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\FinancialAccountType;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,18 +10,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
-#[Fillable([
-    'financial_credit_card_id',
-    'reference_month',
-    'closing_date',
-    'due_date',
-    'paid_at',
-    'notes',
-    'interest_transaction_id',
-    'payment_transaction_id',
-])]
 class FinancialCreditCardInvoice extends Model
 {
+    protected $fillable = [
+        'financial_credit_card_id',
+        'reference_month',
+        'closing_date',
+        'due_date',
+        'paid_at',
+        'notes',
+        'interest_transaction_id',
+        'payment_transaction_id',
+    ];
+
     use HasFactory;
 
     /**

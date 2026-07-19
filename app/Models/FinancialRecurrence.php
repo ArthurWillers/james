@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,20 +18,21 @@ use Illuminate\Support\Carbon;
  * deve-se garantir a validação lógica XOR entre `financial_account_id` e `financial_credit_card_id`.
  * Ou seja, exatamente UM dos dois campos deve estar preenchido (usando `required_without` / `prohibits`).
  */
-#[Fillable([
-    'title',
-    'amount',
-    'type',
-    'frequency',
-    'financial_account_id',
-    'financial_credit_card_id',
-    'start_date',
-    'end_date',
-    'next_processing_date',
-    'is_active',
-])]
 class FinancialRecurrence extends Model
 {
+    protected $fillable = [
+        'title',
+        'amount',
+        'type',
+        'frequency',
+        'financial_account_id',
+        'financial_credit_card_id',
+        'start_date',
+        'end_date',
+        'next_processing_date',
+        'is_active',
+    ];
+
     use HasFactory, Searchable, SoftDeletes;
 
     /**

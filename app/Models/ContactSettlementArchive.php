@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable([
-    'contact_id',
-])]
 class ContactSettlementArchive extends Model
 {
+    protected $fillable = [
+        'contact_id',
+    ];
+
     use HasFactory;
 
     public function contact(): BelongsTo

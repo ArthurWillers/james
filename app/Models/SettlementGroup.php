@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,15 +10,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable([
-    'description',
-    'total_amount',
-    'date',
-    'mode',
-    'financial_transaction_id',
-])]
 class SettlementGroup extends Model implements HasMedia
 {
+    protected $fillable = [
+        'description',
+        'total_amount',
+        'date',
+        'mode',
+        'financial_transaction_id',
+    ];
+
     use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected function casts(): array

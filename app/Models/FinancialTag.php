@@ -3,18 +3,18 @@
 namespace App\Models;
 
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
-#[Fillable([
-    'name',
-    'icon',
-    'color_hex',
-])]
 class FinancialTag extends Model
 {
+    protected $fillable = [
+        'name',
+        'icon',
+        'color_hex',
+    ];
+
     use HasFactory, Searchable;
 
     public const REEMBOLSO_ID = 1;

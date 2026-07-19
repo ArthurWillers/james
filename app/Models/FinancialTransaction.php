@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,21 +17,22 @@ use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable([
-    'financial_account_id',
-    'financial_credit_card_invoice_id',
-    'type',
-    'amount',
-    'description',
-    'date',
-    'is_posted',
-    'transfer_pair_id',
-    'installment_current',
-    'installment_total',
-    'financial_recurrence_id',
-])]
 class FinancialTransaction extends Model implements HasMedia
 {
+    protected $fillable = [
+        'financial_account_id',
+        'financial_credit_card_invoice_id',
+        'type',
+        'amount',
+        'description',
+        'date',
+        'is_posted',
+        'transfer_pair_id',
+        'installment_current',
+        'installment_total',
+        'financial_recurrence_id',
+    ];
+
     use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     /**

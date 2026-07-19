@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,15 +12,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-#[Fillable([
-    'name',
-    'financial_account_id',
-    'credit_limit',
-    'closing_day',
-    'due_day',
-])]
 class FinancialCreditCard extends Model
 {
+    protected $fillable = [
+        'name',
+        'financial_account_id',
+        'credit_limit',
+        'closing_day',
+        'due_day',
+    ];
+
     use HasFactory, Searchable, SoftDeletes;
 
     /**

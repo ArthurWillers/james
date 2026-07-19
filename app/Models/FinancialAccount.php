@@ -4,20 +4,20 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Traits\Searchable;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable([
-    'name',
-    'type',
-    'pix_keys',
-])]
 class FinancialAccount extends Model
 {
+    protected $fillable = [
+        'name',
+        'type',
+        'pix_keys',
+    ];
+
     use HasFactory, Searchable, SoftDeletes;
 
     /**
