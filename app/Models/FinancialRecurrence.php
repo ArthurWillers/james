@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Nota de Implementação (Validação):
@@ -20,6 +22,8 @@ use Illuminate\Support\Carbon;
  */
 class FinancialRecurrence extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'title',
         'amount',
@@ -146,5 +150,16 @@ class FinancialRecurrence extends Model
                     $q2->whereIn('financial_account_id', $accountIds);
                 });
         });
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_recurrence');
     }
 }

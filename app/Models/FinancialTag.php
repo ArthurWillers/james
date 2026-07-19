@@ -6,9 +6,13 @@ use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class FinancialTag extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'name',
         'icon',
@@ -59,5 +63,16 @@ class FinancialTag extends Model
             'financial_tag_id',
             'financial_taggable_id'
         );
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_tag');
     }
 }

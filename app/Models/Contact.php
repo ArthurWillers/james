@@ -15,6 +15,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Override;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Image\Enums\Fit;
 use Spatie\Image\Image;
 use Spatie\MediaLibrary\HasMedia;
@@ -22,6 +24,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Contact extends Model implements HasMedia
 {
+    use LogsActivity;
+
     protected $fillable = [
         'name',
         'relationship_category',
@@ -130,5 +134,16 @@ class Contact extends Model implements HasMedia
             ->distinct()
             ->orderBy('relationship_category', 'asc')
             ->pluck('relationship_category');
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('contact');
     }
 }

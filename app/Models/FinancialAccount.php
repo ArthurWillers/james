@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class FinancialAccount extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'name',
         'type',
@@ -81,5 +85,16 @@ class FinancialAccount extends Model
     public function scopeWithoutInvestments(Builder $query): void
     {
         $query->where('type', '!=', FinancialAccountType::Investment);
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_account');
     }
 }

@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class FinancialTransactionItem extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'financial_transaction_id',
         'description',
@@ -57,5 +61,16 @@ class FinancialTransactionItem extends Model
             'financial_taggable_id',
             'financial_tag_id'
         )->withPivot('is_primary');
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_transaction_item');
     }
 }

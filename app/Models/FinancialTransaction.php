@@ -14,11 +14,15 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class FinancialTransaction extends Model implements HasMedia
 {
+    use LogsActivity;
+
     protected $fillable = [
         'financial_account_id',
         'financial_credit_card_invoice_id',
@@ -355,5 +359,16 @@ class FinancialTransaction extends Model implements HasMedia
         }
 
         return $transactions;
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_transaction');
     }
 }

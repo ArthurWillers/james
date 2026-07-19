@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class FinancialCreditCardInvoice extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'financial_credit_card_id',
         'reference_month',
@@ -320,5 +324,16 @@ class FinancialCreditCardInvoice extends Model
                 'due_date' => $dueDate,
             ]
         );
+    }
+
+    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('financial_credit_card_invoice');
     }
 }
