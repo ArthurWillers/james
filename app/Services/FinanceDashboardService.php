@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\FinancialAccountType;
+use App\Enums\InvoiceStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -326,7 +327,7 @@ class FinanceDashboardService
                 }
 
                 $card->current_invoice_total = $currentInvoice ? $currentInvoice->total() : 0;
-                $card->current_invoice_status = $currentInvoice ? $currentInvoice->status() : 'open';
+                $card->current_invoice_status = $currentInvoice ? $currentInvoice->status() : InvoiceStatus::Open;
 
                 return $card;
             });

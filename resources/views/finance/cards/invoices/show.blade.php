@@ -9,22 +9,7 @@
 
     @php
         $status = $invoice->status();
-        $badgeColor = match($status) {
-            'paid' => 'success',
-            'partially_paid' => 'warning',
-            'open' => 'primary',
-            'overdue' => 'danger',
-            'closed' => 'neutral',
-            default => 'neutral'
-        };
-        $statusLabels = [
-            'paid' => 'Paga',
-            'partially_paid' => 'Parcialmente Paga',
-            'open' => 'Aberta',
-            'overdue' => 'Atrasada',
-            'closed' => 'Fechada',
-        ];
-        
+
         $total = $invoice->total();
         $isFavorable = $total < 0;
         $remaining = max(0, $total - $invoice->amount_paid);
@@ -33,8 +18,8 @@
     <x-page-header title="Fatura de {{ formatMonthYearFull($invoice->reference_month) }}">
         <x-slot:subtitle>
             <div class="flex items-center gap-2 mt-2">
-                <x-badge :color="$badgeColor">
-                    {{ $statusLabels[$status] ?? 'Desconhecido' }}
+                <x-badge :color="$status->color()">
+                    {{ $status->label() }}
                 </x-badge>
                 <span class="text-sm text-neutral-500">Cartão: {{ $card->name }}</span>
             </div>
@@ -69,7 +54,7 @@
             </x-modal>
         @endif
 
-        @if($status !== 'paid' && !$isFavorable && $total > 0)
+        @if($status !== App\Enums\InvoiceStatus::Paid && !$isFavorable && $total > 0)
             <x-modal.trigger name="pay-invoice-modal">
                 <x-button type="button" class="w-full sm:w-auto">
                     <x-heroicon-o-currency-dollar class="size-4" />
@@ -125,7 +110,7 @@
 
     <x-finance.transaction-table :transactions="$transactions" class="lg:mb-8" />
 
-    @if($status !== 'paid' && !$isFavorable && $total > 0)
+    @if($status !== App\Enums\InvoiceStatus::Paid && !$isFavorable && $total > 0)
         <!-- Modal Pagamento -->
         <x-modal name="pay-invoice-modal" title="Pagar Fatura">
             <x-slot name="content">

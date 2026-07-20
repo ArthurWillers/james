@@ -91,21 +91,6 @@
                 @php 
                     $total = $invoice->total(); 
                     $status = $invoice->status();
-                    $badgeColor = match($status) {
-                        'paid' => 'success',
-                        'partially_paid' => 'warning',
-                        'open' => 'primary',
-                        'overdue' => 'danger',
-                        'closed' => 'neutral',
-                        default => 'neutral'
-                    };
-                    $statusLabels = [
-                        'paid' => 'Paga',
-                        'partially_paid' => 'Parcial',
-                        'open' => 'Aberta',
-                        'overdue' => 'Atrasada',
-                        'closed' => 'Fechada',
-                    ];
                 @endphp
                 <x-table.row class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid items-center hover:bg-neutral-50/50">
                     <x-table.cell class="font-medium text-neutral-900">
@@ -123,8 +108,8 @@
                         </div>
                     </x-table.cell>
                     <x-table.cell class="text-center flex justify-center">
-                        <x-badge :color="$badgeColor" size="sm">
-                            {{ $statusLabels[$status] ?? 'Desconhecido' }}
+                        <x-badge :color="$status->color()" size="sm">
+                            {{ $status->label() }}
                         </x-badge>
                     </x-table.cell>
                     <x-table.cell class="flex justify-end">
@@ -138,8 +123,8 @@
                             <div class="font-medium text-neutral-900">
                                 {{ formatMonthYearFull($invoice->reference_month) }}
                             </div>
-                            <x-badge :color="$badgeColor" size="sm">
-                                {{ $statusLabels[$status] ?? 'Desconhecido' }}
+                            <x-badge :color="$status->color()" size="sm">
+                                {{ $status->label() }}
                             </x-badge>
                         </div>
                         <div class="flex justify-between items-center text-sm">
