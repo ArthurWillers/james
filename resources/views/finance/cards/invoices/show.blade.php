@@ -108,7 +108,12 @@
         <h2 class="text-lg font-bold text-neutral-900">Transações</h2>
     </div>
 
-    <x-finance.transaction-table :transactions="$transactions" class="lg:mb-8" />
+    <x-finance.transaction-table :transactions="$transactions" class="lg:mb-4" />
+    @if($transactions->hasPages())
+        <div class="mb-8">
+            {{ $transactions->links() }}
+        </div>
+    @endif
 
     @if($status !== App\Enums\InvoiceStatus::Paid && !$isFavorable && $total > 0)
         <!-- Modal Pagamento -->
