@@ -5,7 +5,7 @@
         <x-filter-bar action="{{ route('audit.index') }}" :showSearch="false" :filters="['module', 'action', 'user', 'date_start', 'date_end', 'sort']">
             <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
                 <x-filter-bar.select name="module">
-                    <option value="">Todos os módulos</option>
+                    <option value="">Todos os models</option>
                     @foreach($modules as $module)
                         <option value="{{ $module }}" @selected(request('module') == $module)>{{ class_basename($module) }}</option>
                     @endforeach
@@ -21,7 +21,7 @@
                 </x-filter-bar.select>
                 
                 <x-filter-bar.select name="user">
-                    <option value="">Todos os usuários</option>
+                    <option value="">Todos os causadores</option>
                     @foreach($users as $user)
                         <option value="{{ $user->id }}" @selected(request('user') == $user->id)>{{ $user->name }}</option>
                     @endforeach
@@ -38,15 +38,15 @@
         </x-filter-bar>
 
         <x-table>
-            <x-table.header class="grid-cols-[200px_1fr_1.5fr_120px] hidden sm:grid">
+            <x-table.header class="grid-cols-[200px_1.5fr_1fr_220px] hidden sm:grid">
                 <x-table.column>DATA/HORA</x-table.column>
                 <x-table.column>CAUSADOR</x-table.column>
-                <x-table.column>MÓDULO</x-table.column>
+                <x-table.column>MODEL</x-table.column>
                 <x-table.column>AÇÃO</x-table.column>
             </x-table.header>
             <div class="divide-y divide-neutral-100">
                 @forelse($activities as $activity)
-                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[200px_1fr_1.5fr_120px] hidden sm:grid items-center">
+                    <x-table.row href="{{ route('audit.show', $activity) }}" class="grid-cols-[200px_1.5fr_1fr_220px] hidden sm:grid items-center">
                         <x-table.cell class="text-neutral-600 text-sm font-medium">{{ formatDateTime($activity->created_at) }}</x-table.cell>
                         <x-table.cell>
                             @if($activity->causer)

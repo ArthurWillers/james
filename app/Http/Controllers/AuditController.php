@@ -114,8 +114,6 @@ class AuditController extends Controller
             ];
         });
 
-        $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
-
         $subject = $activity->subject;
         $subjectUrl = null;
 
@@ -143,6 +141,14 @@ class AuditController extends Controller
             }
         }
 
-        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass', 'subjectUrl'));
+        $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
+        
+        if ($isDeleted) {
+            $gridClass = 'grid-cols-[1fr_2fr]';
+        } else {
+            $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
+        }
+
+        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass', 'subjectUrl', 'isDeleted'));
     }
 }
