@@ -130,8 +130,6 @@
             @endif
         </x-card>
 
-        <!-- Info -->
-        <x-metadata-card :model="$transaction" />
     </div>
 
     @if($transaction->hasMedia('attachments'))
@@ -280,4 +278,9 @@
             </x-table>
         </x-card>
     @endif
+    
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
+        <x-activity-log :model="$transaction" class="!mt-0" />
+        <x-metadata-card :model="$transaction" class="w-full mb-0" />
+    </div>
 </x-layouts.financial>

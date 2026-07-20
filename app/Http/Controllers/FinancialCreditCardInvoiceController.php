@@ -24,7 +24,8 @@ class FinancialCreditCardInvoiceController extends Controller
             ->with(['invoice.creditCard', 'account', 'tags'])
             ->latest('date')
             ->latest('updated_at')
-            ->get();
+            ->paginate(100)
+            ->withQueryString();
 
         return view('finance.cards.invoices.show', compact('card', 'invoice', 'transactions'));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InvoiceStatus;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -144,7 +145,7 @@ class FinancialCreditCard extends Model
         $this->invoices()
             ->whereNull('paid_at')
             ->get()
-            ->filter(fn ($invoice) => $invoice->status() === 'open')
+            ->filter(fn ($invoice) => $invoice->status() === InvoiceStatus::Open)
             ->each(fn ($invoice) => $invoice->recalculateDates());
     }
 

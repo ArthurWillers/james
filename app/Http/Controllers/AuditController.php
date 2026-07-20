@@ -21,6 +21,10 @@ class AuditController extends Controller
             $query->where('subject_type', $request->module);
         }
 
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
         if ($request->filled('action')) {
             $query->where('description', $request->action);
         }
@@ -68,6 +72,16 @@ class AuditController extends Controller
         $old = is_object($old) ? (array) $old : $old;
         $attributes = is_object($attributes) ? (array) $attributes : $attributes;
 
+        $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
+
+        // Spatie activitylog stores deleted data in 'old' for 'deleted' events,
+        // but in 'attributes' for 'forceDeleted' events. Normalize this.
+        if ($isDeleted) {
+            $deletedData = ! empty($old) ? $old : $attributes;
+            $old = $deletedData;
+            $attributes = [];
+        }
+
         $keys = collect(array_keys($old))->merge(array_keys($attributes))->unique();
         $hasOld = count($old) > 0;
 
@@ -110,8 +124,41 @@ class AuditController extends Controller
             ];
         });
 
-        $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
+        $subject = $activity->subject;
+        $subjectUrl = null;
 
-        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass'));
+        if ($subject && ! method_exists($subject, 'trashed') || ($subject && method_exists($subject, 'trashed') && ! $subject->trashed())) {
+            try {
+                $routeMap = [
+                    'FinancialAccount' => 'financial.accounts.show',
+                    'FinancialTransaction' => 'financial.transactions.show',
+                    'FinancialCreditCard' => 'financial.cards.show',
+                    'FinancialCreditCardInvoice' => 'financial.cards.invoices.show',
+                    'FinancialTag' => 'financial.tags.show',
+                    'SettlementGroup' => 'settlements.groups.show',
+                ];
+
+                $basename = class_basename($activity->subject_type);
+                $routeName = $routeMap[$basename] ?? str($basename)->plural()->kebab().'.show';
+
+                if ($basename === 'FinancialCreditCardInvoice') {
+                    $subjectUrl = route($routeName, [$subject->financial_credit_card_id, $subject->id]);
+                } else {
+                    $subjectUrl = route($routeName, $subject);
+                }
+            } catch (\Exception $e) {
+                // If route doesn't exist, ignore
+            }
+        }
+
+        $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
+
+        if ($isDeleted) {
+            $gridClass = 'grid-cols-[1fr_2fr]';
+        } else {
+            $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
+        }
+
+        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass', 'subjectUrl', 'isDeleted'));
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\FinancialAccountType;
+use App\Enums\InvoiceStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -112,7 +113,7 @@ it('getCreditCardsWidget returns the invoice matching the current reference mont
     $cards = $service->getCreditCardsWidget(Carbon::now());
 
     // Should pick agosto (reference_month matches resolved month)
-    expect($cards->first()->current_invoice_status)->toBeIn(['open', 'closed']);
+    expect($cards->first()->current_invoice_status)->toBeIn([InvoiceStatus::Open, InvoiceStatus::Closed]);
 
     Carbon::setTestNow();
 });

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FinancialAccountType;
+use App\Enums\InvoiceStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -143,29 +144,29 @@ class FinancialCreditCardInvoice extends Model
     /**
      * Get the status of the invoice.
      */
-    public function status(): string
+    public function status(): InvoiceStatus
     {
         if ($this->paid_at !== null) {
-            return 'paid';
+            return InvoiceStatus::Paid;
         }
 
         $total = $this->total();
 
         if ($this->amount_paid > 0 && $this->amount_paid < $total) {
-            return 'partially_paid';
+            return InvoiceStatus::PartiallyPaid;
         }
 
         $today = Carbon::today();
 
         if ($today->lt($this->closing_date)) {
-            return 'open';
+            return InvoiceStatus::Open;
         }
 
         if ($today->gt($this->due_date)) {
-            return 'overdue';
+            return InvoiceStatus::Overdue;
         }
 
-        return 'closed';
+        return InvoiceStatus::Closed;
     }
 
     /**
@@ -173,7 +174,7 @@ class FinancialCreditCardInvoice extends Model
      */
     public function isPaid(): bool
     {
-        return $this->status() === 'paid';
+        return $this->status() === InvoiceStatus::Paid;
     }
 
     /**

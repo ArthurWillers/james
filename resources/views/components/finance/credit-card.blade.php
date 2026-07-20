@@ -18,22 +18,12 @@
             $invoiceStatus = $currentInvoice->status();
         } else {
             $invoiceTotal = 0;
-            $invoiceStatus = 'open';
+            $invoiceStatus = \App\Enums\InvoiceStatus::Open;
         }
     }
 
-    $statusLabel = match($invoiceStatus) {
-        'paid'           => 'Paga',
-        'closed'         => 'Fechada',
-        'overdue'        => 'Vencida',
-        'partially_paid' => 'Parcial',
-        default          => 'Aberta',
-    };
-    $statusColor = match($invoiceStatus) {
-        'paid'           => 'success',
-        'overdue'        => 'danger',
-        default          => 'warning',
-    };
+    $statusLabel = $invoiceStatus->label();
+    $statusColor = $invoiceStatus->color();
 @endphp
 
 <x-card :href="route('financial.cards.show', $card->id)" class="p-4 flex flex-col justify-between group h-full">

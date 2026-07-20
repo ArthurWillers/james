@@ -24,6 +24,7 @@
             'green' => 'bg-green-500 text-white ring-green-500/10',
             'blue' => 'bg-blue-500 text-white ring-blue-500/10',
             'yellow' => 'bg-yellow-500 text-white ring-yellow-500/10',
+            'rose' => 'bg-rose-500 text-white ring-rose-500/10',
             default => 'bg-neutral-600 text-white ring-neutral-600/10',
         };
     } else {
@@ -34,6 +35,7 @@
             'green' => 'bg-green-50 text-green-700 ring-green-600/20',
             'blue' => 'bg-blue-50 text-blue-700 ring-blue-700/10',
             'yellow' => 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
+            'rose' => 'bg-rose-50 text-rose-700 ring-rose-600/10',
             default => 'bg-neutral-50 text-neutral-600 ring-neutral-500/10',
         };
     }

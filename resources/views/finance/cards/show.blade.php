@@ -91,23 +91,8 @@
                 @php 
                     $total = $invoice->total(); 
                     $status = $invoice->status();
-                    $badgeColor = match($status) {
-                        'paid' => 'success',
-                        'partially_paid' => 'warning',
-                        'open' => 'primary',
-                        'overdue' => 'danger',
-                        'closed' => 'neutral',
-                        default => 'neutral'
-                    };
-                    $statusLabels = [
-                        'paid' => 'Paga',
-                        'partially_paid' => 'Parcial',
-                        'open' => 'Aberta',
-                        'overdue' => 'Atrasada',
-                        'closed' => 'Fechada',
-                    ];
                 @endphp
-                <x-table.row class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid items-center hover:bg-neutral-50/50">
+                <x-table.row :href="route('financial.cards.invoices.show', [$card, $invoice])" mobileBreakpoint="lg" class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid items-center hover:bg-neutral-50/50">
                     <x-table.cell class="font-medium text-neutral-900">
                         {{ formatMonthYearFull($invoice->reference_month) }}
                     </x-table.cell>
@@ -123,37 +108,39 @@
                         </div>
                     </x-table.cell>
                     <x-table.cell class="text-center flex justify-center">
-                        <x-badge :color="$badgeColor" size="sm">
-                            {{ $statusLabels[$status] ?? 'Desconhecido' }}
+                        <x-badge :color="$status->color()" size="sm">
+                            {{ $status->label() }}
                         </x-badge>
                     </x-table.cell>
                     <x-table.cell class="flex justify-end">
-                        <a href="{{ route('financial.cards.invoices.show', [$card, $invoice]) }}" class="text-neutral-400 hover:text-neutral-600 flex items-center justify-end p-2 -mr-2">
+                        <div class="text-neutral-400 group-hover/row:text-neutral-600 transition-colors flex items-center justify-end p-2 -mr-2">
                             <x-heroicon-o-chevron-right class="size-5" />
-                        </a>
+                        </div>
                     </x-table.cell>
 
                     <x-slot:mobile>
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="font-medium text-neutral-900">
-                                {{ formatMonthYearFull($invoice->reference_month) }}
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="font-medium text-neutral-900">
+                                        {{ formatMonthYearFull($invoice->reference_month) }}
+                                    </div>
+                                    <x-badge :color="$status->color()" size="sm">
+                                        {{ $status->label() }}
+                                    </x-badge>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <div class="text-neutral-500">
+                                        Venc: {{ formatShort($invoice->due_date) }}
+                                    </div>
+                                    <div class="font-medium {{ $total < 0 ? 'text-green-600' : 'text-neutral-900' }}">
+                                        {{ formatCurrency($total) }}
+                                    </div>
+                                </div>
                             </div>
-                            <x-badge :color="$badgeColor" size="sm">
-                                {{ $statusLabels[$status] ?? 'Desconhecido' }}
-                            </x-badge>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <div class="text-neutral-500">
-                                Venc: {{ formatShort($invoice->due_date) }}
+                            <div class="text-neutral-400 group-hover/row:text-neutral-600 transition-colors shrink-0">
+                                <x-heroicon-o-chevron-right class="size-5" />
                             </div>
-                            <div class="font-medium {{ $total < 0 ? 'text-green-600' : 'text-neutral-900' }}">
-                                {{ formatCurrency($total) }}
-                            </div>
-                        </div>
-                        <div class="mt-3 flex justify-end">
-                            <a href="{{ route('financial.cards.invoices.show', [$card, $invoice]) }}" class="text-primary-600 hover:text-primary-900 text-sm font-medium flex items-center gap-1">
-                                Ver Fatura <x-heroicon-o-chevron-right class="size-4" />
-                            </a>
                         </div>
                     </x-slot:mobile>
                 </x-table.row>
@@ -166,7 +153,8 @@
         </div>
     </x-table>
 
-    <div class="flex justify-start lg:justify-end mt-8">
-        <x-ui.metadata-card :model="$card" class="w-full lg:max-w-sm mb-4" />
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
+        <x-activity-log :model="$card" class="!mt-0" />
+        <x-ui.metadata-card :model="$card" class="w-full mb-0" />
     </div>
 </x-layouts.financial>
