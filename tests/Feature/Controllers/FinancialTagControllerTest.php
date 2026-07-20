@@ -56,7 +56,7 @@ it('can update tag', function () {
     ];
 
     $this->put(route('financial.tags.update', $tag), $data)
-        ->assertRedirect(route('financial.tags.index'));
+        ->assertRedirect(route('financial.tags.show', $tag));
 
     $this->assertDatabaseHas('financial_tags', [
         'id' => $tag->id,
