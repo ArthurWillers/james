@@ -143,4 +143,5 @@
     </div>
 
 
+    <x-activity-log :model="$settlementGroup" />
 </x-layouts.app>

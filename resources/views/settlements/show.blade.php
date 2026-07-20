@@ -138,4 +138,5 @@
         </div>
     </div>
 
+    <x-activity-log :model="$settlement" />
 </x-layouts.app>

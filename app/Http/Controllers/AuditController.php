@@ -21,6 +21,10 @@ class AuditController extends Controller
             $query->where('subject_type', $request->module);
         }
 
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
         if ($request->filled('action')) {
             $query->where('description', $request->action);
         }

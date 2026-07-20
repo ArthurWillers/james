@@ -280,4 +280,6 @@
             </x-table>
         </x-card>
     @endif
+    
+    <x-activity-log :model="$transaction" />
 </x-layouts.financial>

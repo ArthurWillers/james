@@ -153,6 +153,8 @@
         </x-modal>
     @endif
 
+    <x-activity-log :model="$invoice" />
+
     <!-- Modal Editar Fatura -->
     <x-modal name="edit-invoice-modal" title="Editar Fatura" confirmVariant="none">
         <form action="{{ route('financial.cards.invoices.update', [$card, $invoice]) }}" method="POST" class="m-0">

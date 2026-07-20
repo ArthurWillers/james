@@ -79,4 +79,6 @@
             </div>
         </div>
     </div>
+
+    <x-activity-log :model="$group" />
 </x-layouts.app>

@@ -156,4 +156,6 @@
     <div class="flex justify-start lg:justify-end mt-8">
         <x-ui.metadata-card :model="$card" class="w-full lg:max-w-sm mb-4" />
     </div>
+
+    <x-activity-log :model="$card" />
 </x-layouts.financial>

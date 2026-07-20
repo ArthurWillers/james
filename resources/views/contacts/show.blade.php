@@ -170,4 +170,5 @@
         <x-ui.metadata-card :model="$contact" class="w-full lg:max-w-sm mb-4" />
     </div>
 
+    <x-activity-log :model="$contact" />
 </x-layouts.app>
