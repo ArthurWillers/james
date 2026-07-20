@@ -92,7 +92,7 @@
                     $total = $invoice->total(); 
                     $status = $invoice->status();
                 @endphp
-                <x-table.row :href="route('financial.cards.invoices.show', [$card, $invoice])" class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid items-center hover:bg-neutral-50/50">
+                <x-table.row :href="route('financial.cards.invoices.show', [$card, $invoice])" mobileBreakpoint="lg" class="grid-cols-[1.5fr_1fr_1fr_1.5fr_100px_60px] hidden lg:grid items-center hover:bg-neutral-50/50">
                     <x-table.cell class="font-medium text-neutral-900">
                         {{ formatMonthYearFull($invoice->reference_month) }}
                     </x-table.cell>
