@@ -44,4 +44,6 @@
             </div>
         </x-table>
     </div>
+@else
+    <div {{ $attributes->merge(['class' => 'hidden lg:block']) }}></div>
 @endif

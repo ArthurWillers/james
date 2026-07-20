@@ -102,6 +102,8 @@ class FinancialTagController extends Controller
      */
     public function show(FinancialTag $financialTag): View
     {
+        $financialTag->loadCount(['transactions', 'transactionItems']);
+
         return view('finance.tags.show', compact('financialTag'));
     }
 
@@ -127,7 +129,7 @@ class FinancialTagController extends Controller
         $financialTag->update($request->validated());
 
         return redirect()
-            ->route('financial.tags.index')
+            ->route('financial.tags.show', $financialTag)
             ->with('success', 'Tag atualizada com sucesso.');
     }
 

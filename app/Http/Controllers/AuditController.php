@@ -116,6 +116,33 @@ class AuditController extends Controller
 
         $gridClass = $hasOld ? 'grid-cols-[1fr_1.5fr_1.5fr]' : 'grid-cols-[1fr_1.5fr]';
 
-        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass'));
+        $subject = $activity->subject;
+        $subjectUrl = null;
+
+        if ($subject && ! method_exists($subject, 'trashed') || ($subject && method_exists($subject, 'trashed') && ! $subject->trashed())) {
+            try {
+                $routeMap = [
+                    'FinancialAccount' => 'financial.accounts.show',
+                    'FinancialTransaction' => 'financial.transactions.show',
+                    'FinancialCreditCard' => 'financial.cards.show',
+                    'FinancialCreditCardInvoice' => 'financial.cards.invoices.show',
+                    'FinancialTag' => 'financial.tags.show',
+                    'SettlementGroup' => 'settlements.groups.show',
+                ];
+                
+                $basename = class_basename($activity->subject_type);
+                $routeName = $routeMap[$basename] ?? str($basename)->plural()->kebab() . '.show';
+
+                if ($basename === 'FinancialCreditCardInvoice') {
+                     $subjectUrl = route($routeName, [$subject->financial_credit_card_id, $subject->id]);
+                } else {
+                     $subjectUrl = route($routeName, $subject);
+                }
+            } catch (\Exception $e) {
+                // If route doesn't exist, ignore
+            }
+        }
+
+        return view('audit.show', compact('activity', 'parsedChanges', 'hasOld', 'gridClass', 'subjectUrl'));
     }
 }

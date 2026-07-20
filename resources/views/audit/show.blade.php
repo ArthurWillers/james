@@ -1,5 +1,12 @@
 <x-layouts.app>
-    <x-page-header title="Detalhes do Log #{{ $activity->id }}" :backRoute="url()->previous()" />
+    <x-page-header title="Detalhes do Log #{{ $activity->id }}" :backRoute="url()->previous()">
+        @if(isset($subjectUrl) && $subjectUrl)
+            <x-button color="outline" href="{{ $subjectUrl }}" class="bg-white flex-1 sm:flex-initial">
+                <x-heroicon-m-arrow-top-right-on-square class="size-4" />
+                <span class="whitespace-nowrap">Registro Original</span>
+            </x-button>
+        @endif
+    </x-page-header>
 
     <div class="mt-6">
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -12,10 +19,8 @@
                             <div class="text-sm font-medium text-neutral-900">
                                 @php
                                     $modelName = class_basename($activity->subject_type);
-                                    $routeName = str($modelName)->kebab()->plural() . '.show';
-                                    $subjectUrl = Route::has($routeName) ? route($routeName, $activity->subject_id) : null;
                                 @endphp
-                                @if($subjectUrl)
+                                @if(isset($subjectUrl) && $subjectUrl)
                                     <a href="{{ $subjectUrl }}" class="text-accent hover:underline flex items-center gap-1">
                                         {{ $modelName }} #{{ $activity->subject_id }}
                                         <x-heroicon-m-arrow-top-right-on-square class="w-3 h-3" />

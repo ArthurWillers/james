@@ -133,7 +133,7 @@
         </div>
     @endif
 
-    <x-finance.recent-transactions :account="$account" limit="10" />
+    <x-finance.recent-transactions :model="$account" limit="10" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
         <x-activity-log :model="$account" class="!mt-0" />

@@ -3,28 +3,44 @@
 namespace App\View\Components\Finance;
 
 use App\Models\FinancialAccount;
+use App\Models\FinancialTag;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
 class RecentTransactions extends Component
 {
-    public $account;
+    public $model;
 
     public $recentTransactions;
+
+    public $viewAllUrl;
 
     /**
      * Create a new component instance.
      */
-    public function __construct(FinancialAccount $account, int $limit = 10)
+    public function __construct(Model $model, ?string $viewAllUrl = null, int $limit = 10)
     {
-        $this->account = $account;
+        $this->model = $model;
 
-        $this->recentTransactions = $account->transactions()
+        $this->recentTransactions = $model->transactions()
             ->with(['invoice.creditCard', 'account', 'tags'])
             ->latest('date')
             ->latest('updated_at')
             ->limit($limit)
             ->get();
+
+        if ($viewAllUrl) {
+            $this->viewAllUrl = $viewAllUrl;
+        } else {
+            if ($model instanceof FinancialAccount) {
+                $this->viewAllUrl = route('financial.transactions.index', ['account_id' => $model->id]);
+            } elseif ($model instanceof FinancialTag) {
+                $this->viewAllUrl = route('financial.transactions.index', ['tag_id' => $model->id]);
+            } else {
+                $this->viewAllUrl = route('financial.transactions.index');
+            }
+        }
     }
 
     /**
