@@ -127,14 +127,14 @@ class AuditController extends Controller
                     'FinancialTag' => 'financial.tags.show',
                     'SettlementGroup' => 'settlements.groups.show',
                 ];
-                
+
                 $basename = class_basename($activity->subject_type);
-                $routeName = $routeMap[$basename] ?? str($basename)->plural()->kebab() . '.show';
+                $routeName = $routeMap[$basename] ?? str($basename)->plural()->kebab().'.show';
 
                 if ($basename === 'FinancialCreditCardInvoice') {
-                     $subjectUrl = route($routeName, [$subject->financial_credit_card_id, $subject->id]);
+                    $subjectUrl = route($routeName, [$subject->financial_credit_card_id, $subject->id]);
                 } else {
-                     $subjectUrl = route($routeName, $subject);
+                    $subjectUrl = route($routeName, $subject);
                 }
             } catch (\Exception $e) {
                 // If route doesn't exist, ignore
@@ -142,7 +142,7 @@ class AuditController extends Controller
         }
 
         $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
-        
+
         if ($isDeleted) {
             $gridClass = 'grid-cols-[1fr_2fr]';
         } else {
