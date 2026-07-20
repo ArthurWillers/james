@@ -92,17 +92,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <!-- Acertos KPI Card -->
-        <x-finance.kpi-card
-            title="Acertos"
-            value="{{ formatCurrency(abs($netBalance)) }}"
-            icon="heroicon-o-scale"
-            :color="$netBalance > 0 ? 'green' : ($netBalance < 0 ? 'red' : 'neutral')"
-            href="{{ route('settlements.contact.show', $contact) }}"
-            class="h-full"
-        >
-            {{ $netBalance > 0 ? 'Você tem a receber' : ($netBalance < 0 ? 'Você tem a pagar' : 'Tudo quitado') }}
-        </x-finance.kpi-card>
+        <x-contacts.balance-card :contact="$contact" />
 
         <!-- Grupos -->
         <x-card class="h-full">

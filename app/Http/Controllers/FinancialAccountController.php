@@ -92,19 +92,11 @@ class FinancialAccountController extends Controller
             }])
             ->get();
 
-        $recentTransactions = $account->transactions()
-            ->with(['invoice.creditCard', 'account', 'tags'])
-            ->latest('date')
-            ->latest('updated_at')
-            ->limit(10)
-            ->get();
-
         return view('finance.accounts.show', compact(
             'account',
             'globalIncome',
             'globalExpense',
-            'creditCards',
-            'recentTransactions'
+            'creditCards'
         ));
     }
 

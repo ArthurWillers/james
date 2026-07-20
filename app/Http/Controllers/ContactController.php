@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\SettlementType;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Models\ContactGroup;
-use App\Models\Settlement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -78,17 +76,7 @@ class ContactController extends Controller
     {
         $allGroups = ContactGroup::orderBy('name')->get();
 
-        $debtTheyOweMe = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyOwe->value)->sum('amount');
-        $paymentsTheyMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyPaid->value)->sum('amount');
-        $toReceive = max(0, $debtTheyOweMe - $paymentsTheyMade);
-
-        $debtIOweThem = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IOwe->value)->sum('amount');
-        $paymentsIMade = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::IPaid->value)->sum('amount');
-        $toPay = max(0, $debtIOweThem - $paymentsIMade);
-
-        $netBalance = $toReceive - $toPay;
-
-        return view('contacts.show', compact('contact', 'allGroups', 'netBalance'));
+        return view('contacts.show', compact('contact', 'allGroups'));
     }
 
     /**

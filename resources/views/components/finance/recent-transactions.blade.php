@@ -1,0 +1,10 @@
+@if($recentTransactions->isNotEmpty())
+    <div class="flex justify-between items-center mb-4 mt-8">
+        <h3 class="text-lg font-bold text-neutral-900">Últimas Transações</h3>
+        <a href="{{ route('financial.transactions.index', ['account_id' => $account->id]) }}" class="text-sm font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1">
+            Ver todas <x-heroicon-m-arrow-right class="size-4" />
+        </a>
+    </div>
+
+    <x-finance.transaction-table :transactions="$recentTransactions" class="lg:mb-8" />
+@endif
