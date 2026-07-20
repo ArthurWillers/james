@@ -101,6 +101,8 @@
             @if($settlementGroup->hasMedia('attachments'))
                 <x-media.manager :model="$settlementGroup" :editable="false" />
             @endif
+
+            <x-activity-log :model="$settlementGroup" class="!mt-0" />
         </div>
 
         <!-- Right Column: Meta -->
@@ -141,7 +143,4 @@
             <x-metadata-card :model="$settlementGroup" />
         </div>
     </div>
-
-
-    <x-activity-log :model="$settlementGroup" />
 </x-layouts.app>

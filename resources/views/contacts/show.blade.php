@@ -156,9 +156,8 @@
         @endif
     </x-card>
 
-    <div class="flex justify-start lg:justify-end mt-8">
-        <x-ui.metadata-card :model="$contact" class="w-full lg:max-w-sm mb-4" />
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
+        <x-activity-log :model="$contact" class="!mt-0" />
+        <x-ui.metadata-card :model="$contact" class="w-full mb-0" />
     </div>
-
-    <x-activity-log :model="$contact" />
 </x-layouts.app>

@@ -153,9 +153,8 @@
         </div>
     </x-table>
 
-    <div class="flex justify-start lg:justify-end mt-8">
-        <x-ui.metadata-card :model="$card" class="w-full lg:max-w-sm mb-4" />
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
+        <x-activity-log :model="$card" class="!mt-0" />
+        <x-ui.metadata-card :model="$card" class="w-full mb-0" />
     </div>
-
-    <x-activity-log :model="$card" />
 </x-layouts.financial>
