@@ -72,6 +72,16 @@ class AuditController extends Controller
         $old = is_object($old) ? (array) $old : $old;
         $attributes = is_object($attributes) ? (array) $attributes : $attributes;
 
+        $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
+
+        // Spatie activitylog stores deleted data in 'old' for 'deleted' events,
+        // but in 'attributes' for 'forceDeleted' events. Normalize this.
+        if ($isDeleted) {
+            $deletedData = ! empty($old) ? $old : $attributes;
+            $old = $deletedData;
+            $attributes = [];
+        }
+
         $keys = collect(array_keys($old))->merge(array_keys($attributes))->unique();
         $hasOld = count($old) > 0;
 
