@@ -13,10 +13,10 @@ enum InvoiceStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::Paid => 'success',
-            self::PartiallyPaid => 'warning',
-            self::Open => 'primary',
-            self::Overdue => 'danger',
+            self::Paid => 'green',
+            self::PartiallyPaid => 'yellow',
+            self::Open => 'blue',
+            self::Overdue => 'red',
             self::Closed => 'neutral',
         };
     }
