@@ -37,6 +37,7 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
 17. **Auditoria e Logs (Spatie v5+):** Utilize `spatie/laravel-activitylog` em todas as Models de negócio para rastreabilidade completa e vitalícia de mutações. Evite logar execuções técnicas de jobs/schedulers — apenas suas mutações via Eloquent. Trate `causer_id` nulo no frontend como "Sistema/Rotina Automática". **IMPORTANTE:** O uso da biblioteca possui regras inegociáveis (mass-assignment exclusivo via `$fillable`, `$recordEvents` dinâmico com SoftDeletes, logs do frontend, etc). Consulte obrigatoriamente `references/spatie-activitylog.md` para conhecer a sintaxe e as regras completas.
 18. **Soft Deletes (Padrão Obrigatório):** Todos os Models DEVEM utilizar a trait `SoftDeletes` por padrão. Exceções são permitidas apenas para tabelas auxiliares puras (ex: pivôs simples, cache, tokens temporários) ou models específicos (ex: Tags), onde a exclusão definitiva não gera risco de perda de dados de negócio. Na dúvida, aplique `SoftDeletes`.
 
+
 ## Workflow e Ferramentas
 
 18. **Documentação:** Se for solicitada a criação ou atualização de documentação, os arquivos devem ser criados DENTRO do diretório `/docs` seguindo o padrão de escrita existente.

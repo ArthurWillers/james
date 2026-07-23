@@ -1,6 +1,6 @@
 # James
 
-James é um ERP pessoal, de usuário único e auto-hospedado. 
+James é um ERP pessoal e auto-hospedado. 
 
 Os ícones do projeto são provenientes do [Heroicons](https://heroicons.com/).
 
@@ -15,14 +15,9 @@ Os ícones do projeto são provenientes do [Heroicons](https://heroicons.com/).
 - [x] **Contatos (CRM Pessoal)** (Gerenciamento de rede, soft deletes, avatares dinâmicos)
 - [x] **Finanças** (inspirado no [Aurum2.0](https://github.com/ArthurWillers/Aurum2.0))
 - [x] **Acertos** (Gestão de "Eu Devo" e "Me Deve", inspirado no [BalanceFlow](https://github.com/ArthurWillers/BalanceFlow))
-- [ ] **Imposto de Renda & Patrimônio**
-- [ ] **Documentos**
-- [ ] **Tarefas / Projetos**
-- [ ] **Hábitos & Saúde**
-- [ ] **Despensa & Receitas Culinárias**
-- [ ] **Manutenção & Viagens**
-- [ ] **Conhecimento**
-- [ ] **Dashboard Unificado**
+- [ ] **Veículos**
+- [ ] **Saúde**
+- [ ] **Patrimônio**
 
 ## Documentação
 

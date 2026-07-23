@@ -289,3 +289,4 @@ Para manter o rigor e a padronização no desenvolvimento do projeto, precisáva
 
 **Decisão:**
 Foi criada a skill estruturada `.agents/skills/project-conventions/SKILL.md`. Essa documentação atua como a fonte de verdade absoluta e deve ser lida ativamente (via o comando `/project-conventions` ou gatilhos de contexto) antes e durante a criação ou refatoração de views. Ela documenta regras rígidas como a proibição de valores arbitrários no Tailwind, ordem estrita de atributos do AlpineJS e uso mandatório de componentes Blade específicos, garantindo consistência sem depender apenas da memória de contexto.
+
