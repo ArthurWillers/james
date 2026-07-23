@@ -1,6 +1,6 @@
 # James
 
-James é um ERP pessoal, Multi-Tenant (v2) e auto-hospedado. 
+James é um ERP pessoal e auto-hospedado. 
 
 Os ícones do projeto são provenientes do [Heroicons](https://heroicons.com/).
 

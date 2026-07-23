@@ -12,7 +12,7 @@ layout: "docs"
 
 <div class="hx:mb-6">
 {{< hextra/hero-subtitle >}}
-  ERP pessoal Multi-Tenant — documentação técnica e roadmap do projeto
+  ERP pessoal — documentação técnica e roadmap do projeto
 {{< /hextra/hero-subtitle >}}
 </div>
 
@@ -69,14 +69,6 @@ Se você acompanhou a história do Aurum, sabe das dores de cabeça que tive com
 - **Frontend:** Blade, Alpine.js e TailwindCSS v4. Retornei ao básico renderizado pelo servidor, o que é ótimo para a performance e simplicidade. O Alpine.js entra apenas para interações locais (modais, tooltips, dropdowns), sem o overhead e os ciclos de vida complexos que o Livewire trazia.
 - **Gráficos e Dashboards:** Em vez de brigar com reatividade pesada, utilizamos **Apache ECharts** integrado via Vanilla JavaScript para renderizar visualizações complexas (como o Diagrama de Sankey do fluxo de caixa), garantindo controle total da renderização na view.
 - **Armazenamento e Privacidade:** Utilizamos o `spatie/laravel-medialibrary` configurado no disco privado. Nenhum dado (como avatares de contatos ou recibos financeiros) é exposto publicamente na web.
-
-<div class="hx:mt-12 hx:mb-6">
-  <h2>A Era Multi-Usuário</h2>
-</div>
-
-Inicialmente, o James foi desenhado de forma muito estrita para um **único usuário**. O banco de dados não possuía a noção de "a quem pertence esse dado". Mas logo ficou claro que, para o sistema ser útil a longo prazo, outras pessoas poderiam querer usar a mesma plataforma.
-
-Assim nasceu a versão 2.0 (v2). Reformulamos a arquitetura do banco de dados para um formato **Single Database Multi-Tenancy**. Agora, o sistema é capaz de isolar rigorosamente os dados (através da injeção de `user_id` em todas as models de negócio e de Policies restritas), permitindo que múltiplas pessoas usem o James no mesmo servidor, mas cada uma vivendo em seu próprio "universo particular".
 
 <div class="hx:mt-12 hx:mb-6">
   <h2>A Filosofia "Omakase": Feito para Mim</h2>
