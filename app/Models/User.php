@@ -6,7 +6,6 @@ use App\Traits\HasInitials;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -31,61 +30,6 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
-    }
-
-    public function contacts(): HasMany
-    {
-        return $this->hasMany(Contact::class);
-    }
-
-    public function contactGroups(): HasMany
-    {
-        return $this->hasMany(ContactGroup::class);
-    }
-
-    public function financialAccounts(): HasMany
-    {
-        return $this->hasMany(FinancialAccount::class);
-    }
-
-    public function financialCreditCards(): HasMany
-    {
-        return $this->hasMany(FinancialCreditCard::class);
-    }
-
-    public function financialCreditCardInvoices(): HasMany
-    {
-        return $this->hasMany(FinancialCreditCardInvoice::class);
-    }
-
-    public function financialRecurrences(): HasMany
-    {
-        return $this->hasMany(FinancialRecurrence::class);
-    }
-
-    public function financialTags(): HasMany
-    {
-        return $this->hasMany(FinancialTag::class);
-    }
-
-    public function financialTransactions(): HasMany
-    {
-        return $this->hasMany(FinancialTransaction::class);
-    }
-
-    public function financialTransactionItems(): HasMany
-    {
-        return $this->hasMany(FinancialTransactionItem::class);
-    }
-
-    public function settlements(): HasMany
-    {
-        return $this->hasMany(Settlement::class);
-    }
-
-    public function settlementGroups(): HasMany
-    {
-        return $this->hasMany(SettlementGroup::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted'];

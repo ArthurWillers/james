@@ -24,7 +24,6 @@ class FinancialTransaction extends Model implements HasMedia
     use LogsActivity;
 
     protected $fillable = [
-        'user_id',
         'financial_account_id',
         'financial_credit_card_invoice_id',
         'type',
@@ -360,14 +359,6 @@ class FinancialTransaction extends Model implements HasMedia
         }
 
         return $transactions;
-    }
-
-    /**
-     * Get the user that owns this record.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];

@@ -25,7 +25,6 @@ class FinancialRecurrence extends Model
     use LogsActivity;
 
     protected $fillable = [
-        'user_id',
         'title',
         'amount',
         'type',
@@ -151,14 +150,6 @@ class FinancialRecurrence extends Model
                     $q2->whereIn('financial_account_id', $accountIds);
                 });
         });
-    }
-
-    /**
-     * Get the user that owns this record.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];

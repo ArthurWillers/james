@@ -17,7 +17,6 @@ class Settlement extends Model implements HasMedia
     use LogsActivity;
 
     protected $fillable = [
-        'user_id',
         'contact_id',
         'financial_transaction_id',
         'settlement_group_id',
@@ -57,14 +56,6 @@ class Settlement extends Model implements HasMedia
     public function group(): BelongsTo
     {
         return $this->belongsTo(SettlementGroup::class, 'settlement_group_id');
-    }
-
-    /**
-     * Get the user that owns this record.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
