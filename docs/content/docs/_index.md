@@ -79,6 +79,12 @@ Inicialmente, o James foi desenhado de forma muito estrita para um **único usu�
 Assim nasceu a versão 2.0 (v2). Reformulamos a arquitetura do banco de dados para um formato **Single Database Multi-Tenancy**. Agora, o sistema é capaz de isolar rigorosamente os dados (através da injeção de `user_id` em todas as models de negócio e de Policies restritas), permitindo que múltiplas pessoas usem o James no mesmo servidor, mas cada uma vivendo em seu próprio "universo particular".
 
 <div class="hx:mt-12 hx:mb-6">
+  <h2>A Filosofia "Omakase": Feito para Mim</h2>
+</div>
+
+Uma premissa fundamental do James é que ele é um software construído **por mim, para mim**. Isso significa que as decisões de design, as escolhas de funcionalidades e a priorização do que entra ou não no sistema seguem a filosofia *Omakase* (termo que, no software, descreve um menu fechado e altamente opinativo feito pelo "chef"). O James reflete estritamente as minhas próprias necessidades e o meu fluxo de trabalho. Se algo faz sentido e facilita a minha rotina, entra no projeto; caso contrário, fica de fora.
+
+<div class="hx:mt-12 hx:mb-6">
   <h2>Sobre esta Documentação</h2>
 </div>
 
