@@ -37,6 +37,13 @@ Sempre siga essas regras ao programar neste projeto, pois elas foram definidas p
 17. **Auditoria e Logs (Spatie v5+):** Utilize `spatie/laravel-activitylog` em todas as Models de negócio para rastreabilidade completa e vitalícia de mutações. Evite logar execuções técnicas de jobs/schedulers — apenas suas mutações via Eloquent. Trate `causer_id` nulo no frontend como "Sistema/Rotina Automática". **IMPORTANTE:** O uso da biblioteca possui regras inegociáveis (mass-assignment exclusivo via `$fillable`, `$recordEvents` dinâmico com SoftDeletes, logs do frontend, etc). Consulte obrigatoriamente `references/spatie-activitylog.md` para conhecer a sintaxe e as regras completas.
 18. **Soft Deletes (Padrão Obrigatório):** Todos os Models DEVEM utilizar a trait `SoftDeletes` por padrão. Exceções são permitidas apenas para tabelas auxiliares puras (ex: pivôs simples, cache, tokens temporários) ou models específicos (ex: Tags), onde a exclusão definitiva não gera risco de perda de dados de negócio. Na dúvida, aplique `SoftDeletes`.
 
+## Segurança e Multi-Tenancy (v2+)
+
+22. **O Padrão Multi-Usuário:** O sistema opera em uma arquitetura de *Single Database Multi-Tenancy*. Toda Model de negócio (exceto tabelas de sistema puras) DEVE possuir a chave estrangeira `user_id` e pertencer a um usuário.
+23. **Criação e Listagem (O Escudo Oculto):** Nunca utilize `Model::all()` ou `Model::create()` em rotas autenticadas. Sempre parta do usuário logado utilizando relacionamentos nativos. Correto: `Auth::user()->transactions()->get()` ou `Auth::user()->tags()->create()`.
+24. **Acesso Direto e Policies (Prevenção de IDOR):** Toda rota que acessa um recurso diretamente por ID (Show, Edit, Update, Delete) através de Route Model Binding DEVE obrigatoriamente ser protegida por uma Policy. A Policy deve garantir que `$user->id === $model->user_id`. Nunca confie apenas na URL.
+25. **Validações Únicas Escopadas:** Em FormRequests, regras do tipo `Rule::unique()` NUNCA devem ser globais. Elas DEVEM obrigatoriamente conter a cláusula `->where('user_id', auth()->id())` para permitir que usuários diferentes tenham, por exemplo, tags com o mesmo nome.
+
 ## Workflow e Ferramentas
 
 18. **Documentação:** Se for solicitada a criação ou atualização de documentação, os arquivos devem ser criados DENTRO do diretório `/docs` seguindo o padrão de escrita existente.

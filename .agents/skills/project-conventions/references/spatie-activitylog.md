@@ -48,6 +48,7 @@ class ExemploModel extends Model
 
 ## 3. Frontend e Exibição do Histórico
 
+* **Isolamento de Auditoria (Multi-tenant):** Como o banco de dados é compartilhado, NUNCA liste os logs fazendo `Activity::all()`. Para exibir a linha do tempo de auditoria de um usuário, você deve consultar APENAS os logs associados às models que pertencem àquele usuário, evitando o vazamento de informações de atividades de outras contas.
 * **Ações de Sistema e Causer_id:** Ações na interface web registrarão automaticamente o `Auth::user()` como autor (`causer_id`). Mutações geradas por processos em background (Filas, Schedulers) criarão o log com `causer_id` nulo. Ao exibir o histórico, trate os logs sem autor. Se `causer_id` for null, exiba uma label como "Sistema" ou "Rotina Automática".
 * **Atributos Antigos e Novos (v4+):** Lembre-se que a partir do Spatie Activitylog v4, as diferenças de atributos automáticos (`old` e `attributes`) ficam armazenadas na propriedade `$activity->attribute_changes`, e NÃO na propriedade `$activity->properties`. Considere isso ao exibir o detalhe do log no front-end.
 
