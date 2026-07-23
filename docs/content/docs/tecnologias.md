@@ -30,6 +30,7 @@ O James é construído sobre uma fundação moderna, robusta e focada em simplic
   - **[EasyMDE](https://github.com/Ionaru/easy-markdown-editor)**: Usado para edição de textos ricos como notas e descrições (através do componente `form-markdown-editor`). Os dados são salvos como **Markdown puro** no banco, garantindo extrema segurança contra injeções de HTML e facilidade de exportação.
 
 ### Padrões Arquiteturais e Banco de Dados
+- **Multi-Tenancy (v2)**: Arquitetura "Single Database Multi-Tenancy". Todos os dados de negócio são rigorosamente escopados por usuário (`user_id`), garantindo isolamento total de informações entre diferentes contas na mesma instalação.
 - **PostgreSQL Extensions**:
   - `unaccent`: Habilitado para buscas textuais precisas ignorando acentuação.
   - `pg_trgm`: Utilizado para indexação otimizada e buscas por similaridade/relevância.

@@ -289,3 +289,16 @@ Para manter o rigor e a padronização no desenvolvimento do projeto, precisáva
 
 **Decisão:**
 Foi criada a skill estruturada `.agents/skills/project-conventions/SKILL.md`. Essa documentação atua como a fonte de verdade absoluta e deve ser lida ativamente (via o comando `/project-conventions` ou gatilhos de contexto) antes e durante a criação ou refatoração de views. Ela documenta regras rígidas como a proibição de valores arbitrários no Tailwind, ordem estrita de atributos do AlpineJS e uso mandatório de componentes Blade específicos, garantindo consistência sem depender apenas da memória de contexto.
+
+## 021 — Arquitetura Single Database Multi-Tenancy (v2)
+
+**Data:** 23 de Julho de 2026
+
+**Contexto:**
+O projeto foi originalmente concebido como um sistema "Single User" (usuário único). No entanto, para permitir que o sistema escale e seja utilizado por diferentes pessoas na mesma instância de forma isolada, foi necessária uma evolução estrutural.
+
+**Decisão:**
+Adoção da arquitetura **Single Database Multi-Tenancy**. Todas as tabelas e models de negócio passam a possuir a chave estrangeira `user_id`. O isolamento de dados (Tenant) é garantido em nível de aplicação, onde todas as consultas e persistências partem obrigatoriamente do usuário logado (`Auth::user()->...`), complementado pelo uso rigoroso de Policies para evitar IDOR (Insecure Direct Object Reference) em rotas de manipulação direta.
+
+**Observações:**
+Essa decisão marca a transição oficial do projeto para a versão 2.0 (v2), expandindo a capacidade do sistema sem perder a premissa de extrema privacidade individual.
