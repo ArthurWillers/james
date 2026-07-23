@@ -20,6 +20,7 @@ class FinancialCreditCard extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'user_id',
         'name',
         'financial_account_id',
         'credit_limit',
@@ -191,6 +192,14 @@ class FinancialCreditCard extends Model
         }
 
         return $transactions;
+    }
+
+    /**
+     * Get the user that owns this record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];

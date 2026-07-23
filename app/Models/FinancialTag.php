@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -14,6 +15,7 @@ class FinancialTag extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'user_id',
         'name',
         'icon',
         'color_hex',
@@ -63,6 +65,14 @@ class FinancialTag extends Model
             'financial_tag_id',
             'financial_taggable_id'
         );
+    }
+
+    /**
+     * Get the user that owns this record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted'];

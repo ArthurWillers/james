@@ -14,6 +14,7 @@ class FinancialTransactionItem extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'user_id',
         'financial_transaction_id',
         'description',
         'quantity',
@@ -61,6 +62,14 @@ class FinancialTransactionItem extends Model
             'financial_taggable_id',
             'financial_tag_id'
         )->withPivot('is_primary');
+    }
+
+    /**
+     * Get the user that owns this record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted'];

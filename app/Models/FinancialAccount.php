@@ -7,6 +7,7 @@ use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -17,6 +18,7 @@ class FinancialAccount extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'user_id',
         'name',
         'type',
         'pix_keys',
@@ -85,6 +87,14 @@ class FinancialAccount extends Model
     public function scopeWithoutInvestments(Builder $query): void
     {
         $query->where('type', '!=', FinancialAccountType::Investment);
+    }
+
+    /**
+     * Get the user that owns this record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];

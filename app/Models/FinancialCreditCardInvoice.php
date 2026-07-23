@@ -18,6 +18,7 @@ class FinancialCreditCardInvoice extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'user_id',
         'financial_credit_card_id',
         'reference_month',
         'closing_date',
@@ -325,6 +326,14 @@ class FinancialCreditCardInvoice extends Model
                 'due_date' => $dueDate,
             ]
         );
+    }
+
+    /**
+     * Get the user that owns this record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted'];

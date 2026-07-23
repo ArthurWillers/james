@@ -17,6 +17,7 @@ class SettlementGroup extends Model implements HasMedia
     use LogsActivity;
 
     protected $fillable = [
+        'user_id',
         'description',
         'total_amount',
         'date',
@@ -49,6 +50,14 @@ class SettlementGroup extends Model implements HasMedia
         $this->addMediaCollection('attachments')
             ->useDisk('attachments')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']);
+    }
+
+    /**
+     * Get the user that owns this record.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
