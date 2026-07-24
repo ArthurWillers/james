@@ -117,7 +117,7 @@ class FinanceDashboardService
 
         $income = (float) $totals->income;
         $expense = (float) $totals->expense;
-        $currentBalance = $income - $expense;
+        $currentBalance = $accountBalance;
 
         return [
             'netBalance' => $netBalance,
@@ -539,8 +539,7 @@ class FinanceDashboardService
             ->value('balance') ?? 0;
 
         $flowsQuery = FinancialTransaction::posted()
-            ->forPeriod($startDate, $today)
-            ->withoutTransfers();
+            ->forPeriod($startDate, $today);
 
         if (! $includeInvestments) {
             $flowsQuery->withoutInvestments();
