@@ -90,23 +90,17 @@ class FinanceDashboardService
 
         $otherDebtsQuery = FinancialTransaction::pending()
             ->expenses()
-            ->withoutTransfers()
             ->withoutInvoice();
 
-        if (! $includeInvestments) {
-            $otherDebtsQuery->withoutInvestments();
-        }
+        $this->applyTransferScope($otherDebtsQuery, $includeInvestments);
 
         $otherDebts = $otherDebtsQuery->sum('amount');
 
         $netBalance = $accountBalance - $creditCardDebt - $otherDebts;
 
-        $totalsQuery = FinancialTransaction::posted()
-            ->withoutTransfers();
+        $totalsQuery = FinancialTransaction::posted();
 
-        if (! $includeInvestments) {
-            $totalsQuery->withoutInvestments();
-        }
+        $this->applyTransferScope($totalsQuery, $includeInvestments);
 
         $totals = $totalsQuery->toBase()
             ->selectRaw("
@@ -256,12 +250,9 @@ class FinanceDashboardService
     {
         $query = FinancialTransaction::forPeriod($start, $end)
             ->pending()
-            ->withoutInvoice()
-            ->withoutTransfers();
+            ->withoutInvoice();
 
-        if (! $includeInvestments) {
-            $query->withoutInvestments();
-        }
+        $this->applyTransferScope($query, $includeInvestments);
 
         return $query->toBase()
             ->selectRaw("
@@ -635,5 +626,35 @@ class FinanceDashboardService
         }
 
         return $chartData;
+    }
+
+    private function applyTransferScope($query, bool $includeInvestments): void
+    {
+        if (! $includeInvestments) {
+            $query->withoutInvestments();
+            
+            $query->where(function ($q) {
+                // Not a transfer
+                $q->whereDoesntHave('tags', function ($tagQuery) {
+                    $tagQuery->where('financial_tag_id', \App\Models\FinancialTag::TRANSFERENCIA_ID);
+                })
+                // OR is a transfer from/to an Investment account (which is currently external to our scope)
+                ->orWhere(function ($transferQuery) {
+                    $transferQuery->whereHas('tags', function ($tagQuery) {
+                        $tagQuery->where('financial_tag_id', \App\Models\FinancialTag::TRANSFERENCIA_ID);
+                    })
+                    ->whereExists(function ($existsQuery) {
+                        $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
+                            ->from('financial_transactions as pair')
+                            ->join('financial_accounts as pair_account', 'pair.financial_account_id', '=', 'pair_account.id')
+                            ->whereColumn('pair.transfer_pair_id', 'financial_transactions.transfer_pair_id')
+                            ->whereColumn('pair.id', '!=', 'financial_transactions.id')
+                            ->where('pair_account.type', \App\Enums\FinancialAccountType::Investment->value);
+                    });
+                });
+            });
+        } else {
+            $query->withoutTransfers();
+        }
     }
 }
