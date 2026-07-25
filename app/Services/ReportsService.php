@@ -213,9 +213,9 @@ class ReportsService
         foreach ($groupedByTag as $tagName => $items) {
             $incomeSum = $items->where('type', 'income')->sum('amount');
             $expenseSum = $items->where('type', 'expense')->sum('amount');
-            
+
             $netValue = $incomeSum - $expenseSum;
-            
+
             if (abs($netValue) > 0.001) {
                 $tag = $getPrimaryTag($items->first());
                 $nodes->push([
