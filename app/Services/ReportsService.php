@@ -198,12 +198,6 @@ class ReportsService
         $nodes = collect();
         $links = collect();
 
-        $incomes = $transactions->where('type', 'income');
-        $expenses = $transactions->where('type', 'expense');
-
-        $totalIncome = $incomes->sum('amount');
-        $totalExpense = $expenses->sum('amount');
-
         // Central Node
         $nodes->push(['name' => 'Fluxo de Caixa', 'itemStyle' => ['color' => '#3b82f6']]);
 
@@ -211,40 +205,39 @@ class ReportsService
             return $t->tags->where('pivot.is_primary', true)->first() ?? $t->tags->first();
         };
 
-        // Income Nodes — group by primary tag name
-        $incomeByTag = $incomes->groupBy(fn ($t) => optional($getPrimaryTag($t))->name ?? 'Sem Categoria');
-        foreach ($incomeByTag as $tagName => $items) {
-            $sum = $items->sum('amount');
-            if ($sum > 0) {
-                $tag = $getPrimaryTag($items->first());
-                $nodeName = $tagName.' (R)';
-                $nodes->push([
-                    'name' => $nodeName,
-                    'itemStyle' => ['color' => $tag?->color_hex ?? '#9ca3af'],
-                ]);
-                $links->push([
-                    'source' => $nodeName,
-                    'target' => 'Fluxo de Caixa',
-                    'value' => round($sum, 2),
-                ]);
-            }
-        }
+        $groupedByTag = $transactions->groupBy(fn ($t) => optional($getPrimaryTag($t))->name ?? 'Sem Categoria');
 
-        // Expense Nodes — group by primary tag name
-        $expenseByTag = $expenses->groupBy(fn ($t) => optional($getPrimaryTag($t))->name ?? 'Sem Categoria');
-        foreach ($expenseByTag as $tagName => $items) {
-            $sum = $items->sum('amount');
-            if ($sum > 0) {
+        $totalIncome = 0;
+        $totalExpense = 0;
+
+        foreach ($groupedByTag as $tagName => $items) {
+            $incomeSum = $items->where('type', 'income')->sum('amount');
+            $expenseSum = $items->where('type', 'expense')->sum('amount');
+            
+            $netValue = $incomeSum - $expenseSum;
+            
+            if (abs($netValue) > 0.001) {
                 $tag = $getPrimaryTag($items->first());
                 $nodes->push([
                     'name' => $tagName,
                     'itemStyle' => ['color' => $tag?->color_hex ?? '#9ca3af'],
                 ]);
-                $links->push([
-                    'source' => 'Fluxo de Caixa',
-                    'target' => $tagName,
-                    'value' => round($sum, 2),
-                ]);
+
+                if ($netValue > 0) {
+                    $totalIncome += $netValue;
+                    $links->push([
+                        'source' => $tagName,
+                        'target' => 'Fluxo de Caixa',
+                        'value' => round($netValue, 2),
+                    ]);
+                } else {
+                    $totalExpense += abs($netValue);
+                    $links->push([
+                        'source' => 'Fluxo de Caixa',
+                        'target' => $tagName,
+                        'value' => round(abs($netValue), 2),
+                    ]);
+                }
             }
         }
 
