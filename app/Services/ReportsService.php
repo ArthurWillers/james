@@ -355,6 +355,8 @@ class ReportsService
             }
         }
 
+        $lastPeriodKey = array_key_last($periods);
+
         foreach ($virtuals as $t) {
             $date = Carbon::parse($t->date);
 
@@ -363,6 +365,16 @@ class ReportsService
             }
 
             $key = $this->getPeriodKey($date, $interval);
+
+            // If the resolved invoice due date falls beyond the report period, assign it to future_expense of the last bucket
+            if (! isset($periods[$key]) && $lastPeriodKey !== null && $date->gt($endDate)) {
+                if ($t->type === 'expense') {
+                    $periods[$lastPeriodKey]['future_expense'] = ($periods[$lastPeriodKey]['future_expense'] ?? 0) + $t->amount;
+                }
+
+                continue;
+            }
+
             if (isset($periods[$key])) {
                 if ($t->type === 'income') {
                     $periods[$key]['income'] += $t->amount;
@@ -384,6 +396,7 @@ class ReportsService
                 'value' => round($runningBalance, 2),
                 'income' => round($data['income'], 2),
                 'expense' => round($data['expense'], 2),
+                'future_expense' => round($data['future_expense'] ?? 0, 2),
             ];
         }
 

@@ -104,8 +104,10 @@ document.addEventListener('alpine:init', () => {
                         
                         const inc = fmt(data[dataIndex].income);
                         const exp = fmt(data[dataIndex].expense);
+                        const futureExpRaw = data[dataIndex].future_expense || 0;
+                        const futureExp = fmt(futureExpRaw);
 
-                        return `<div class="font-medium text-gray-500 text-xs mb-2 uppercase">${date}</div>
+                        let tooltip = `<div class="font-medium text-gray-500 text-xs mb-2 uppercase">${date}</div>
                                 <div class="font-bold text-gray-900 text-sm mb-2">${val}</div>
                                 <div class="flex justify-between items-center gap-4 text-xs">
                                     <span class="text-emerald-600 flex items-center gap-1">↑ ${this.incomeLabel}</span>
@@ -115,6 +117,15 @@ document.addEventListener('alpine:init', () => {
                                     <span class="text-red-600 flex items-center gap-1">↓ ${this.expenseLabel}</span>
                                     <span class="font-medium text-red-600">${exp}</span>
                                 </div>`;
+
+                        if (futureExpRaw > 0) {
+                            tooltip += `<div class="flex justify-between items-center gap-4 text-xs mt-2 pt-2 border-t border-gray-100">
+                                    <span class="text-amber-600 flex items-center gap-1">Fatura Futura</span>
+                                    <span class="font-medium text-amber-600">${futureExp}</span>
+                                </div>`;
+                        }
+
+                        return tooltip;
                     },
                     axisPointer: {
                         lineStyle: { color: '#d1d5db', type: 'dashed' }
