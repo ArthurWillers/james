@@ -64,7 +64,7 @@
         @endif
     </x-page-header>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <x-card class="p-5">
             <h3 class="text-sm font-medium text-neutral-500 mb-1">Fechamento</h3>
             <div class="text-lg font-semibold text-neutral-900">{{ formatShort($invoice->closing_date) }}</div>
