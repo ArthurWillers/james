@@ -575,7 +575,7 @@ class FinanceDashboardService
             $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();
 
             // For credit card recurrences, shift to the invoice due date
-            if ($t->relationLoaded('invoice') && $t->invoice && $t->invoice->relationLoaded('creditCard') && $t->invoice->creditCard) {
+            if (empty($t->is_invoice) && $t->relationLoaded('invoice') && $t->invoice && $t->invoice->relationLoaded('creditCard') && $t->invoice->creditCard) {
                 $transactionDate = $t->invoice->creditCard->resolveInvoiceDueDate($transactionDate);
             }
 
