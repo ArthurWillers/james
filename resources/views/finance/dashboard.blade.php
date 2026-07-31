@@ -67,7 +67,7 @@
                                     {{ formatCurrency($projections['currentMonth']) }}
                                 </p>
                             </div>
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm {{ $projections['currentMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm {{ $projections['currentMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                 @if($projections['currentMonth'] >= 0)
                                     <x-heroicon-o-arrow-trending-up class="w-6 h-6" />
                                 @else
@@ -89,7 +89,7 @@
                                     {{ formatCurrency($projections['nextMonth']) }}
                                 </p>
                             </div>
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm {{ $projections['nextMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm {{ $projections['nextMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                 @if($projections['nextMonth'] >= 0)
                                     <x-heroicon-o-arrow-trending-up class="w-6 h-6" />
                                 @else
@@ -111,7 +111,7 @@
                                     {{ formatCurrency($projections['afterNextMonth']) }}
                                 </p>
                             </div>
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center shadow-sm {{ $projections['afterNextMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm {{ $projections['afterNextMonth'] >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                 @if($projections['afterNextMonth'] >= 0)
                                     <x-heroicon-o-arrow-trending-up class="w-6 h-6" />
                                 @else
