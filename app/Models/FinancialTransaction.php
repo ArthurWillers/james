@@ -24,13 +24,10 @@ class FinancialTransaction extends Model implements HasMedia
     use LogsActivity;
 
     protected $fillable = [
-        'financial_account_id',
-        'financial_credit_card_invoice_id',
         'type',
         'amount',
         'description',
         'date',
-        'is_posted',
         'transfer_pair_id',
         'installment_current',
         'installment_total',
@@ -49,7 +46,6 @@ class FinancialTransaction extends Model implements HasMedia
         return [
             'amount' => 'decimal:2',
             'date' => 'date',
-            'is_posted' => 'boolean',
         ];
     }
 
@@ -85,19 +81,32 @@ class FinancialTransaction extends Model implements HasMedia
     }
 
     /**
-     * Get the account associated with the transaction.
+     * Get the payments associated with the transaction.
      */
-    public function account(): BelongsTo
+    public function payments(): HasMany
     {
-        return $this->belongsTo(FinancialAccount::class, 'financial_account_id');
+        return $this->hasMany(FinancialTransactionPayment::class);
     }
 
     /**
-     * Get the invoice associated with the transaction.
+     * Virtual Accessor: is posted when all payments are posted.
      */
-    public function invoice(): BelongsTo
+    public function getIsPostedAttribute(): bool
     {
-        return $this->belongsTo(FinancialCreditCardInvoice::class, 'financial_credit_card_invoice_id');
+        if ($this->payments->isEmpty()) {
+            return false;
+        }
+
+        return $this->payments->every(fn (FinancialTransactionPayment $p) => $p->is_posted);
+    }
+
+    /**
+     * Virtual Accessor: partially posted when some payments are posted and some are not.
+     */
+    public function getIsPartiallyPostedAttribute(): bool
+    {
+        return $this->payments->contains(fn (FinancialTransactionPayment $p) => $p->is_posted)
+            && $this->payments->contains(fn (FinancialTransactionPayment $p) => ! $p->is_posted);
     }
 
     /**
@@ -161,19 +170,23 @@ class FinancialTransaction extends Model implements HasMedia
     }
 
     /**
-     * Scope a query to only include posted transactions.
+     * Scope a query to only include posted transactions (all payments are posted).
      */
     public function scopePosted(Builder $query): Builder
     {
-        return $query->where('is_posted', true);
+        return $query->whereDoesntHave('payments', function ($q) {
+            $q->where('is_posted', false);
+        });
     }
 
     /**
-     * Scope a query to only include pending transactions.
+     * Scope a query to only include pending transactions (at least one payment is pending).
      */
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('is_posted', false);
+        return $query->whereHas('payments', function ($q) {
+            $q->where('is_posted', false);
+        });
     }
 
     /**
@@ -215,7 +228,9 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function scopeWithoutInvoice(Builder $query): Builder
     {
-        return $query->whereNull('financial_credit_card_invoice_id');
+        return $query->whereDoesntHave('payments', function ($q) {
+            $q->whereNotNull('financial_credit_card_invoice_id');
+        });
     }
 
     /**
@@ -223,9 +238,9 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function scopeWithoutInvestments(Builder $query): Builder
     {
-        return $query->whereDoesntHave('account', function ($q) {
+        return $query->whereDoesntHave('payments.account', function ($q) {
             $q->where('type', FinancialAccountType::Investment);
-        })->whereDoesntHave('invoice.creditCard.financialAccount', function ($q) {
+        })->whereDoesntHave('payments.invoice.creditCard.financialAccount', function ($q) {
             $q->where('type', FinancialAccountType::Investment);
         });
     }
@@ -239,11 +254,11 @@ class FinancialTransaction extends Model implements HasMedia
             return $query;
         }
 
-        return $query->where(function ($sub) use ($accountIds) {
-            $sub->whereIn('financial_account_id', $accountIds)
-                ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
-                    $q2->whereIn('financial_account_id', $accountIds);
-                });
+        return $query->whereHas('payments', function ($q) use ($accountIds) {
+            $q->whereIn('financial_account_id', $accountIds)
+              ->orWhereHas('invoice.creditCard', function ($q2) use ($accountIds) {
+                  $q2->whereIn('financial_account_id', $accountIds);
+              });
         });
     }
 
@@ -285,14 +300,18 @@ class FinancialTransaction extends Model implements HasMedia
             $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
 
             $transaction = static::create([
-                'financial_account_id' => $account->id,
                 'type' => $type,
                 'amount' => $amount,
                 'description' => $description,
                 'date' => $date,
-                'is_posted' => $isPosted,
                 'installment_current' => $i,
                 'installment_total' => $installments,
+            ]);
+
+            $transaction->payments()->create([
+                'financial_account_id' => $account->id,
+                'amount' => $amount,
+                'is_posted' => $isPosted,
             ]);
 
             $createdTransactions->push($transaction);
@@ -316,24 +335,32 @@ class FinancialTransaction extends Model implements HasMedia
         $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
 
         $expense = static::create([
-            'financial_account_id' => $from->id,
             'type' => 'expense',
             'amount' => $amount,
             'description' => $description,
             'date' => $date,
+        ]);
+        
+        $expense->payments()->create([
+            'financial_account_id' => $from->id,
+            'amount' => $amount,
             'is_posted' => $isPosted,
         ]);
 
         $expense->update(['transfer_pair_id' => $expense->id]);
 
         $income = static::create([
-            'financial_account_id' => $to->id,
             'type' => 'income',
             'amount' => $amount,
             'description' => $description,
             'date' => $date,
-            'is_posted' => $isPosted,
             'transfer_pair_id' => $expense->id,
+        ]);
+        
+        $income->payments()->create([
+            'financial_account_id' => $to->id,
+            'amount' => $amount,
+            'is_posted' => $isPosted,
         ]);
 
         $expense->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
@@ -343,11 +370,15 @@ class FinancialTransaction extends Model implements HasMedia
 
         if ($feeAmount !== null && $feeAmount > 0) {
             $fee = static::create([
-                'financial_account_id' => $from->id,
                 'type' => 'expense',
                 'amount' => $feeAmount,
                 'description' => "Taxa/imposto — {$description}",
                 'date' => $date,
+            ]);
+            
+            $fee->payments()->create([
+                'financial_account_id' => $from->id,
+                'amount' => $feeAmount,
                 'is_posted' => $isPosted,
             ]);
 

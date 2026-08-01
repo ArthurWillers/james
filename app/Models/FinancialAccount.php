@@ -38,13 +38,13 @@ class FinancialAccount extends Model
     }
 
     /**
-     * Get the transactions associated with the account.
+     * Get the payments associated with the account.
      *
-     * @return HasMany<FinancialTransaction, $this>
+     * @return HasMany<FinancialTransactionPayment, $this>
      */
-    public function transactions(): HasMany
+    public function payments(): HasMany
     {
-        return $this->hasMany(FinancialTransaction::class);
+        return $this->hasMany(FinancialTransactionPayment::class);
     }
 
     /**
@@ -73,9 +73,13 @@ class FinancialAccount extends Model
     public function scopeWithBalance(Builder $query): void
     {
         $query->addSelect([
-            'balance' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0)")
-                ->whereColumn('financial_account_id', 'financial_accounts.id')
-                ->where('is_posted', true),
+            'balance' => function ($subQuery) {
+                $subQuery->selectRaw("COALESCE(SUM(CASE WHEN financial_transactions.type = 'income' THEN financial_transaction_payments.amount WHEN financial_transactions.type = 'expense' THEN -financial_transaction_payments.amount ELSE 0 END), 0)")
+                    ->from('financial_transaction_payments')
+                    ->join('financial_transactions', 'financial_transactions.id', '=', 'financial_transaction_payments.financial_transaction_id')
+                    ->whereColumn('financial_transaction_payments.financial_account_id', 'financial_accounts.id')
+                    ->where('financial_transaction_payments.is_posted', true);
+            }
         ])->withCasts(['balance' => 'float']);
     }
 

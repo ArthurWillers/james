@@ -57,13 +57,13 @@ class FinancialCreditCardInvoice extends Model
     }
 
     /**
-     * Get the transactions associated with the invoice.
+     * Get the payments associated with the invoice.
      *
-     * @return HasMany<FinancialTransaction, $this>
+     * @return HasMany<FinancialTransactionPayment, $this>
      */
-    public function transactions(): HasMany
+    public function payments(): HasMany
     {
-        return $this->hasMany(FinancialTransaction::class);
+        return $this->hasMany(FinancialTransactionPayment::class, 'financial_credit_card_invoice_id');
     }
 
     /**
@@ -95,8 +95,12 @@ class FinancialCreditCardInvoice extends Model
     public function scopeWithTotalAmount(Builder $query): Builder
     {
         return $query->addSelect([
-            'total_amount' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)")
-                ->whereColumn('financial_credit_card_invoice_id', 'financial_credit_card_invoices.id'),
+            'total_amount' => function ($subQuery) {
+                $subQuery->selectRaw("COALESCE(SUM(CASE WHEN financial_transactions.type = 'expense' THEN financial_transaction_payments.amount WHEN financial_transactions.type = 'income' THEN -financial_transaction_payments.amount ELSE 0 END), 0)")
+                    ->from('financial_transaction_payments')
+                    ->join('financial_transactions', 'financial_transactions.id', '=', 'financial_transaction_payments.financial_transaction_id')
+                    ->whereColumn('financial_transaction_payments.financial_credit_card_invoice_id', 'financial_credit_card_invoices.id');
+            },
         ]);
     }
 
@@ -136,8 +140,9 @@ class FinancialCreditCardInvoice extends Model
             return (float) $this->total_amount;
         }
 
-        return (float) $this->transactions()
-            ->selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0) as total")
+        return (float) $this->payments()
+            ->join('financial_transactions as ft', 'ft.id', '=', 'financial_transaction_payments.financial_transaction_id')
+            ->selectRaw("COALESCE(SUM(CASE WHEN ft.type = 'expense' THEN financial_transaction_payments.amount WHEN ft.type = 'income' THEN -financial_transaction_payments.amount ELSE 0 END), 0) as total")
             ->value('total');
     }
 
@@ -187,10 +192,10 @@ class FinancialCreditCardInvoice extends Model
 
         if ($newAmountPaid >= $total) {
             if ($this->payment_transaction_id) {
-                $this->paymentTransaction?->delete();
+                $this->paymentTransaction()->first()?->delete();
             }
 
-            $this->transactions()->update([
+            $this->payments()->update([
                 'financial_account_id' => $this->creditCard->financial_account_id,
                 'is_posted' => true,
             ]);
@@ -205,17 +210,20 @@ class FinancialCreditCardInvoice extends Model
                     'date' => $paidAt,
                 ]);
             } else {
-                $paymentTransaction = $this->creditCard->financialAccount->transactions()->create([
-                    'date' => $paidAt,
+                $paymentTransaction = FinancialTransaction::create([
                     'type' => 'expense',
                     'amount' => $newAmountPaid,
                     'description' => "Pagamento parcial fatura {$this->reference_month->format('m/Y')}",
+                    'date' => $paidAt,
+                ]);
+
+                $paymentTransaction->payments()->create([
+                    'financial_account_id' => $this->creditCard->financial_account_id,
+                    'amount' => $newAmountPaid,
                     'is_posted' => true,
                 ]);
 
-                if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::PAGAMENTO_PARCIAL_ID')) {
-                    $paymentTransaction->tags()->attach(FinancialTag::PAGAMENTO_PARCIAL_ID, ['is_primary' => true]);
-                }
+                $paymentTransaction->tags()->attach(FinancialTag::PAGAMENTO_PARCIAL_ID, ['is_primary' => true]);
 
                 $this->payment_transaction_id = $paymentTransaction->id;
             }
@@ -223,18 +231,20 @@ class FinancialCreditCardInvoice extends Model
         }
 
         if ($interestAmount !== null && $interestAmount > 0 && $this->interest_transaction_id === null) {
-            $interestTransaction = $this->creditCard->financialAccount->transactions()->create([
-                'date' => $paidAt,
+            $interestTransaction = FinancialTransaction::create([
                 'type' => 'expense',
                 'amount' => $interestAmount,
                 'description' => "Juros da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
+                'date' => $paidAt,
+            ]);
+
+            $interestTransaction->payments()->create([
+                'financial_account_id' => $this->creditCard->financial_account_id,
+                'amount' => $interestAmount,
                 'is_posted' => true,
             ]);
 
-            // Attach JUROS_ID tag as primary
-            if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::JUROS_ID')) {
-                $interestTransaction->tags()->attach(FinancialTag::JUROS_ID, ['is_primary' => true]);
-            }
+            $interestTransaction->tags()->attach(FinancialTag::JUROS_ID, ['is_primary' => true]);
 
             $this->interest_transaction_id = $interestTransaction->id;
         }
@@ -257,8 +267,8 @@ class FinancialCreditCardInvoice extends Model
             $this->interest_transaction_id = null;
         }
 
-        // Revert transactions to unposted
-        $this->transactions()->update([
+        // Revert payments to unposted
+        $this->payments()->update([
             'financial_account_id' => null,
             'is_posted' => false,
         ]);
