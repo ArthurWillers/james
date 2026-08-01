@@ -17,7 +17,7 @@ class ReportsService
      *
      * @return array{sankey: array, evolution: array, tags: array, transactions: Collection}
      */
-    public function getAll(Carbon $startDate, Carbon $endDate, ?array $accountIds = null, string $interval = 'auto'): array
+    public function getAll(Carbon $startDate, Carbon $endDate, ?array $accountIds = null): array
     {
         $transactions = $this->getUnifiedTransactions($startDate, $endDate, $accountIds);
         $flattenedForTags = $this->flattenTransactionsForTags($transactions);
@@ -28,8 +28,8 @@ class ReportsService
 
         return [
             'sankey' => $this->buildSankeyData($flattenedForTags, $initialBalance),
-            'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $interval, $initialBalance, $accountIds),
-            'netWorthEvolution' => $this->buildNetWorthEvolutionData($transactions, $startDate, $endDate, $interval, $initialNetWorth, $accountIds),
+            'evolution' => $this->buildEvolutionData($transactions, $startDate, $endDate, $initialBalance, $accountIds),
+            'netWorthEvolution' => $this->buildNetWorthEvolutionData($transactions, $startDate, $endDate, $initialNetWorth),
             'tags' => $this->buildTagsData($flattenedForTags),
             'transactions' => $transactions,
             'tableTransactions' => $tableTransactions,
@@ -279,72 +279,41 @@ class ReportsService
         ];
     }
 
-    private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialBalance, ?array $accountIds = null): array
+    private function buildEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, float $initialBalance, ?array $accountIds = null): array
     {
-        $diffInDays = $startDate->diffInDays($endDate);
-
-        if ($interval === 'auto') {
-            if ($diffInDays <= 95) {
-                $interval = 'daily';
-            } elseif ($diffInDays <= 180) {
-                $interval = 'weekly';
-            } elseif ($diffInDays <= 730) {
-                $interval = 'monthly';
-            } else {
-                $interval = 'yearly';
-            }
-        }
-
         $periods = [];
         $currentDate = $startDate->copy();
 
-        if ($interval === 'daily') {
-            while ($currentDate->lte($endDate)) {
-                $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addDay();
-            }
-        } elseif ($interval === 'weekly') {
-            $currentDate->startOfWeek();
-            $endWeek = $endDate->copy()->startOfWeek();
-            while ($currentDate->lte($endWeek)) {
-                $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addWeek();
-            }
-        } elseif ($interval === 'yearly') {
-            $currentDate->startOfYear();
-            $endYear = $endDate->copy()->startOfYear();
-            while ($currentDate->lte($endYear)) {
-                $periods[$currentDate->format('Y')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addYear();
-            }
-        } else { // monthly
-            $currentDate->startOfMonth();
-            $endMonth = $endDate->copy()->startOfMonth();
-            while ($currentDate->lte($endMonth)) {
-                $periods[$currentDate->format('Y-m')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addMonth();
-            }
+        while ($currentDate->lte($endDate)) {
+            $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
+            $currentDate->addDay();
         }
 
+        // Cash-basis: exclude CC invoice transactions (their cash impact is via the payment transaction)
         $cashFlows = FinancialTransaction::withoutTransfers()
             ->forAccounts($accountIds)
-            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate], 'and')
-            ->selectRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
-            ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN amount ELSE 0 END) as income")
-            ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN amount ELSE 0 END) as expense")
-            ->groupBy('effective_date')
+            ->whereNull('financial_credit_card_invoice_id')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('date')
+            ->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income")
+            ->selectRaw("SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expense")
+            ->groupBy('date')
             ->get();
 
         $virtuals = $transactions->where('is_virtual', true);
 
-        // Populate amounts
         foreach ($cashFlows as $cf) {
-            $date = Carbon::parse($cf->effective_date);
-            $key = $this->getPeriodKey($date, $interval);
+            $key = is_string($cf->date) ? substr($cf->date, 0, 10) : $cf->date->format('Y-m-d');
             if (isset($periods[$key])) {
                 $periods[$key]['income'] += (float) $cf->income;
                 $periods[$key]['expense'] += (float) $cf->expense;
+            }
+        }
+
+        // Add invoice cash flows for the period (cash-basis: paid on paid_at, unpaid on due_date)
+        foreach ($this->buildInvoicePeriodFlows($startDate, $endDate, $accountIds) as $dateStr => $amount) {
+            if (isset($periods[$dateStr])) {
+                $periods[$dateStr]['expense'] += $amount;
             }
         }
 
@@ -357,7 +326,7 @@ class ReportsService
                 $date = $t->invoice->creditCard->resolveInvoiceDueDate($date);
             }
 
-            $key = $this->getPeriodKey($date, $interval);
+            $key = $date->format('Y-m-d');
 
             // If the resolved invoice due date falls beyond the report period, assign it to future_expense of the last bucket
             if (! isset($periods[$key]) && $lastPeriodKey !== null && $date->gt($endDate)) {
@@ -396,51 +365,14 @@ class ReportsService
         return $chartData;
     }
 
-    private function buildNetWorthEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, string $interval, float $initialNetWorth, ?array $accountIds = null): array
+    private function buildNetWorthEvolutionData(Collection $transactions, Carbon $startDate, Carbon $endDate, float $initialNetWorth): array
     {
-        $diffInDays = $startDate->diffInDays($endDate);
-
-        if ($interval === 'auto') {
-            if ($diffInDays <= 95) {
-                $interval = 'daily';
-            } elseif ($diffInDays <= 180) {
-                $interval = 'weekly';
-            } elseif ($diffInDays <= 730) {
-                $interval = 'monthly';
-            } else {
-                $interval = 'yearly';
-            }
-        }
-
         $periods = [];
         $currentDate = $startDate->copy();
 
-        if ($interval === 'daily') {
-            while ($currentDate->lte($endDate)) {
-                $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addDay();
-            }
-        } elseif ($interval === 'weekly') {
-            $currentDate->startOfWeek();
-            $endWeek = $endDate->copy()->startOfWeek();
-            while ($currentDate->lte($endWeek)) {
-                $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addWeek();
-            }
-        } elseif ($interval === 'yearly') {
-            $currentDate->startOfYear();
-            $endYear = $endDate->copy()->startOfYear();
-            while ($currentDate->lte($endYear)) {
-                $periods[$currentDate->format('Y')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addYear();
-            }
-        } else { // monthly
-            $currentDate->startOfMonth();
-            $endMonth = $endDate->copy()->startOfMonth();
-            while ($currentDate->lte($endMonth)) {
-                $periods[$currentDate->format('Y-m')] = ['income' => 0, 'expense' => 0];
-                $currentDate->addMonth();
-            }
+        while ($currentDate->lte($endDate)) {
+            $periods[$currentDate->format('Y-m-d')] = ['income' => 0, 'expense' => 0];
+            $currentDate->addDay();
         }
 
         $partialPaymentTagId = FinancialTag::PAGAMENTO_PARCIAL_ID;
@@ -459,7 +391,7 @@ class ReportsService
             }
 
             $date = Carbon::parse($t->date);
-            $key = $this->getPeriodKey($date, $interval);
+            $key = $date->format('Y-m-d');
 
             if (isset($periods[$key])) {
                 if ($t->type === 'income') {
@@ -604,23 +536,41 @@ class ReportsService
         ];
     }
 
-    private function getPeriodKey(Carbon $date, string $interval): string
-    {
-        return match ($interval) {
-            'daily' => $date->format('Y-m-d'),
-            'weekly' => $date->copy()->startOfWeek()->format('Y-m-d'),
-            'yearly' => $date->format('Y'),
-            default => $date->format('Y-m'),
-        };
-    }
-
     private function getInitialBalance(Carbon $startDate, ?array $accountIds = null): float
     {
-        return (float) FinancialTransaction::withoutTransfers()
+        $nonCcBalance = (float) FinancialTransaction::withoutTransfers()
             ->forAccounts($accountIds)
-            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
-            ->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate], 'and')
+            ->whereNull('financial_credit_card_invoice_id')
+            ->where('financial_transactions.date', '<', $startDate)
             ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+
+        // Add invoice totals that settled (paid_at or due_date) before startDate
+        $invoiceBalance = 0.0;
+        $invoiceQuery = FinancialCreditCardInvoice::withTotalAmount();
+
+        if (! empty($accountIds)) {
+            $invoiceQuery->whereHas('creditCard', fn ($q) => $q->whereIn('financial_account_id', $accountIds));
+        }
+
+        foreach ($invoiceQuery->get() as $invoice) {
+            $invoiceTotal = (float) $invoice->total();
+            if ($invoiceTotal <= 0) {
+                continue;
+            }
+
+            if ($invoice->paid_at !== null) {
+                if ($invoice->paid_at->lt($startDate)) {
+                    $invoiceBalance -= $invoiceTotal;
+                }
+            } else {
+                $remaining = $invoiceTotal - (float) $invoice->amount_paid;
+                if ($remaining > 0 && $invoice->due_date->lt($startDate)) {
+                    $invoiceBalance -= $remaining;
+                }
+            }
+        }
+
+        return $nonCcBalance + $invoiceBalance;
     }
 
     private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float
@@ -630,5 +580,47 @@ class ReportsService
             ->forAccounts($accountIds)
             ->where('financial_transactions.date', '<', $startDate)
             ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+    }
+
+    /**
+     * Returns invoice cash flows (date => expense amount) for invoices settling within [$startDate, $endDate].
+     * Fully paid: total on paid_at. Unpaid/partial: remaining on due_date (partial payment_transaction already captured).
+     *
+     * @return array<string, float>
+     */
+    private function buildInvoicePeriodFlows(Carbon $startDate, Carbon $endDate, ?array $accountIds = null): array
+    {
+        $query = FinancialCreditCardInvoice::withTotalAmount();
+
+        if (! empty($accountIds)) {
+            $query->whereHas('creditCard', fn ($q) => $q->whereIn('financial_account_id', $accountIds));
+        }
+
+        $flows = [];
+
+        foreach ($query->get() as $invoice) {
+            $invoiceTotal = (float) $invoice->total();
+            if ($invoiceTotal <= 0) {
+                continue;
+            }
+
+            if ($invoice->paid_at !== null) {
+                // Fully paid: single outflow on paid_at
+                if ($invoice->paid_at->between($startDate, $endDate)) {
+                    $dateStr = $invoice->paid_at->format('Y-m-d');
+                    $flows[$dateStr] = ($flows[$dateStr] ?? 0) + $invoiceTotal;
+                }
+            } else {
+                // Unpaid or partial: remaining balance hits on due_date
+                // The partial payment_transaction (no invoice_id) is already captured in the main cashFlows query
+                $remaining = $invoiceTotal - (float) $invoice->amount_paid;
+                if ($remaining > 0 && $invoice->due_date->between($startDate, $endDate)) {
+                    $dateStr = $invoice->due_date->format('Y-m-d');
+                    $flows[$dateStr] = ($flows[$dateStr] ?? 0) + $remaining;
+                }
+            }
+        }
+
+        return $flows;
     }
 }

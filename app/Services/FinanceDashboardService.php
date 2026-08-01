@@ -519,16 +519,21 @@ class FinanceDashboardService
         };
 
         $initialBalanceQuery = FinancialTransaction::posted()
+            ->whereNull('financial_credit_card_invoice_id')
             ->where('date', '<', $startDate);
 
         $this->applyTransferScope($initialBalanceQuery, $includeInvestments);
 
-        // Get initial balance before start date
+        // Get initial balance before start date (non-CC transactions)
         $initialBalance = $initialBalanceQuery
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0) as balance")
             ->value('balance') ?? 0;
 
+        // Add invoice cash flows that settled before startDate
+        $initialBalance += $this->getInvoiceInitialBalance($startDate, $includeInvestments);
+
         $flowsQuery = FinancialTransaction::posted()
+            ->whereNull('financial_credit_card_invoice_id')
             ->forPeriod($startDate, $today);
 
         $this->applyTransferScope($flowsQuery, $includeInvestments);
@@ -554,6 +559,15 @@ class FinanceDashboardService
                 'expense' => (float) $item->expense,
             ]];
         })->toArray();
+
+        // Add invoice cash flows for the historical period
+        foreach ($this->getInvoicePeriodFlows($startDate, $today, $includeInvestments) as $dateStr => $amount) {
+            if (! isset($flowsByDate[$dateStr])) {
+                $flowsByDate[$dateStr] = ['net_flow' => 0, 'income' => 0, 'expense' => 0];
+            }
+            $flowsByDate[$dateStr]['expense'] += $amount;
+            $flowsByDate[$dateStr]['net_flow'] -= $amount;
+        }
 
         // Add future projections (pending, recurrences, open invoices)
         $futureTransactions = $this->getJamesRadar($today);
@@ -650,5 +664,84 @@ class FinanceDashboardService
         } else {
             $query->withoutTransfers();
         }
+    }
+
+    /**
+     * Returns the net invoice cash flow (as negative, i.e. expense) that settled before $startDate.
+     * Used to build the initial balance for the chart.
+     */
+    private function getInvoiceInitialBalance(Carbon $startDate, bool $includeInvestments): float
+    {
+        $query = FinancialCreditCardInvoice::withTotalAmount();
+
+        if (! $includeInvestments) {
+            $query->withoutInvestments();
+        }
+
+        $total = 0.0;
+
+        foreach ($query->get() as $invoice) {
+            $invoiceTotal = (float) $invoice->total();
+
+            if ($invoiceTotal <= 0) {
+                continue;
+            }
+
+            if ($invoice->paid_at !== null) {
+                // Fully paid: cash out on paid_at
+                if ($invoice->paid_at->lt($startDate)) {
+                    $total -= $invoiceTotal;
+                }
+            } else {
+                // Unpaid or partial: cash out (remaining) on due_date
+                $remaining = $invoiceTotal - (float) $invoice->amount_paid;
+                if ($remaining > 0 && $invoice->due_date->lt($startDate)) {
+                    $total -= $remaining;
+                }
+            }
+        }
+
+        return $total;
+    }
+
+    /**
+     * Returns invoice cash flows (date => amount) for invoices that settle within [$startDate, $endDate].
+     * Amount is positive (expense to be subtracted from balance).
+     */
+    private function getInvoicePeriodFlows(Carbon $startDate, Carbon $endDate, bool $includeInvestments): array
+    {
+        $query = FinancialCreditCardInvoice::withTotalAmount();
+
+        if (! $includeInvestments) {
+            $query->withoutInvestments();
+        }
+
+        $flows = [];
+
+        foreach ($query->get() as $invoice) {
+            $invoiceTotal = (float) $invoice->total();
+
+            if ($invoiceTotal <= 0) {
+                continue;
+            }
+
+            if ($invoice->paid_at !== null) {
+                // Fully paid: single outflow on paid_at
+                if ($invoice->paid_at->between($startDate, $endDate)) {
+                    $dateStr = $invoice->paid_at->format('Y-m-d');
+                    $flows[$dateStr] = ($flows[$dateStr] ?? 0) + $invoiceTotal;
+                }
+            } else {
+                // Unpaid or partial: remaining balance hits on due_date
+                // The partial payment itself is already captured as a payment_transaction (no invoice_id)
+                $remaining = $invoiceTotal - (float) $invoice->amount_paid;
+                if ($remaining > 0 && $invoice->due_date->between($startDate, $endDate)) {
+                    $dateStr = $invoice->due_date->format('Y-m-d');
+                    $flows[$dateStr] = ($flows[$dateStr] ?? 0) + $remaining;
+                }
+            }
+        }
+
+        return $flows;
     }
 }
