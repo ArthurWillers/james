@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('financial_transaction_payments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('financial_transaction_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('financial_account_id')->nullable()->constrained()->restrictOnDelete();
+            $table->foreignId('financial_credit_card_invoice_id')->nullable()->constrained()->restrictOnDelete();
+            $table->decimal('amount', 10, 2);
+            $table->boolean('is_posted')->default(true);
             $table->timestamps();
+
+            $table->index(['financial_account_id', 'is_posted']);
         });
     }
 
