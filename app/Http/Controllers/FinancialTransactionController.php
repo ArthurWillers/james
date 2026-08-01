@@ -284,7 +284,13 @@ class FinancialTransactionController extends Controller
         if (! empty($validated['financial_credit_card_id'])) {
             $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
             $date = Carbon::parse($validated['date']);
-            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+
+            $invoiceDate = $date->copy();
+            if ($transaction->installment_current > 1) {
+                $invoiceDate->addMonthsNoOverflow($transaction->installment_current - 1);
+            }
+
+            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $invoiceDate);
 
             $transaction->update([
                 'financial_account_id' => null,
