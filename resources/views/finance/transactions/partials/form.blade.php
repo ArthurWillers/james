@@ -56,36 +56,62 @@
                 <x-radio-block name="type" x-model="type" value="income" icon="heroicon-o-arrow-trending-up" label="Receita" activeClass="peer-checked:text-green-600" inactiveClass="text-green-600 hover:text-green-700" />
             </x-radio-block-group>
 
-            {{-- Conta ou Cartão --}}
+            {{-- Formas de Pagamento --}}
             <div class="space-y-4 pt-2">
-                <x-radio-block-group legend="Onde">
-                    <x-radio-block name="targetType_dummy" x-model="targetType" value="account" icon="heroicon-o-building-library" label="Conta" />
-                    <x-radio-block name="targetType_dummy" x-model="targetType" value="card" icon="heroicon-o-credit-card" label="Cartão" />
-                </x-radio-block-group>
-                
-                <div>
-                    <div x-show="targetType === 'account'">
-                        <x-form-select name="financial_account_id">
-                            <option value="">Selecione uma conta...</option>
-                            @foreach($accounts as $account)
-                                <option value="{{ $account->id }}" {{ old('financial_account_id', $transaction->financial_account_id ?? '') == $account->id ? 'selected' : '' }}>{{ $account->name }}</option>
-                            @endforeach
-                        </x-form-select>
-                    </div>
-                    <div x-show="targetType === 'card'" style="display: none;">
-                        <x-form-select name="financial_credit_card_id">
-                            <option value="">Selecione um cartão...</option>
-                            @foreach($cards as $card)
-                                <option value="{{ $card->id }}" {{ old('financial_credit_card_id', isset($transaction) ? optional($transaction->invoice)->financial_credit_card_id : '') == $card->id ? 'selected' : '' }}>{{ $card->name }}</option>
-                            @endforeach
-                        </x-form-select>
-                    </div>
+                <div class="flex justify-between items-center">
+                    <h4 class="text-sm font-semibold text-neutral-700">Formas de Pagamento</h4>
+                    <button type="button" @click="addPayment()" x-show="mode !== 'installment'" class="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1 focus:outline-none cursor-pointer">
+                        <x-heroicon-o-plus class="size-3.5"/> Adicionar Meio de Pagamento
+                    </button>
                 </div>
-                
-                <div class="pt-4 border-t border-neutral-100" x-show="targetType === 'account'">
-                    <x-switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
-                    <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
-                </div>
+
+                <template x-for="(payment, index) in payments" :key="index">
+                    <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-100 space-y-3 relative group">
+                        <button type="button" @click="removePayment(index)" x-show="payments.length > 1" class="absolute top-2 right-2 text-neutral-400 hover:text-red-500 lg:hidden group-hover:block bg-neutral-100 hover:bg-neutral-200 rounded-full p-1 transition-colors cursor-pointer" title="Remover meio de pagamento">
+                            <x-heroicon-o-trash class="size-4" />
+                        </button>
+
+                        <template x-if="payment.id">
+                            <input type="hidden" x-bind:name="'payments['+index+'][id]'" x-model="payment.id">
+                        </template>
+
+                        <x-radio-block-group legend="Onde">
+                            <x-radio-block name="" x-bind:name="'payments['+index+'][target_type]'" x-model="payment.target_type" value="account" icon="heroicon-o-building-library" label="Conta" />
+                            <x-radio-block name="" x-bind:name="'payments['+index+'][target_type]'" x-model="payment.target_type" value="card" icon="heroicon-o-credit-card" label="Cartão" />
+                        </x-radio-block-group>
+                        
+                        <div>
+                            <div x-show="payment.target_type === 'account'">
+                                <x-form-select name="" x-bind:name="'payments['+index+'][financial_account_id]'" x-model="payment.financial_account_id">
+                                    <option value="">Selecione uma conta...</option>
+                                    @foreach($accounts as $account)
+                                        <option value="{{ $account->id }}">{{ $account->name }}</option>
+                                    @endforeach
+                                </x-form-select>
+                            </div>
+                            <div x-show="payment.target_type === 'card'" style="display: none;">
+                                <x-form-select name="" x-bind:name="'payments['+index+'][financial_credit_card_id]'" x-model="payment.financial_credit_card_id">
+                                    <option value="">Selecione um cartão...</option>
+                                    @foreach($cards as $card)
+                                        <option value="{{ $card->id }}">{{ $card->name }}</option>
+                                    @endforeach
+                                </x-form-select>
+                            </div>
+                        </div>
+
+                        <!-- Valor Parcial -->
+                        <div x-show="payments.length > 1">
+                            <x-form-input label="Valor Parcial (R$)" name="" x-bind:name="'payments['+index+'][amount]'" :currency="true" placeholder="0,00" x-model="payment.amount" />
+                        </div>
+                        
+
+                    </div>
+                </template>
+            </div>
+
+            <div class="pt-4 border-t border-neutral-100" x-show="payments.some(p => p.target_type === 'account')" x-cloak>
+                <x-form.switch label="Transação Efetivada?" name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" />
+                <p class="text-xs text-neutral-500 mt-1">Se desmarcado, os pagamentos via conta corrente ficarão pendentes.</p>
             </div>
         </x-card>
     </div>

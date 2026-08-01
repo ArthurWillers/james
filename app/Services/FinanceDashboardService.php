@@ -350,18 +350,12 @@ class FinanceDashboardService
             ->withoutInvoice()
             ->expenses()
             ->withoutTransfers()
-            ->with(['tags', 'invoice.creditCard'])
+            ->with(['tags', 'payments.invoice.creditCard', 'payments.account'])
             ->get()
             ->each(function ($t) {
-                if ($t->financial_account_id) {
-                    $t->setRelation('account', $this->getAccounts()->firstWhere('id', $t->financial_account_id));
-                } else {
-                    $t->setRelation('account', null);
-                }
-
-                if (! $t->financial_credit_card_invoice_id) {
-                    $t->setRelation('invoice', null);
-                }
+                $primaryPayment = $t->payments->sortByDesc('amount')->first();
+                $t->setRelation('account', $primaryPayment?->account);
+                $t->setRelation('invoice', $primaryPayment?->invoice);
             });
 
         $recurrences = $this->getActiveRecurrences()
@@ -372,7 +366,6 @@ class FinanceDashboardService
                     'amount' => $r->amount,
                     'type' => $r->type,
                     'date' => $r->next_processing_date,
-                    'is_posted' => false,
                 ]);
                 $t->is_recurrence = true;
                 $t->recurrence_id = $r->id;
@@ -402,7 +395,6 @@ class FinanceDashboardService
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
                     'type' => 'expense',
                     'date' => $inv->due_date,
-                    'is_posted' => false,
                 ]);
                 $t->is_invoice = true;
                 $t->setRelation('tags', collect());
@@ -421,7 +413,7 @@ class FinanceDashboardService
         $endDate = $referenceDate->copy();
 
         $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
-            ->where(function ($q) {
+            ->whereHas('payments', function ($q) {
                 $q->where('is_posted', true)
                     ->orWhereNotNull('financial_credit_card_invoice_id');
             })
@@ -487,18 +479,16 @@ class FinanceDashboardService
 
     public function getRecentTransactions(): Collection
     {
-        $transactions = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
+        $transactions = FinancialTransaction::with(['payments.invoice.creditCard', 'payments.account', 'tags', 'recurrence'])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
 
         $transactions->each(function ($t) {
-            $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
-
-            if ($t->relationLoaded('invoice') && $t->invoice) {
-                $t->invoice->setRelation('creditCard', $t->invoice->financial_credit_card_id ? $this->getCreditCards()->firstWhere('id', $t->invoice->financial_credit_card_id) : null);
-            }
+            $primaryPayment = $t->payments->sortByDesc('amount')->first();
+            $t->setRelation('account', $primaryPayment?->account);
+            $t->setRelation('invoice', $primaryPayment?->invoice);
         });
 
         return $transactions;
@@ -572,30 +562,59 @@ class FinanceDashboardService
         }
 
         foreach ($futureTransactions as $t) {
-            $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();
+            if ($t->relationLoaded('payments') && $t->payments->isNotEmpty()) {
+                foreach ($t->payments as $payment) {
+                    $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();
 
-            // For credit card recurrences, shift to the invoice due date
-            if (empty($t->is_invoice) && $t->relationLoaded('invoice') && $t->invoice && $t->invoice->relationLoaded('creditCard') && $t->invoice->creditCard) {
-                $transactionDate = $t->invoice->creditCard->resolveInvoiceDueDate($transactionDate);
-            }
+                    if ($payment->financial_credit_card_invoice_id && $payment->invoice && $payment->invoice->creditCard) {
+                        $transactionDate = $payment->invoice->creditCard->resolveInvoiceDueDate($transactionDate);
+                    }
 
-            $dateStr = $transactionDate->format('Y-m-d');
+                    $dateStr = $transactionDate->format('Y-m-d');
 
-            if ($transactionDate->gt($endDate)) {
-                continue;
-            }
+                    if ($transactionDate->gt($endDate)) {
+                        continue;
+                    }
 
-            if (! isset($flowsByDate[$dateStr])) {
-                $flowsByDate[$dateStr] = ['net_flow' => 0, 'income' => 0, 'expense' => 0];
-            }
+                    if (! isset($flowsByDate[$dateStr])) {
+                        $flowsByDate[$dateStr] = ['net_flow' => 0, 'income' => 0, 'expense' => 0];
+                    }
 
-            $amount = (float) $t->amount;
-            if ($t->type === 'income') {
-                $flowsByDate[$dateStr]['income'] += $amount;
-                $flowsByDate[$dateStr]['net_flow'] += $amount;
+                    $amount = (float) $payment->amount;
+                    if ($t->type === 'income') {
+                        $flowsByDate[$dateStr]['income'] += $amount;
+                        $flowsByDate[$dateStr]['net_flow'] += $amount;
+                    } else {
+                        $flowsByDate[$dateStr]['expense'] += $amount;
+                        $flowsByDate[$dateStr]['net_flow'] -= $amount;
+                    }
+                }
             } else {
-                $flowsByDate[$dateStr]['expense'] += $amount;
-                $flowsByDate[$dateStr]['net_flow'] -= $amount;
+                $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();
+
+                // For credit card recurrences, shift to the invoice due date
+                if (empty($t->is_invoice) && $t->relationLoaded('invoice') && $t->invoice && $t->invoice->relationLoaded('creditCard') && $t->invoice->creditCard) {
+                    $transactionDate = $t->invoice->creditCard->resolveInvoiceDueDate($transactionDate);
+                }
+
+                $dateStr = $transactionDate->format('Y-m-d');
+
+                if ($transactionDate->gt($endDate)) {
+                    continue;
+                }
+
+                if (! isset($flowsByDate[$dateStr])) {
+                    $flowsByDate[$dateStr] = ['net_flow' => 0, 'income' => 0, 'expense' => 0];
+                }
+
+                $amount = (float) $t->amount;
+                if ($t->type === 'income') {
+                    $flowsByDate[$dateStr]['income'] += $amount;
+                    $flowsByDate[$dateStr]['net_flow'] += $amount;
+                } else {
+                    $flowsByDate[$dateStr]['expense'] += $amount;
+                    $flowsByDate[$dateStr]['net_flow'] -= $amount;
+                }
             }
         }
 
@@ -641,7 +660,8 @@ class FinanceDashboardService
                             ->whereIn('transfer_pair_id', function ($sub) {
                                 $sub->select('transfer_pair_id')
                                     ->from('financial_transactions')
-                                    ->join('financial_accounts', 'financial_transactions.financial_account_id', '=', 'financial_accounts.id')
+                                    ->join('financial_transaction_payments', 'financial_transactions.id', '=', 'financial_transaction_payments.financial_transaction_id')
+                                    ->join('financial_accounts', 'financial_transaction_payments.financial_account_id', '=', 'financial_accounts.id')
                                     ->where('financial_accounts.type', FinancialAccountType::Investment->value)
                                     ->whereNotNull('transfer_pair_id');
                             });

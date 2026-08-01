@@ -97,7 +97,7 @@ class FinancialTransaction extends Model implements HasMedia
             return false;
         }
 
-        return $this->payments->every(fn (FinancialTransactionPayment $p) => $p->is_posted);
+        return $this->payments->every(fn (FinancialTransactionPayment $p) => $p->is_posted || !empty($p->financial_credit_card_invoice_id));
     }
 
     /**
@@ -105,8 +105,8 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function getIsPartiallyPostedAttribute(): bool
     {
-        return $this->payments->contains(fn (FinancialTransactionPayment $p) => $p->is_posted)
-            && $this->payments->contains(fn (FinancialTransactionPayment $p) => ! $p->is_posted);
+        return $this->payments->contains(fn (FinancialTransactionPayment $p) => $p->is_posted || !empty($p->financial_credit_card_invoice_id))
+            && $this->payments->contains(fn (FinancialTransactionPayment $p) => !($p->is_posted || !empty($p->financial_credit_card_invoice_id)));
     }
 
     /**

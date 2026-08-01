@@ -167,20 +167,25 @@ class SettlementGroupService
             'amount' => $validated['total_amount'],
             'description' => $validated['description'].' (Conta Dividida)',
             'date' => $date,
-            'is_posted' => true,
-            'financial_account_id' => null,
-            'financial_credit_card_invoice_id' => null,
         ];
+
+        $transaction = FinancialTransaction::create($data);
 
         if ($validated['targetType'] === 'card') {
             $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
             $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
-            $data['financial_credit_card_invoice_id'] = $invoice->id;
+            $transaction->payments()->create([
+                'financial_credit_card_invoice_id' => $invoice->id,
+                'amount' => $validated['total_amount'],
+                'is_posted' => false,
+            ]);
         } else {
-            $data['financial_account_id'] = $validated['financial_account_id'];
+            $transaction->payments()->create([
+                'financial_account_id' => $validated['financial_account_id'],
+                'amount' => $validated['total_amount'],
+                'is_posted' => true,
+            ]);
         }
-
-        $transaction = FinancialTransaction::create($data);
 
         // Item: "Minha Parte" (user's share, tagged with user-selected tags)
         $myItem = FinancialTransactionItem::create([

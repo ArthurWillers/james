@@ -22,7 +22,7 @@ class FinancialTransactionController extends Controller
 
     public function index(Request $request)
     {
-        $query = FinancialTransaction::query()->with(['account', 'invoice.creditCard', 'tags']);
+        $query = FinancialTransaction::query()->with(['payments.account', 'payments.invoice.creditCard', 'tags']);
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -34,11 +34,15 @@ class FinancialTransactionController extends Controller
         }
 
         if ($request->filled('account_id')) {
-            $query->where('financial_account_id', $request->account_id);
+            $query->whereHas('payments', function ($q) use ($request) {
+                $q->where('financial_account_id', $request->account_id);
+            });
         }
 
         if ($request->filled('credit_card_invoice_id')) {
-            $query->where('financial_credit_card_invoice_id', $request->credit_card_invoice_id);
+            $query->whereHas('payments', function ($q) use ($request) {
+                $q->where('financial_credit_card_invoice_id', $request->credit_card_invoice_id);
+            });
         }
 
         if ($request->filled('type')) {
@@ -46,7 +50,11 @@ class FinancialTransactionController extends Controller
         }
 
         if ($request->filled('is_posted')) {
-            $query->where('is_posted', $request->boolean('is_posted'));
+            if ($request->boolean('is_posted')) {
+                $query->posted();
+            } else {
+                $query->pending();
+            }
         }
 
         if ($request->filled('date')) {
@@ -90,27 +98,31 @@ class FinancialTransactionController extends Controller
         $mode = $validated['mode'];
 
         if ($mode === 'single') {
-            if (! empty($validated['financial_credit_card_id'])) {
-                $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-                $date = Carbon::parse($validated['date']);
-                $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+            $transaction = FinancialTransaction::create([
+                'type' => $validated['type'],
+                'amount' => $validated['amount'],
+                'description' => $validated['description'],
+                'date' => Carbon::parse($validated['date']),
+            ]);
 
-                $transaction = $invoice->transactions()->create([
-                    'type' => $validated['type'],
-                    'amount' => $validated['amount'],
-                    'description' => $validated['description'],
-                    'date' => $date,
-                    'is_posted' => false,
-                ]);
-            } else {
-                $transaction = FinancialTransaction::create([
-                    'financial_account_id' => $validated['financial_account_id'],
-                    'type' => $validated['type'],
-                    'amount' => $validated['amount'],
-                    'description' => $validated['description'],
-                    'date' => Carbon::parse($validated['date']),
-                    'is_posted' => $validated['is_posted'] ?? false,
-                ]);
+            foreach ($validated['payments'] as $paymentData) {
+                if ($paymentData['target_type'] === 'card') {
+                    $card = FinancialCreditCard::findOrFail($paymentData['financial_credit_card_id']);
+                    $date = Carbon::parse($validated['date']);
+                    $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+
+                    $transaction->payments()->create([
+                        'financial_credit_card_invoice_id' => $invoice->id,
+                        'amount' => $paymentData['amount'],
+                        'is_posted' => false,
+                    ]);
+                } else {
+                    $transaction->payments()->create([
+                        'financial_account_id' => $paymentData['financial_account_id'],
+                        'amount' => $paymentData['amount'],
+                        'is_posted' => $validated['is_posted'] ?? false,
+                    ]);
+                }
             }
 
             $hasItemTags = false;
@@ -139,8 +151,10 @@ class FinancialTransactionController extends Controller
                 }
             }
         } elseif ($mode === 'installment') {
-            if (! empty($validated['financial_credit_card_id'])) {
-                $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+            $payment = $validated['payments'][0];
+
+            if ($payment['target_type'] === 'card') {
+                $card = FinancialCreditCard::findOrFail($payment['financial_credit_card_id']);
                 $transactions = $card->createInstallmentPurchase(
                     Carbon::parse($validated['date']),
                     $validated['amount'],
@@ -148,7 +162,7 @@ class FinancialTransactionController extends Controller
                     $validated['description']
                 );
             } else {
-                $account = FinancialAccount::findOrFail($validated['financial_account_id']);
+                $account = FinancialAccount::findOrFail($payment['financial_account_id']);
                 $transactions = FinancialTransaction::createInstallmentsOnAccount(
                     $account,
                     Carbon::parse($validated['date']),
@@ -225,7 +239,7 @@ class FinancialTransactionController extends Controller
 
     public function show(FinancialTransaction $transaction)
     {
-        $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags', 'settlements']);
+        $transaction->load(['payments.account', 'payments.invoice.creditCard', 'tags', 'items.tags', 'settlements']);
 
         $settlementGroup = SettlementGroup::where('financial_transaction_id', $transaction->id)->first();
 
@@ -243,7 +257,7 @@ class FinancialTransactionController extends Controller
 
     public function edit(FinancialTransaction $transaction)
     {
-        $transaction->load(['tags', 'items.tags', 'invoice.creditCard']);
+        $transaction->load(['tags', 'items.tags', 'payments.invoice.creditCard', 'payments.account']);
         $accounts = FinancialAccount::all();
         $cards = FinancialCreditCard::all();
         $tags = FinancialTag::all()->map(function ($tag) {
@@ -262,30 +276,34 @@ class FinancialTransactionController extends Controller
     {
         $validated = $request->validated();
 
-        if (! empty($validated['financial_credit_card_id'])) {
-            $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-            $date = Carbon::parse($validated['date']);
-            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+        $date = Carbon::parse($validated['date']);
 
-            $transaction->update([
-                'financial_account_id' => null,
-                'financial_credit_card_invoice_id' => $invoice->id,
-                'type' => $validated['type'],
-                'amount' => $validated['amount'],
-                'description' => $validated['description'],
-                'date' => $date,
-            ]);
-        } else {
-            $date = Carbon::parse($validated['date']);
-            $transaction->update([
-                'financial_account_id' => $validated['financial_account_id'],
-                'financial_credit_card_invoice_id' => null,
-                'type' => $validated['type'],
-                'amount' => $validated['amount'],
-                'description' => $validated['description'],
-                'date' => $date,
-                'is_posted' => $validated['is_posted'] ?? false,
-            ]);
+        $transaction->update([
+            'type' => $validated['type'],
+            'amount' => $validated['amount'],
+            'description' => $validated['description'],
+            'date' => $date,
+        ]);
+
+        $transaction->payments()->delete();
+
+        foreach ($validated['payments'] as $paymentData) {
+            if ($paymentData['target_type'] === 'card') {
+                $card = FinancialCreditCard::findOrFail($paymentData['financial_credit_card_id']);
+                $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+
+                $transaction->payments()->create([
+                    'financial_credit_card_invoice_id' => $invoice->id,
+                    'amount' => $paymentData['amount'],
+                    'is_posted' => false,
+                ]);
+            } else {
+                $transaction->payments()->create([
+                    'financial_account_id' => $paymentData['financial_account_id'],
+                    'amount' => $paymentData['amount'],
+                    'is_posted' => $validated['is_posted'] ?? false,
+                ]);
+            }
         }
 
         $hasItemTags = false;
@@ -333,8 +351,8 @@ class FinancialTransactionController extends Controller
     {
         $transactions = FinancialTransaction::onlyTrashed()
             ->with([
-                'account',
-                'invoice.creditCard',
+                'payments.account',
+                'payments.invoice.creditCard',
                 'tags',
                 'settlements' => fn ($q) => $q->withTrashed(),
                 'settlementGroup' => fn ($q) => $q->withTrashed(),

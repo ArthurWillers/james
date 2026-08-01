@@ -52,11 +52,16 @@ class FinancialAccountController extends Controller
 
         if (! empty($validated['initial_balance']) && $validated['initial_balance'] != 0) {
             $isPositive = $validated['initial_balance'] > 0;
-            $transaction = $financialAccount->transactions()->create([
+            $transaction = \App\Models\FinancialTransaction::create([
                 'type' => $isPositive ? 'income' : 'expense',
                 'amount' => abs($validated['initial_balance']),
                 'date' => now(),
                 'description' => 'Saldo Inicial',
+            ]);
+
+            $transaction->payments()->create([
+                'financial_account_id' => $financialAccount->id,
+                'amount' => abs($validated['initial_balance']),
                 'is_posted' => true,
             ]);
 
@@ -75,14 +80,18 @@ class FinancialAccountController extends Controller
     {
         $account = FinancialAccount::withBalance()->findOrFail($financialAccount->id);
 
-        $globalIncome = $account->transactions()
+        $globalIncome = \App\Models\FinancialTransaction::whereHas('payments', function ($q) use ($account) {
+                $q->where('financial_account_id', $account->id)
+                  ->where('is_posted', true);
+            })
             ->where('type', 'income')
-            ->where('is_posted', true)
             ->sum('amount');
 
-        $globalExpense = $account->transactions()
+        $globalExpense = \App\Models\FinancialTransaction::whereHas('payments', function ($q) use ($account) {
+                $q->where('financial_account_id', $account->id)
+                  ->where('is_posted', true);
+            })
             ->where('type', 'expense')
-            ->where('is_posted', true)
             ->sum('amount');
 
         $creditCards = $account->creditCards()
@@ -155,11 +164,16 @@ class FinancialAccountController extends Controller
 
         $isIncome = $difference > 0;
 
-        $transaction = $financialAccount->transactions()->create([
+        $transaction = \App\Models\FinancialTransaction::create([
             'type' => $isIncome ? 'income' : 'expense',
             'amount' => abs($difference),
             'description' => 'Ajuste de Saldo',
             'date' => now(),
+        ]);
+
+        $transaction->payments()->create([
+            'financial_account_id' => $financialAccount->id,
+            'amount' => abs($difference),
             'is_posted' => true,
         ]);
 
@@ -202,7 +216,7 @@ class FinancialAccountController extends Controller
     public function forceDestroy(FinancialAccount $financialAccount): RedirectResponse
     {
         if ($financialAccount->creditCards()->exists() ||
-            $financialAccount->transactions()->exists() ||
+            $financialAccount->payments()->exists() ||
             $financialAccount->recurrences()->exists()) {
             return redirect()
                 ->route('financial.accounts.trashed')

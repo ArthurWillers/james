@@ -75,21 +75,37 @@
         <!-- Conta/Fatura -->
         <x-card>
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Conta / Origem</h3>
-            @if($transaction->invoice)
-                <div class="flex items-center gap-3">
-                    <x-avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
-                    <div>
-                        <p class="font-bold text-neutral-900">{{ $transaction->invoice->creditCard->name }}</p>
-                        <p class="text-xs text-neutral-500">Fatura de {{ formatMonthYear($transaction->invoice->closing_date) }}</p>
-                    </div>
-                </div>
-            @elseif($transaction->account)
-                <div class="flex items-center gap-3">
-                    <x-avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
-                    <div>
-                        <p class="font-bold text-neutral-900">{{ $transaction->account->name }}</p>
-                        <p class="text-xs text-neutral-500">Conta Corrente</p>
-                    </div>
+            @if($transaction->payments->isNotEmpty())
+                <div class="space-y-4">
+                @foreach($transaction->payments as $payment)
+                    @if($payment->invoice)
+                        <div class="flex items-center justify-between gap-3 border-b border-neutral-100 last:border-0 pb-3 last:pb-0">
+                            <div class="flex items-center gap-3">
+                                <x-avatar icon="heroicon-o-credit-card" variant="soft" radius="lg" size="md" />
+                                <div>
+                                    <p class="font-bold text-neutral-900">{{ $payment->invoice->creditCard->name }}</p>
+                                    <p class="text-xs text-neutral-500">Fatura de {{ formatMonthYear($payment->invoice->closing_date) }}</p>
+                                </div>
+                            </div>
+                            @if($transaction->payments->count() > 1)
+                                <div class="font-semibold text-sm text-neutral-900">{{ formatCurrency($payment->amount) }}</div>
+                            @endif
+                        </div>
+                    @elseif($payment->account)
+                        <div class="flex items-center justify-between gap-3 border-b border-neutral-100 last:border-0 pb-3 last:pb-0">
+                            <div class="flex items-center gap-3">
+                                <x-avatar icon="heroicon-o-building-library" variant="soft" radius="lg" size="md" />
+                                <div>
+                                    <p class="font-bold text-neutral-900">{{ $payment->account->name }}</p>
+                                    <p class="text-xs text-neutral-500">Conta Corrente</p>
+                                </div>
+                            </div>
+                            @if($transaction->payments->count() > 1)
+                                <div class="font-semibold text-sm text-neutral-900">{{ formatCurrency($payment->amount) }}</div>
+                            @endif
+                        </div>
+                    @endif
+                @endforeach
                 </div>
             @else
                 <span class="text-neutral-400 text-sm">-</span>

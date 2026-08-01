@@ -42,13 +42,17 @@ class ReportsService
     private function getUnifiedTransactions(Carbon $startDate, Carbon $endDate, ?array $accountIds = null): Collection
     {
         // 1. Real Transactions (includes future credit card installments since they are materialized)
-        $query = FinancialTransaction::with(['tags', 'items.tags', 'invoice.creditCard', 'account'])
+        $query = FinancialTransaction::with(['tags', 'items.tags', 'payments.invoice.creditCard', 'payments.account'])
             ->whereBetween('date', [$startDate, $endDate])
             ->withoutTransfers()
             ->forAccounts($accountIds);
 
         $realTransactions = $query->get()->map(function ($t) {
             $t->is_virtual = false;
+
+            $primaryPayment = $t->payments->sortByDesc('amount')->first();
+            $t->setRelation('account', $primaryPayment?->account);
+            $t->setRelation('invoice', $primaryPayment?->invoice);
 
             return $t;
         });
@@ -78,7 +82,6 @@ class ReportsService
                     'amount' => $recurrence->amount,
                     'date' => $currentDate->copy(),
                     'description' => $recurrence->title,
-                    'is_posted' => false,
                 ]);
 
                 $t->id = 'v_'.$recurrence->id.'_'.$currentDate->format('Ymd');
@@ -328,11 +331,12 @@ class ReportsService
 
         $cashFlows = FinancialTransaction::withoutTransfers()
             ->forAccounts($accountIds)
-            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
+            ->join('financial_transaction_payments', 'financial_transactions.id', '=', 'financial_transaction_payments.financial_transaction_id')
+            ->leftJoin('financial_credit_card_invoices', 'financial_transaction_payments.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
             ->whereRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) BETWEEN ? AND ?', [$startDate, $endDate], 'and')
             ->selectRaw('COALESCE(DATE(financial_credit_card_invoices.paid_at), financial_credit_card_invoices.due_date, financial_transactions.date) as effective_date')
-            ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN amount ELSE 0 END) as income")
-            ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN amount ELSE 0 END) as expense")
+            ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'income' THEN financial_transaction_payments.amount ELSE 0 END) as income")
+            ->selectRaw("SUM(CASE WHEN financial_transactions.type = 'expense' THEN financial_transaction_payments.amount ELSE 0 END) as expense")
             ->groupBy('effective_date')
             ->get();
 
@@ -618,9 +622,10 @@ class ReportsService
     {
         return (float) FinancialTransaction::withoutTransfers()
             ->forAccounts($accountIds)
-            ->leftJoin('financial_credit_card_invoices', 'financial_transactions.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
+            ->join('financial_transaction_payments', 'financial_transactions.id', '=', 'financial_transaction_payments.financial_transaction_id')
+            ->leftJoin('financial_credit_card_invoices', 'financial_transaction_payments.financial_credit_card_invoice_id', '=', 'financial_credit_card_invoices.id')
             ->whereRaw('COALESCE(financial_credit_card_invoices.due_date, financial_transactions.date) < ?', [$startDate], 'and')
-            ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+            ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN financial_transaction_payments.amount WHEN financial_transactions.type = 'expense' THEN -financial_transaction_payments.amount ELSE 0 END"));
     }
 
     private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float

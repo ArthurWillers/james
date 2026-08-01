@@ -55,15 +55,51 @@
                 </x-table.cell>
 
                 <x-table.cell>
-                    @if($transaction->invoice)
+                    @php
+                        $paymentsCount = $transaction->relationLoaded('payments') && $transaction->payments ? $transaction->payments->count() : 0;
+                        
+                        $payments = $transaction->relationLoaded('payments') ? $transaction->payments : collect();
+                        $paymentsCount = $payments->count();
+                        
+                        // Fake relations set by ReportsService/DashboardService
+                        $fakeInvoice = $transaction->relationLoaded('invoice') ? $transaction->invoice : null;
+                        $fakeAccount = $transaction->relationLoaded('account') ? $transaction->account : null;
+                        
+                        $mainPayment = $paymentsCount > 0 ? $payments->sortByDesc('amount')->first() : null;
+                        $invoice = $fakeInvoice ?? ($mainPayment ? $mainPayment->invoice : null);
+                        $account = $fakeAccount ?? ($mainPayment ? $mainPayment->account : null);
+                        
+                        $otherPaymentsCount = $paymentsCount > 1 ? $paymentsCount - 1 : 0;
+                        $otherPaymentsNames = '';
+                        if ($otherPaymentsCount > 0) {
+                            $otherPayments = $payments->sortByDesc('amount')->skip(1);
+                            $otherPaymentsNames = $otherPayments->map(function($p) {
+                                if (!empty($p->financial_credit_card_invoice_id) && $p->invoice) return $p->invoice->creditCard->name;
+                                if (!empty($p->financial_account_id) && $p->account) return $p->account->name;
+                                return 'Desconhecido';
+                            })->join(', ');
+                        }
+                    @endphp
+                    
+                    @if($invoice)
                         <div class="flex items-center gap-1.5 text-neutral-600 truncate">
                             <x-heroicon-o-credit-card class="size-4 shrink-0" />
-                            <span class="truncate">{{ $transaction->invoice->creditCard->name }}</span>
+                            <span class="truncate">{{ $invoice->creditCard->name }}</span>
+                            @if($otherPaymentsCount > 0)
+                                <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xxs font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help" title="{{ $otherPaymentsNames }}">
+                                    +{{ $otherPaymentsCount }}
+                                </span>
+                            @endif
                         </div>
-                    @elseif($transaction->account)
+                    @elseif($account)
                         <div class="flex items-center gap-1.5 text-neutral-600 truncate">
                             <x-heroicon-o-building-library class="size-4 shrink-0" />
-                            <span class="truncate">{{ $transaction->account->name }}</span>
+                            <span class="truncate">{{ $account->name }}</span>
+                            @if($otherPaymentsCount > 0)
+                                <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xxs font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help" title="{{ $otherPaymentsNames }}">
+                                    +{{ $otherPaymentsCount }}
+                                </span>
+                            @endif
                         </div>
                     @else
                         <span class="text-neutral-400">-</span>
@@ -135,10 +171,20 @@
                             <div class="flex items-center gap-2 text-sm text-neutral-500">
                                 <span>{{ formatShort($transaction->date) }}</span>
                                 <span>&bull;</span>
-                                @if($transaction->invoice)
-                                    <span class="truncate flex items-center gap-1"><x-heroicon-o-credit-card class="size-3" /> {{ $transaction->invoice->creditCard->name }}</span>
-                                @elseif($transaction->account)
-                                    <span class="truncate flex items-center gap-1"><x-heroicon-o-building-library class="size-3" /> {{ $transaction->account->name }}</span>
+                                @if($invoice)
+                                    <span class="truncate flex items-center gap-1">
+                                        <x-heroicon-o-credit-card class="size-3" /> {{ $invoice->creditCard->name }}
+                                        @if($otherPaymentsCount > 0)
+                                            <span class="text-xxs ml-0.5 opacity-75">(+{{ $otherPaymentsCount }})</span>
+                                        @endif
+                                    </span>
+                                @elseif($account)
+                                    <span class="truncate flex items-center gap-1">
+                                        <x-heroicon-o-building-library class="size-3" /> {{ $account->name }}
+                                        @if($otherPaymentsCount > 0)
+                                            <span class="text-xxs ml-0.5 opacity-75">(+{{ $otherPaymentsCount }})</span>
+                                        @endif
+                                    </span>
                                 @endif
                             </div>
                         </div>

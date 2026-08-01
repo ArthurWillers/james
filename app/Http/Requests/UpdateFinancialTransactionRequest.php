@@ -17,6 +17,19 @@ class UpdateFinancialTransactionRequest extends FormRequest
             $this->merge(['amount' => str_replace(',', '.', $this->amount)]);
         }
 
+        if ($this->has('payments') && is_array($this->payments)) {
+            $payments = $this->payments;
+            foreach ($payments as $key => $payment) {
+                if (isset($payment['amount']) && is_string($payment['amount'])) {
+                    $payments[$key]['amount'] = str_replace(',', '.', $payment['amount']);
+                }
+            }
+            if (count($payments) === 1 && $this->has('amount')) {
+                $payments[array_key_first($payments)]['amount'] = $this->amount;
+            }
+            $this->merge(['payments' => $payments]);
+        }
+
         if ($this->has('items') && is_array($this->items)) {
             $items = $this->items;
             foreach ($items as $key => $item) {
@@ -38,13 +51,17 @@ class UpdateFinancialTransactionRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:0.01'],
             'date' => ['required', 'date'],
             'type' => ['required', 'string', 'in:income,expense'],
-            'targetType' => ['required', 'string', 'in:account,card'],
-            'financial_account_id' => ['nullable', 'required_if:targetType,account', 'exists:financial_accounts,id'],
-            'financial_credit_card_id' => ['nullable', 'required_if:targetType,card', 'exists:financial_credit_cards,id'],
+            
+            'payments' => ['required', 'array', 'min:1'],
+            'payments.*.target_type' => ['required', 'string', 'in:account,card'],
+            'payments.*.financial_account_id' => ['nullable', 'required_if:payments.*.target_type,account', 'exists:financial_accounts,id'],
+            'payments.*.financial_credit_card_id' => ['nullable', 'required_if:payments.*.target_type,card', 'exists:financial_credit_cards,id'],
+            'payments.*.amount' => ['required', 'numeric', 'min:0.01'],
+            'is_posted' => ['boolean'],
+
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:financial_tags,id'],
             'primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
-            'is_posted' => ['boolean'],
             'items' => ['nullable', 'array'],
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
@@ -59,14 +76,36 @@ class UpdateFinancialTransactionRequest extends FormRequest
         ];
     }
 
+    public function after(): array
+    {
+        return [
+            function (\Illuminate\Validation\Validator $validator) {
+                if ($this->has('payments') && is_array($this->payments) && $this->has('amount')) {
+                    $sum = collect($this->payments)->sum('amount');
+                    $totalAmount = (float) $this->amount;
+                    if (abs($sum - $totalAmount) > 0.01) {
+                        $validator->errors()->add('payments', 'A soma dos pagamentos deve ser exatamente igual ao valor total da transação.');
+                    }
+                    
+                    $transaction = $this->route('transaction');
+                    if ($transaction && $transaction->installment_total > 1 && count($this->payments) > 1) {
+                        $validator->errors()->add('payments', 'Transações parceladas não podem ter múltiplos pagamentos divididos.');
+                    }
+                }
+            },
+        ];
+    }
+
     public function messages(): array
     {
         return [
             'description.required' => 'A descrição da transação é obrigatória.',
             'amount.required' => 'O valor da transação é obrigatório.',
             'amount.min' => 'O valor da transação deve ser maior que zero.',
-            'financial_account_id.required_if' => 'Selecione uma conta bancária para esta transação.',
-            'financial_credit_card_id.required_if' => 'Selecione um cartão de crédito para esta transação.',
+            'payments.required' => 'É necessário informar ao menos uma forma de pagamento.',
+            'payments.*.financial_account_id.required_if' => 'Selecione uma conta bancária para o pagamento.',
+            'payments.*.financial_credit_card_id.required_if' => 'Selecione um cartão de crédito para o pagamento.',
+            'payments.*.amount.required' => 'O valor do pagamento é obrigatório.',
             'items.*.description.required' => 'Preencha a descrição de todos os itens adicionados.',
             'items.*.quantity.required' => 'A quantidade é obrigatória nos itens.',
             'items.*.quantity.not_in' => 'A quantidade do item não pode ser zero.',

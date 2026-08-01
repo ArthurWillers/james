@@ -340,23 +340,29 @@ class SettlementController extends Controller
             'amount' => $validated['amount'],
             'description' => $description,
             'date' => $date,
-            'is_posted' => true,
-            'financial_account_id' => null,
-            'financial_credit_card_invoice_id' => null,
         ];
-
-        if ($validated['targetType'] === 'card') {
-            $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
-            $data['financial_credit_card_invoice_id'] = $invoice->id;
-        } else {
-            $data['financial_account_id'] = $validated['financial_account_id'];
-        }
 
         if ($transaction) {
             $transaction->update($data);
+            $transaction->payments()->delete(); // Limpa pagamentos antigos para recriar
         } else {
-            $transaction = FinancialTransaction::create($data);
+            $transaction = \App\Models\FinancialTransaction::create($data);
+        }
+
+        if ($validated['targetType'] === 'card') {
+            $card = \App\Models\FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+            $invoice = \App\Models\FinancialCreditCardInvoice::resolveForDate($card, $date);
+            $transaction->payments()->create([
+                'financial_credit_card_invoice_id' => $invoice->id,
+                'amount' => $validated['amount'],
+                'is_posted' => false, // Fatura não é efetivada
+            ]);
+        } else {
+            $transaction->payments()->create([
+                'financial_account_id' => $validated['financial_account_id'],
+                'amount' => $validated['amount'],
+                'is_posted' => true, // Conta corrente sempre é efetivada aqui
+            ]);
         }
 
         // Sincroniza a tag "Reembolso" (is_primary = true)

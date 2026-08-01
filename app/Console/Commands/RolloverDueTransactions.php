@@ -17,11 +17,13 @@ class RolloverDueTransactions extends Command
      */
     public function handle()
     {
-        $updatedCount = FinancialTransaction::where('is_posted', false)
-            ->whereNull('financial_credit_card_invoice_id')
-            ->where('date', '<=', Carbon::today())
-            ->update(['is_posted' => true]);
+        $updatedCount = \App\Models\FinancialTransactionPayment::query()
+            ->join('financial_transactions as ft', 'ft.id', '=', 'financial_transaction_payments.financial_transaction_id')
+            ->where('financial_transaction_payments.is_posted', false)
+            ->whereNull('financial_transaction_payments.financial_credit_card_invoice_id')
+            ->where('ft.date', '<=', Carbon::today())
+            ->update(['financial_transaction_payments.is_posted' => true]);
 
-        $this->info("Transações efetivadas com sucesso: {$updatedCount}");
+        $this->info("Pagamentos de transações efetivados com sucesso: {$updatedCount}");
     }
 }

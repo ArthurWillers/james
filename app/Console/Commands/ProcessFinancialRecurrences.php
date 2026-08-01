@@ -86,24 +86,33 @@ class ProcessFinancialRecurrences extends Command
                 // Process for Credit Card
                 $invoice = FinancialCreditCardInvoice::resolveForDate($recurrence->financialCreditCard, $date);
 
-                $transaction = $invoice->transactions()->create([
-                    'financial_account_id' => null, // Na fatura
+                $transaction = \App\Models\FinancialTransaction::create([
                     'date' => $date,
                     'type' => $recurrence->type,
                     'amount' => $recurrence->amount,
                     'description' => $recurrence->title,
-                    'is_posted' => false, // Nasce não postada por padrão
                     'financial_recurrence_id' => $recurrence->id,
+                ]);
+                
+                $transaction->payments()->create([
+                    'financial_credit_card_invoice_id' => $invoice->id,
+                    'amount' => $recurrence->amount,
+                    'is_posted' => false, // Nasce não postada por padrão
                 ]);
             } elseif ($recurrence->financial_account_id) {
                 // Process for Account
-                $transaction = $recurrence->financialAccount->transactions()->create([
+                $transaction = \App\Models\FinancialTransaction::create([
                     'date' => $date,
                     'type' => $recurrence->type,
                     'amount' => $recurrence->amount,
                     'description' => $recurrence->title,
-                    'is_posted' => true, // Conta corrente nasce postada, conf. regras
                     'financial_recurrence_id' => $recurrence->id,
+                ]);
+                
+                $transaction->payments()->create([
+                    'financial_account_id' => $recurrence->financial_account_id,
+                    'amount' => $recurrence->amount,
+                    'is_posted' => true, // Conta corrente nasce postada, conf. regras
                 ]);
             }
 

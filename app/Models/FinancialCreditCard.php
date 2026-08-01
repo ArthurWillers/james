@@ -82,15 +82,19 @@ class FinancialCreditCard extends Model
     public function scopeWithUsedLimit(Builder $query): Builder
     {
         return $query->addSelect([
-            'used_limit' => FinancialCreditCardInvoice::selectRaw("COALESCE(SUM(
-                GREATEST(0, (
-                    SELECT COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)
-                    FROM financial_transactions 
-                    WHERE financial_credit_card_invoice_id = financial_credit_card_invoices.id
-                ) - amount_paid)
-            ), 0)")
+            'used_limit' => function ($subQuery) {
+                $subQuery->selectRaw("COALESCE(SUM(
+                    GREATEST(0, (
+                        SELECT COALESCE(SUM(CASE WHEN ft.type = 'expense' THEN ftp.amount WHEN ft.type = 'income' THEN -ftp.amount ELSE 0 END), 0)
+                        FROM financial_transaction_payments ftp
+                        INNER JOIN financial_transactions ft ON ft.id = ftp.financial_transaction_id
+                        WHERE ftp.financial_credit_card_invoice_id = financial_credit_card_invoices.id
+                    ) - amount_paid)
+                ), 0)")
+                ->from('financial_credit_card_invoices')
                 ->whereColumn('financial_credit_card_id', 'financial_credit_cards.id')
-                ->whereNull('paid_at'),
+                ->whereNull('paid_at');
+            }
         ]);
     }
 
@@ -178,16 +182,22 @@ class FinancialCreditCard extends Model
                 ? $totalAmount - ($installmentAmount * ($installments - 1))
                 : $installmentAmount;
 
-            $transactions->push($invoice->transactions()->create([
-                'financial_account_id' => null,
+            $transaction = FinancialTransaction::create([
                 'date' => $purchaseDate,
                 'type' => 'expense',
                 'amount' => $amount,
                 'description' => $description,
-                'is_posted' => false,
                 'installment_current' => $i,
                 'installment_total' => $installments,
-            ]));
+            ]);
+
+            $transaction->payments()->create([
+                'financial_credit_card_invoice_id' => $invoice->id,
+                'amount' => $amount,
+                'is_posted' => false,
+            ]);
+
+            $transactions->push($transaction);
         }
 
         return $transactions;
