@@ -58,18 +58,6 @@
                 </div>
 
                 <div class="flex items-center gap-4 w-full md:w-auto">
-                    <!-- Interval -->
-                    <div class="flex flex-col w-full md:w-36">
-                        <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Intervalo</label>
-                        <x-select name="interval" class="w-full" :disabled="$isSingleDay" @change="submit()">
-                            <option value="auto" @selected($interval === 'auto')>Automático</option>
-                            <option value="daily" @selected($interval === 'daily')>Diário</option>
-                            <option value="weekly" @selected($interval === 'weekly')>Semanal</option>
-                            <option value="monthly" @selected($interval === 'monthly')>Mensal</option>
-                            <option value="yearly" @selected($interval === 'yearly')>Anual</option>
-                        </x-select>
-                    </div>
-
                     <!-- Accounts -->
                     <div class="flex flex-col w-full md:w-56">
                         <label class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Contas</label>
@@ -94,16 +82,6 @@
             </x-filter-bar>
         </div>
 
-        @if($isSingleDay)
-            <div class="bg-accent/10 border border-accent/20 rounded-xl p-4 text-accent-700 flex items-center gap-3 mb-6">
-                <x-heroicon-o-calendar-days class="w-6 h-6" />
-                <div>
-                    <strong class="block">Data Específica Selecionada</strong>
-                    <span class="text-sm">Exibindo fluxo, categorias e transações de um único dia. Gráficos de evolução temporal ocultos.</span>
-                </div>
-            </div>
-        @endif
-
         <!-- Sankey Chart -->
         <x-card class="hidden lg:block mb-6">
             <h3 class="text-lg font-bold text-neutral-900 mb-4">Fluxo de Caixa</h3>
@@ -113,18 +91,16 @@
         </x-card>
 
         <!-- Evolution Chart -->
-        @if(!$isSingleDay)
-            <x-card class="hidden lg:block mb-6">
-                <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
-                <x-finance.evolution-chart-base :data="json_encode($evolution)" />
-            </x-card>
+        <x-card class="hidden lg:block mb-6">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução de Saldo</h3>
+            <x-finance.evolution-chart-base :data="json_encode($evolution)" />
+        </x-card>
 
-            <!-- Net Worth Evolution Chart -->
-            <x-card class="hidden lg:block mb-6">
-                <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
-                <x-finance.evolution-chart-base :data="json_encode($netWorthEvolution)" income-label="Receita (Competência)" expense-label="Despesa (Competência)" />
-            </x-card>
-        @endif
+        <!-- Net Worth Evolution Chart -->
+        <x-card class="hidden lg:block mb-6">
+            <h3 class="text-lg font-bold text-neutral-900 mb-4">Evolução do Saldo Líquido</h3>
+            <x-finance.evolution-chart-base :data="json_encode($netWorthEvolution)" income-label="Receita (Competência)" expense-label="Despesa (Competência)" />
+        </x-card>
 
         <!-- Tags and Accounts Layout -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 items-start">

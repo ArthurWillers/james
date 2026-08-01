@@ -18,7 +18,6 @@ class ReportsController extends Controller
     public function index(Request $request)
     {
         $period = $request->input('period', 'all_time');
-        $interval = $request->input('interval', 'auto');
         $accountId = $request->input('account');
 
         $accountIds = null;
@@ -77,11 +76,9 @@ class ReportsController extends Controller
             $endDate = $now->copy()->endOfMonth();
         }
 
-        $reportData = $this->reportsService->getAll($startDate, $endDate, $accountIds, $interval);
+        $reportData = $this->reportsService->getAll($startDate, $endDate, $accountIds);
 
         $accounts = FinancialAccount::orderBy('name')->get();
-
-        $isSingleDay = $startDate->format('Y-m-d') === $endDate->format('Y-m-d');
 
         $allTransactions = $reportData['tableTransactions'];
 
@@ -126,11 +123,9 @@ class ReportsController extends Controller
             'transactions' => $paginatedTransactions,
             'virtualTransactions' => $paginatedVirtual,
             'period' => $period,
-            'interval' => $interval,
             'startDate' => $startDate->format('Y-m-d'),
             'endDate' => $endDate->format('Y-m-d'),
             'accountId' => $accountId,
-            'isSingleDay' => $isSingleDay,
             'accountBalancesChart' => $accountBalancesChart,
         ]);
     }
