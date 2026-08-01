@@ -177,15 +177,34 @@ class FinancialTransactionController extends Controller
                     $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
 
                     if (! empty($validated['items'])) {
+                        $installmentItemsTotalCents = 0;
+
                         foreach ($validated['items'] as $itemData) {
+                            $originalUnitPriceCents = (int) round($itemData['unit_price'] * 100);
+                            $unitPriceInstallmentCents = (int) floor($originalUnitPriceCents / $validated['installments']);
+
+                            $isLastInstallment = $t->installment_current === $t->installment_total;
+                            if ($isLastInstallment) {
+                                $unitPriceRemainderCents = $originalUnitPriceCents - ($unitPriceInstallmentCents * $validated['installments']);
+                                $unitPriceInstallmentCents += $unitPriceRemainderCents;
+                            }
+
+                            $currentUnitPrice = round($unitPriceInstallmentCents / 100, 2);
+                            $currentItemTotal = round($itemData['quantity'] * $currentUnitPrice, 2);
+                            $installmentItemsTotalCents += (int) round($currentItemTotal * 100);
+
                             $item = $t->items()->create([
                                 'description' => $itemData['description'],
                                 'quantity' => $itemData['quantity'],
-                                'unit_price' => $itemData['unit_price'],
-                                'total' => $itemData['quantity'] * $itemData['unit_price'],
+                                'unit_price' => $currentUnitPrice,
+                                'total' => $currentItemTotal,
                             ]);
                             $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
                         }
+
+                        // Update the transaction amount to exactly match the sum of its items
+                        // This prevents 1-cent inconsistencies between the transaction amount and the items total
+                        $t->update(['amount' => round($installmentItemsTotalCents / 100, 2)]);
                     }
                 }
             }
