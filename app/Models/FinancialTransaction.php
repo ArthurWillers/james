@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FinancialAccountType;
+use App\Enums\TransactionStatus;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +31,7 @@ class FinancialTransaction extends Model implements HasMedia
         'amount',
         'description',
         'date',
-        'is_posted',
+        'status',
         'transfer_pair_id',
         'installment_current',
         'installment_total',
@@ -49,7 +50,7 @@ class FinancialTransaction extends Model implements HasMedia
         return [
             'amount' => 'decimal:2',
             'date' => 'date',
-            'is_posted' => 'boolean',
+            'status' => TransactionStatus::class,
         ];
     }
 
@@ -165,7 +166,7 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function scopePosted(Builder $query): Builder
     {
-        return $query->where('is_posted', true);
+        return $query->where('status', TransactionStatus::Posted);
     }
 
     /**
@@ -173,7 +174,15 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('is_posted', false);
+        return $query->where('status', TransactionStatus::Pending);
+    }
+
+    /**
+     * Scope a query to only include draft transactions.
+     */
+    public function scopeDraft(Builder $query): Builder
+    {
+        return $query->where('status', TransactionStatus::Draft);
     }
 
     /**
@@ -290,7 +299,7 @@ class FinancialTransaction extends Model implements HasMedia
                 'amount' => $amount,
                 'description' => $description,
                 'date' => $date,
-                'is_posted' => $isPosted,
+                'status' => $isPosted ? TransactionStatus::Posted : TransactionStatus::Pending,
                 'installment_current' => $i,
                 'installment_total' => $installments,
             ]);
@@ -321,7 +330,7 @@ class FinancialTransaction extends Model implements HasMedia
             'amount' => $amount,
             'description' => $description,
             'date' => $date,
-            'is_posted' => $isPosted,
+            'status' => $isPosted ? TransactionStatus::Posted : TransactionStatus::Pending,
         ]);
 
         $expense->update(['transfer_pair_id' => $expense->id]);
@@ -332,7 +341,7 @@ class FinancialTransaction extends Model implements HasMedia
             'amount' => $amount,
             'description' => $description,
             'date' => $date,
-            'is_posted' => $isPosted,
+            'status' => $isPosted ? TransactionStatus::Posted : TransactionStatus::Pending,
             'transfer_pair_id' => $expense->id,
         ]);
 
@@ -348,7 +357,7 @@ class FinancialTransaction extends Model implements HasMedia
                 'amount' => $feeAmount,
                 'description' => "Taxa/imposto — {$description}",
                 'date' => $date,
-                'is_posted' => $isPosted,
+                'status' => $isPosted ? TransactionStatus::Posted : TransactionStatus::Pending,
             ]);
 
             if ($feeTagId !== null) {

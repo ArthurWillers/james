@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialTransaction;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +23,7 @@ class FinancialTransactionFactory extends Factory
             'amount' => $this->faker->randomFloat(2, 10, 1000),
             'date' => $this->faker->date(),
             'description' => $this->faker->sentence(),
-            'is_posted' => $this->faker->boolean(),
+            'status' => $this->faker->randomElement([TransactionStatus::Posted, TransactionStatus::Pending]),
         ];
     }
 }

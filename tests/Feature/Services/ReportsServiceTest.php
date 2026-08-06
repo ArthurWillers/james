@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -24,7 +25,7 @@ it('calculates net worth evolution correctly based on accrual accounting (compet
         'type' => 'income',
         'amount' => 1000,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted,
     ]);
 
     // A credit card expense today (competência: impacts net worth TODAY, not on invoice due date)
@@ -33,7 +34,7 @@ it('calculates net worth evolution correctly based on accrual accounting (compet
         'type' => 'expense',
         'amount' => 300,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted,
     ]);
 
     $service = new ReportsService;

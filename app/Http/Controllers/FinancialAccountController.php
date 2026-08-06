@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\FinancialAccountType;
+use App\Enums\TransactionStatus;
 use App\Http\Requests\StoreFinancialAccountRequest;
 use App\Http\Requests\UpdateFinancialAccountRequest;
 use App\Models\FinancialAccount;
@@ -57,7 +58,7 @@ class FinancialAccountController extends Controller
                 'amount' => abs($validated['initial_balance']),
                 'date' => now(),
                 'description' => 'Saldo Inicial',
-                'is_posted' => true,
+                'status' => TransactionStatus::Posted,
             ]);
 
             $transaction->tags()->attach(FinancialTag::SALDO_INICIAL_ID, ['is_primary' => true]);
@@ -77,12 +78,12 @@ class FinancialAccountController extends Controller
 
         $globalIncome = $account->transactions()
             ->where('type', 'income')
-            ->where('is_posted', true)
+            ->where('status', TransactionStatus::Posted)
             ->sum('amount');
 
         $globalExpense = $account->transactions()
             ->where('type', 'expense')
-            ->where('is_posted', true)
+            ->where('status', TransactionStatus::Posted)
             ->sum('amount');
 
         $creditCards = $account->creditCards()
@@ -160,7 +161,7 @@ class FinancialAccountController extends Controller
             'amount' => abs($difference),
             'description' => 'Ajuste de Saldo',
             'date' => now(),
-            'is_posted' => true,
+            'status' => TransactionStatus::Posted,
         ]);
 
         $transaction->tags()->attach(FinancialTag::AJUSTE_SALDO_ID, ['is_primary' => true]);

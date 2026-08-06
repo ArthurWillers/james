@@ -57,11 +57,9 @@
                         {{ formatShort($transaction->date) }}
                     </x-badge>
                     
-                    @if($transaction->is_posted)
-                        <x-badge color="accent" size="sm">Efetivada</x-badge>
-                    @else
-                        <x-badge color="warning" size="sm">Pendente</x-badge>
-                    @endif
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $transaction->status->badgeClass() }}">
+                        {{ $transaction->status->label() }}
+                    </span>
 
                     @if($transaction->type === 'transfer')
                         <x-badge color="info" size="sm">Transferência</x-badge>

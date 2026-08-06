@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -192,7 +193,7 @@ class FinancialCreditCardInvoice extends Model
 
             $this->transactions()->update([
                 'financial_account_id' => $this->creditCard->financial_account_id,
-                'is_posted' => true,
+                'status' => TransactionStatus::Posted,
             ]);
 
             $this->paid_at = $paidAt;
@@ -210,7 +211,7 @@ class FinancialCreditCardInvoice extends Model
                     'type' => 'expense',
                     'amount' => $newAmountPaid,
                     'description' => "Pagamento parcial fatura {$this->reference_month->format('m/Y')}",
-                    'is_posted' => true,
+                    'status' => TransactionStatus::Posted,
                 ]);
 
                 if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::PAGAMENTO_PARCIAL_ID')) {
@@ -228,7 +229,7 @@ class FinancialCreditCardInvoice extends Model
                 'type' => 'expense',
                 'amount' => $interestAmount,
                 'description' => "Juros da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
-                'is_posted' => true,
+                'status' => TransactionStatus::Posted,
             ]);
 
             // Attach JUROS_ID tag as primary
@@ -260,7 +261,7 @@ class FinancialCreditCardInvoice extends Model
         // Revert transactions to unposted
         $this->transactions()->update([
             'financial_account_id' => null,
-            'is_posted' => false,
+            'status' => TransactionStatus::Pending,
         ]);
 
         $this->paid_at = null;

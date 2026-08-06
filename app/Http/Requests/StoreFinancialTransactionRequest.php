@@ -45,7 +45,7 @@ class StoreFinancialTransactionRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:financial_tags,id'],
             'primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
-            'is_posted' => ['boolean'],
+            'is_posted' => ['nullable', 'boolean'],
             'installments' => ['required_if:mode,installment', 'integer', 'min:2'],
             'items' => ['nullable', 'array'],
             'items.*.description' => ['required', 'string', 'max:255'],

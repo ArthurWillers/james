@@ -2,6 +2,7 @@
 
 use App\Enums\FinancialAccountType;
 use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -17,7 +18,7 @@ it('calculates KPIs correctly', function () {
         'type' => 'income',
         'amount' => 500,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted,
     ]);
 
     FinancialTransaction::factory()->create([
@@ -25,7 +26,7 @@ it('calculates KPIs correctly', function () {
         'type' => 'expense',
         'amount' => 200,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted,
     ]);
 
     $service = new FinanceDashboardService;
@@ -46,7 +47,7 @@ it('calculates cash flow projections', function () {
         'type' => 'income',
         'amount' => 1000,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted,
     ]);
 
     $service = new FinanceDashboardService;
@@ -70,7 +71,7 @@ it('returns account balances chart data', function () {
         'type' => 'income',
         'amount' => 500,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted,
     ]);
 
     $service = new FinanceDashboardService;

@@ -83,7 +83,7 @@
                 </div>
                 
                 <div class="pt-4 border-t border-neutral-100" x-show="targetType === 'account'">
-                    <x-switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->is_posted : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
+                    <x-switch name="is_posted" :checked="old('is_posted', isset($transaction) ? $transaction->status->isPosted() : true)" label="Transação Efetivada?" @uncheck-posted.window="checked = false" @uncheck-posted-edit.window="checked = false" />
                     <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, a transação ficará como pendente.</p>
                 </div>
             </div>

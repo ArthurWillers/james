@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
@@ -55,7 +56,7 @@ it('can pay invoice', function () {
         'financial_credit_card_invoice_id' => $invoice->id,
         'type' => 'expense',
         'amount' => 1000,
-        'is_posted' => false,
+        'status' => TransactionStatus::Pending,
     ]);
 
     $data = [

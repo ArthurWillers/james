@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialTag;
 use App\Models\User;
@@ -125,7 +126,7 @@ it('can adjust balance', function () {
     $this->assertDatabaseHas('financial_transactions', [
         'financial_account_id' => $account->id,
         'description' => 'Ajuste de Saldo',
-        'is_posted' => true,
+        'status' => TransactionStatus::Posted->value,
     ]);
 });
 

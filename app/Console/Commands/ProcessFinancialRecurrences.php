@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialRecurrence;
 use Illuminate\Console\Command;
@@ -92,7 +93,7 @@ class ProcessFinancialRecurrences extends Command
                     'type' => $recurrence->type,
                     'amount' => $recurrence->amount,
                     'description' => $recurrence->title,
-                    'is_posted' => false, // Nasce não postada por padrão
+                    'status' => TransactionStatus::Pending, // Nasce pendente por padrão
                     'financial_recurrence_id' => $recurrence->id,
                 ]);
             } elseif ($recurrence->financial_account_id) {
@@ -102,7 +103,7 @@ class ProcessFinancialRecurrences extends Command
                     'type' => $recurrence->type,
                     'amount' => $recurrence->amount,
                     'description' => $recurrence->title,
-                    'is_posted' => true, // Conta corrente nasce postada, conf. regras
+                    'status' => TransactionStatus::Posted, // Conta corrente nasce efetivada, conf. regras
                     'financial_recurrence_id' => $recurrence->id,
                 ]);
             }

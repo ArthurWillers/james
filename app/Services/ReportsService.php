@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialRecurrence;
 use App\Models\FinancialTag;
@@ -78,7 +79,7 @@ class ReportsService
                     'amount' => $recurrence->amount,
                     'date' => $currentDate->copy(),
                     'description' => $recurrence->title,
-                    'is_posted' => false,
+                    'status' => TransactionStatus::Pending,
                 ]);
 
                 $t->id = 'v_'.$recurrence->id.'_'.$currentDate->format('Ymd');

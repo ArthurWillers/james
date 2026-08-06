@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TransactionStatus;
 use App\Http\Requests\StoreFinancialTransactionRequest;
 use App\Http\Requests\StoreFinancialTransferRequest;
 use App\Http\Requests\UpdateFinancialTransactionRequest;
@@ -45,8 +46,8 @@ class FinancialTransactionController extends Controller
             $query->where('type', $request->type);
         }
 
-        if ($request->filled('is_posted')) {
-            $query->where('is_posted', $request->boolean('is_posted'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         if ($request->filled('date')) {
@@ -100,7 +101,7 @@ class FinancialTransactionController extends Controller
                     'amount' => $validated['amount'],
                     'description' => $validated['description'],
                     'date' => $date,
-                    'is_posted' => false,
+                    'status' => TransactionStatus::Pending,
                 ]);
             } else {
                 $transaction = FinancialTransaction::create([
@@ -109,7 +110,9 @@ class FinancialTransactionController extends Controller
                     'amount' => $validated['amount'],
                     'description' => $validated['description'],
                     'date' => Carbon::parse($validated['date']),
-                    'is_posted' => $validated['is_posted'] ?? false,
+                    'status' => isset($validated['is_posted']) && $validated['is_posted']
+                        ? TransactionStatus::Posted
+                        : TransactionStatus::Pending,
                 ]);
             }
 
@@ -309,7 +312,9 @@ class FinancialTransactionController extends Controller
                 'amount' => $validated['amount'],
                 'description' => $validated['description'],
                 'date' => $date,
-                'is_posted' => $validated['is_posted'] ?? false,
+                'status' => isset($validated['is_posted']) && $validated['is_posted']
+                    ? TransactionStatus::Posted
+                    : TransactionStatus::Pending,
             ]);
         }
 

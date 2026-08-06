@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FinancialAccountType;
+use App\Enums\TransactionStatus;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -75,7 +76,7 @@ class FinancialAccount extends Model
         $query->addSelect([
             'balance' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0)")
                 ->whereColumn('financial_account_id', 'financial_accounts.id')
-                ->where('is_posted', true),
+                ->where('status', TransactionStatus::Posted),
         ])->withCasts(['balance' => 'float']);
     }
 

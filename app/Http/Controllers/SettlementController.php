@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SettlementType;
+use App\Enums\TransactionStatus;
 use App\Http\Requests\StoreSettlementRequest;
 use App\Http\Requests\UpdateSettlementRequest;
 use App\Models\Contact;
@@ -340,7 +341,7 @@ class SettlementController extends Controller
             'amount' => $validated['amount'],
             'description' => $description,
             'date' => $date,
-            'is_posted' => true,
+            'status' => TransactionStatus::Posted,
             'financial_account_id' => null,
             'financial_credit_card_invoice_id' => null,
         ];

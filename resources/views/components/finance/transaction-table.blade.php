@@ -42,7 +42,7 @@
                                 <span class="text-neutral-500 font-normal ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                             @endif
                         </span>
-                        @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
+                        @if(isset($transaction->status) && !$transaction->status->isPosted() && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                             <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
                         @endif
                         @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
@@ -122,7 +122,7 @@
                                         <span class="text-neutral-500 font-normal text-sm ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                                     @endif
                                 </span>
-                                @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
+                                @if(isset($transaction->status) && !$transaction->status->isPosted() && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                                     <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
                                 @endif
                                 @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
