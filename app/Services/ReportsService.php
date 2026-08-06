@@ -44,8 +44,11 @@ class ReportsService
         // 1. Real Transactions (includes future credit card installments since they are materialized)
         $query = FinancialTransaction::with(['tags', 'items.tags', 'invoice.creditCard', 'account'])
             ->whereBetween('date', [$startDate, $endDate])
-            ->withoutTransfers()
             ->forAccounts($accountIds);
+
+        if (empty($accountIds)) {
+            $query->withoutTransfers();
+        }
 
         $realTransactions = $query->get()->map(function ($t) {
             $t->is_virtual = false;
@@ -290,11 +293,15 @@ class ReportsService
         }
 
         // Cash-basis: exclude CC invoice transactions (their cash impact is via the payment transaction)
-        $cashFlows = FinancialTransaction::withoutTransfers()
-            ->forAccounts($accountIds)
+        $query = FinancialTransaction::forAccounts($accountIds)
             ->whereNull('financial_credit_card_invoice_id')
-            ->whereBetween('date', [$startDate, $endDate])
-            ->selectRaw('date')
+            ->whereBetween('date', [$startDate, $endDate]);
+
+        if (empty($accountIds)) {
+            $query->withoutTransfers();
+        }
+
+        $cashFlows = $query->selectRaw('date')
             ->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income")
             ->selectRaw("SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expense")
             ->groupBy('date')
@@ -376,12 +383,11 @@ class ReportsService
         }
 
         $partialPaymentTagId = FinancialTag::PAGAMENTO_PARCIAL_ID;
-        $transferTagId = FinancialTag::TRANSFERENCIA_ID;
 
         foreach ($transactions as $t) {
             $hasIgnoredTag = false;
             if ($t->relationLoaded('tags') && $t->tags) {
-                if ($t->tags->contains('id', $partialPaymentTagId) || $t->tags->contains('id', $transferTagId)) {
+                if ($t->tags->contains('id', $partialPaymentTagId)) {
                     $hasIgnoredTag = true;
                 }
             }
@@ -538,11 +544,15 @@ class ReportsService
 
     private function getInitialBalance(Carbon $startDate, ?array $accountIds = null): float
     {
-        $nonCcBalance = (float) FinancialTransaction::withoutTransfers()
-            ->forAccounts($accountIds)
+        $query = FinancialTransaction::forAccounts($accountIds)
             ->whereNull('financial_credit_card_invoice_id')
-            ->where('financial_transactions.date', '<', $startDate)
-            ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+            ->where('financial_transactions.date', '<', $startDate);
+
+        if (empty($accountIds)) {
+            $query->withoutTransfers();
+        }
+
+        $nonCcBalance = (float) $query->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
 
         // Add invoice totals that settled (paid_at or due_date) before startDate
         $invoiceBalance = 0.0;
@@ -575,11 +585,15 @@ class ReportsService
 
     private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float
     {
-        return (float) FinancialTransaction::withoutTransfers()
-            ->withoutPartialPayments()
+        $query = FinancialTransaction::withoutPartialPayments()
             ->forAccounts($accountIds)
-            ->where('financial_transactions.date', '<', $startDate)
-            ->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
+            ->where('financial_transactions.date', '<', $startDate);
+
+        if (empty($accountIds)) {
+            $query->withoutTransfers();
+        }
+
+        return (float) $query->sum(DB::raw("CASE WHEN financial_transactions.type = 'income' THEN amount WHEN financial_transactions.type = 'expense' THEN -amount ELSE 0 END"));
     }
 
     /**
