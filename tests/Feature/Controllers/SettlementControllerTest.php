@@ -108,3 +108,31 @@ it('can soft delete a settlement', function () {
 
     $this->assertSoftDeleted('settlements', ['id' => $settlement->id]);
 });
+
+it('calculates global totals based on net balance per contact, not gross amounts', function () {
+    // Lucas: ele me deve R$60 (TheyOwe), eu devo R$56,50 (IOwe), ele pagou R$3,50 (TheyPaid)
+    // Net balance do Lucas: toReceive = max(0, 60 - 3.50) = 56.50, toPay = max(0, 56.50) = 56.50 → net = 0
+    // O bug: o totalizador somava to_receive e to_pay brutos separadamente
+    // O correto: como net = 0, Lucas não deve contribuir para nenhum dos totais globais
+    $lucas = Contact::factory()->create();
+    Settlement::create(['contact_id' => $lucas->id, 'type' => SettlementType::TheyOwe->value, 'amount' => 60, 'description' => 'Fernet', 'date' => '2026-09-08']);
+    Settlement::create(['contact_id' => $lucas->id, 'type' => SettlementType::IOwe->value, 'amount' => 56.50, 'description' => 'Janta', 'date' => '2026-09-08']);
+    Settlement::create(['contact_id' => $lucas->id, 'type' => SettlementType::TheyPaid->value, 'amount' => 3.50, 'description' => 'Quitação', 'date' => '2026-09-08']);
+
+    // Mateus: me deve R$50 sem contrapartida → deve aparecer em A Receber
+    $mateus = Contact::factory()->create();
+    Settlement::create(['contact_id' => $mateus->id, 'type' => SettlementType::TheyOwe->value, 'amount' => 50, 'description' => 'Almoço', 'date' => '2026-09-08']);
+
+    $response = $this->get(route('settlements.index'));
+    $response->assertSuccessful();
+
+    $toReceive = $response->viewData('toReceive');
+    $toPay = $response->viewData('toPay');
+    $netBalance = $response->viewData('netBalance');
+
+    // Lucas net = 0, não deve contribuir para nenhum lado
+    // Mateus net = +50, deve aparecer em A Receber
+    expect($toReceive)->toBe(50.0)
+        ->and($toPay)->toBe(0.0)
+        ->and($netBalance)->toBe(50.0);
+});

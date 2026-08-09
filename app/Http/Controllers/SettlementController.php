@@ -85,8 +85,8 @@ class SettlementController extends Controller
             })
             ->values();
 
-        $toReceive = $contacts->sum('to_receive') ?? 0;
-        $toPay = $contacts->sum('to_pay') ?? 0;
+        $toReceive = (float) $contacts->sum(fn ($c) => max(0, $c->net_balance));
+        $toPay = (float) $contacts->sum(fn ($c) => max(0, -$c->net_balance));
         $netBalance = $toReceive - $toPay;
 
         $groups = ContactGroup::orderBy('name')->get();
