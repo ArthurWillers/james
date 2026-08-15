@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\FinancialAccountType;
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -71,4 +72,23 @@ it('retrieves transfer pair correctly', function () {
 
     expect($t1->transfer_pair->id)->toBe($t2->id)
         ->and($t2->transfer_pair->id)->toBe($t1->id);
+});
+
+it('casts status to TransactionStatus enum and filters correctly with scopes', function () {
+    $posted = FinancialTransaction::factory()->posted()->create();
+    $pending = FinancialTransaction::factory()->pending()->create();
+    $draft = FinancialTransaction::factory()->draft()->create();
+
+    expect($posted->status)->toBe(TransactionStatus::Posted)
+        ->and($pending->status)->toBe(TransactionStatus::Pending)
+        ->and($draft->status)->toBe(TransactionStatus::Draft);
+
+    expect(FinancialTransaction::posted()->pluck('id'))->toContain($posted->id)
+        ->and(FinancialTransaction::posted()->pluck('id'))->not->toContain($pending->id, $draft->id);
+
+    expect(FinancialTransaction::pending()->pluck('id'))->toContain($pending->id)
+        ->and(FinancialTransaction::pending()->pluck('id'))->not->toContain($posted->id, $draft->id);
+
+    expect(FinancialTransaction::draft()->pluck('id'))->toContain($draft->id)
+        ->and(FinancialTransaction::draft()->pluck('id'))->not->toContain($posted->id, $pending->id);
 });

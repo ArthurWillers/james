@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FinancialAccountType;
 use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

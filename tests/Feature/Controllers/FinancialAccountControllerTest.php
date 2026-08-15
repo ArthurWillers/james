@@ -125,7 +125,7 @@ it('can adjust balance', function () {
     $this->assertDatabaseHas('financial_transactions', [
         'financial_account_id' => $account->id,
         'description' => 'Ajuste de Saldo',
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 });
 
