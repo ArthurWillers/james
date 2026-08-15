@@ -294,19 +294,32 @@ class FinancialCreditCardInvoice extends Model
 
     /**
      * Find or create the correct invoice based on the purchase date and card closing/due days.
+     *
+     * When an invoice already exists for the candidate month, its stored closing_date
+     * is used instead of recalculating from the card's closing_day. This ensures that
+     * invoices with a customised closing_date are respected when assigning transactions.
      */
     public static function resolveForDate(FinancialCreditCard $card, Carbon $date): self
     {
         // Try current month as the reference month candidate
         $candidateMonth = $date->copy()->startOfMonth();
-        $closingDate = $candidateMonth->copy()->day((int) min($card->closing_day, $candidateMonth->daysInMonth));
 
-        if ($date->copy()->startOfDay()->lte($closingDate)) {
-            // Purchase date is on or before the closing date, belongs to the current month's invoice
+        // Check if an invoice already exists for the candidate month so we can
+        // honour its actual closing_date rather than recalculating from the card's closing_day.
+        $existingInvoice = static::where('financial_credit_card_id', $card->id)
+            ->where('reference_month', $candidateMonth->toDateString())
+            ->first();
+
+        $closingDate = $existingInvoice
+            ? $existingInvoice->closing_date->copy()
+            : $candidateMonth->copy()->day((int) min($card->closing_day, $candidateMonth->daysInMonth));
+
+        if ($date->copy()->startOfDay()->lt($closingDate)) {
+            // Purchase date is strictly before the closing date, belongs to the current month's invoice
             $referenceMonth = $candidateMonth;
         } else {
-            // Purchase date is after the closing date, belongs to the next month's invoice
-            $referenceMonth = $candidateMonth->addMonth();
+            // Purchase date is on or after the closing date, belongs to the next month's invoice
+            $referenceMonth = $candidateMonth->copy()->addMonth();
             $closingDate = $referenceMonth->copy()->day((int) min($card->closing_day, $referenceMonth->daysInMonth));
         }
 
