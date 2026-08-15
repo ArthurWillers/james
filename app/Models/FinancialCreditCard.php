@@ -184,7 +184,7 @@ class FinancialCreditCard extends Model
                 'type' => 'expense',
                 'amount' => $amount,
                 'description' => $description,
-                'is_posted' => false,
+                'status' => TransactionStatus::Pending,
                 'installment_current' => $i,
                 'installment_total' => $installments,
             ]));

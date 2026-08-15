@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FinancialAccountType;
+use App\Enums\TransactionStatus;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +31,7 @@ class FinancialTransaction extends Model implements HasMedia
         'amount',
         'description',
         'date',
-        'is_posted',
+        'status',
         'transfer_pair_id',
         'installment_current',
         'installment_total',
@@ -49,7 +50,7 @@ class FinancialTransaction extends Model implements HasMedia
         return [
             'amount' => 'decimal:2',
             'date' => 'date',
-            'is_posted' => 'boolean',
+            'status' => TransactionStatus::class,
         ];
     }
 
@@ -165,7 +166,7 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function scopePosted(Builder $query): Builder
     {
-        return $query->where('is_posted', true);
+        return $query->where('status', TransactionStatus::Posted);
     }
 
     /**
@@ -173,7 +174,15 @@ class FinancialTransaction extends Model implements HasMedia
      */
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('is_posted', false);
+        return $query->where('status', TransactionStatus::Pending);
+    }
+
+    /**
+     * Scope a query to only include draft transactions.
+     */
+    public function scopeDraft(Builder $query): Builder
+    {
+        return $query->where('status', TransactionStatus::Draft);
     }
 
     /**
@@ -282,7 +291,9 @@ class FinancialTransaction extends Model implements HasMedia
 
             $amount = round($amountCents / 100, 2);
             $date = $purchaseDate->copy()->addMonths($i - 1);
-            $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
+            $status = $date->copy()->startOfDay()->lte(Carbon::today())
+                ? TransactionStatus::Posted
+                : TransactionStatus::Pending;
 
             $transaction = static::create([
                 'financial_account_id' => $account->id,
@@ -290,7 +301,7 @@ class FinancialTransaction extends Model implements HasMedia
                 'amount' => $amount,
                 'description' => $description,
                 'date' => $date,
-                'is_posted' => $isPosted,
+                'status' => $status,
                 'installment_current' => $i,
                 'installment_total' => $installments,
             ]);
@@ -313,7 +324,9 @@ class FinancialTransaction extends Model implements HasMedia
         ?float $feeAmount = null,
         ?int $feeTagId = null
     ): array {
-        $isPosted = $date->copy()->startOfDay()->lte(Carbon::today());
+        $status = $date->copy()->startOfDay()->lte(Carbon::today())
+            ? TransactionStatus::Posted
+            : TransactionStatus::Pending;
 
         $expense = static::create([
             'financial_account_id' => $from->id,
@@ -321,7 +334,7 @@ class FinancialTransaction extends Model implements HasMedia
             'amount' => $amount,
             'description' => $description,
             'date' => $date,
-            'is_posted' => $isPosted,
+            'status' => $status,
         ]);
 
         $expense->update(['transfer_pair_id' => $expense->id]);
@@ -332,7 +345,7 @@ class FinancialTransaction extends Model implements HasMedia
             'amount' => $amount,
             'description' => $description,
             'date' => $date,
-            'is_posted' => $isPosted,
+            'status' => $status,
             'transfer_pair_id' => $expense->id,
         ]);
 
@@ -348,7 +361,7 @@ class FinancialTransaction extends Model implements HasMedia
                 'amount' => $feeAmount,
                 'description' => "Taxa/imposto — {$description}",
                 'date' => $date,
-                'is_posted' => $isPosted,
+                'status' => $status,
             ]);
 
             if ($feeTagId !== null) {
