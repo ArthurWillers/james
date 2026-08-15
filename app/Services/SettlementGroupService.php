@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\SettlementType;
+use App\Enums\TransactionStatus;
 use App\Models\Contact;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -167,7 +168,7 @@ class SettlementGroupService
             'amount' => $validated['total_amount'],
             'description' => $validated['description'].' (Conta Dividida)',
             'date' => $date,
-            'is_posted' => true,
+            'status' => TransactionStatus::Posted,
             'financial_account_id' => null,
             'financial_credit_card_invoice_id' => null,
         ];

@@ -35,7 +35,7 @@ it('can store transaction', function () {
         'amount' => 125.50,
         'description' => 'Compra no supermercado',
         'date' => now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ];
 
     $this->post(route('financial.transactions.store'), $data)
@@ -69,7 +69,7 @@ it('can update transaction', function () {
         'amount' => 300.00,
         'description' => 'Venda de bicicleta',
         'date' => now()->format('Y-m-d'),
-        'is_posted' => false,
+        'status' => 'pending',
     ];
 
     $this->put(route('financial.transactions.update', $transaction), $data)

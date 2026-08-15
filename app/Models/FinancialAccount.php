@@ -75,7 +75,7 @@ class FinancialAccount extends Model
         $query->addSelect([
             'balance' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END), 0)")
                 ->whereColumn('financial_account_id', 'financial_accounts.id')
-                ->where('is_posted', true),
+                ->posted(),
         ])->withCasts(['balance' => 'float']);
     }
 

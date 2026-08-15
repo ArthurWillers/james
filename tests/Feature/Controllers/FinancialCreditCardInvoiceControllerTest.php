@@ -55,7 +55,7 @@ it('can pay invoice', function () {
         'financial_credit_card_invoice_id' => $invoice->id,
         'type' => 'expense',
         'amount' => 1000,
-        'is_posted' => false,
+        'status' => 'pending',
     ]);
 
     $data = [

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialTransaction;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -17,10 +18,10 @@ class RolloverDueTransactions extends Command
      */
     public function handle()
     {
-        $updatedCount = FinancialTransaction::where('is_posted', false)
+        $updatedCount = FinancialTransaction::pending()
             ->whereNull('financial_credit_card_invoice_id')
             ->where('date', '<=', Carbon::today())
-            ->update(['is_posted' => true]);
+            ->update(['status' => TransactionStatus::Posted->value]);
 
         $this->info("Transações efetivadas com sucesso: {$updatedCount}");
     }

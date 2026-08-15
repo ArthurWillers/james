@@ -24,7 +24,7 @@ it('calculates net worth evolution correctly based on accrual accounting (compet
         'type' => 'income',
         'amount' => 1000,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 
     // A credit card expense today (competência: impacts net worth TODAY, not on invoice due date)
@@ -33,7 +33,7 @@ it('calculates net worth evolution correctly based on accrual accounting (compet
         'type' => 'expense',
         'amount' => 300,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 
     $service = new ReportsService;

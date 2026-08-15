@@ -95,7 +95,7 @@
     <x-filter-bar 
         action="{{ route('financial.transactions.index') }}" 
         searchPlaceholder="Buscar por descrição..." 
-        :filters="['search', 'account_id', 'tag_id', 'type', 'is_posted', 'date']">
+        :filters="['search', 'account_id', 'tag_id', 'type', 'status', 'date']">
         
         <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
             <x-filter-bar.select name="account_id">
@@ -118,10 +118,11 @@
                 <option value="expense" @selected(request('type') == 'expense')>Despesa</option>
             </x-filter-bar.select>
 
-            <x-filter-bar.select name="is_posted">
+            <x-filter-bar.select name="status">
                 <option value="">Todos os Status</option>
-                <option value="1" @selected(request('is_posted') === '1')>Efetivadas</option>
-                <option value="0" @selected(request('is_posted') === '0')>Pendentes</option>
+                <option value="posted" @selected(request('status') === 'posted')>Efetivadas</option>
+                <option value="pending" @selected(request('status') === 'pending')>Pendentes</option>
+                <option value="draft" @selected(request('status') === 'draft')>Rascunhos</option>
             </x-filter-bar.select>
 
             <x-filter-bar.date name="date" value="{{ request('date') }}" title="Filtrar por data específica" />

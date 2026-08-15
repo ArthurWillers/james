@@ -37,7 +37,7 @@
             :value="formatCurrency($kpi['currentBalance'])" 
             icon="heroicon-o-scale" 
             :color="$kpi['currentBalance'] >= 0 ? 'green' : 'red'" 
-            :href="route('financial.transactions.index', ['is_posted' => 1])"
+            :href="route('financial.transactions.index', ['status' => 'posted'])"
         />
     </div>
 

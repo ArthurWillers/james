@@ -17,7 +17,7 @@ it('calculates KPIs correctly', function () {
         'type' => 'income',
         'amount' => 500,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 
     FinancialTransaction::factory()->create([
@@ -25,7 +25,7 @@ it('calculates KPIs correctly', function () {
         'type' => 'expense',
         'amount' => 200,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 
     $service = new FinanceDashboardService;
@@ -46,7 +46,7 @@ it('calculates cash flow projections', function () {
         'type' => 'income',
         'amount' => 1000,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 
     $service = new FinanceDashboardService;
@@ -70,7 +70,7 @@ it('returns account balances chart data', function () {
         'type' => 'income',
         'amount' => 500,
         'date' => Carbon::now()->format('Y-m-d'),
-        'is_posted' => true,
+        'status' => 'posted',
     ]);
 
     $service = new FinanceDashboardService;

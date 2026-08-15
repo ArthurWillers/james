@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\FinancialAccountType;
 use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -372,7 +373,7 @@ class FinanceDashboardService
                     'amount' => $r->amount,
                     'type' => $r->type,
                     'date' => $r->next_processing_date,
-                    'is_posted' => false,
+                    'status' => TransactionStatus::Pending,
                 ]);
                 $t->is_recurrence = true;
                 $t->recurrence_id = $r->id;
@@ -402,7 +403,7 @@ class FinanceDashboardService
                     'amount' => max(0, $inv->total() - $inv->amount_paid),
                     'type' => 'expense',
                     'date' => $inv->due_date,
-                    'is_posted' => false,
+                    'status' => TransactionStatus::Pending,
                 ]);
                 $t->is_invoice = true;
                 $t->setRelation('tags', collect());
@@ -422,7 +423,7 @@ class FinanceDashboardService
 
         $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
             ->where(function ($q) {
-                $q->where('is_posted', true)
+                $q->where('status', TransactionStatus::Posted)
                     ->orWhereNotNull('financial_credit_card_invoice_id');
             })
             ->expenses()

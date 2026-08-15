@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use App\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -184,7 +185,7 @@ class FinancialCreditCard extends Model
                 'type' => 'expense',
                 'amount' => $amount,
                 'description' => $description,
-                'is_posted' => false,
+                'status' => TransactionStatus::Pending,
                 'installment_current' => $i,
                 'installment_total' => $installments,
             ]));

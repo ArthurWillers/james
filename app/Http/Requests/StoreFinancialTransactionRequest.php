@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class StoreFinancialTransactionRequest extends FormRequest
 {
@@ -45,7 +47,7 @@ class StoreFinancialTransactionRequest extends FormRequest
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:financial_tags,id'],
             'primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
-            'is_posted' => ['boolean'],
+            'status' => ['nullable', new Enum(TransactionStatus::class)],
             'installments' => ['required_if:mode,installment', 'integer', 'min:2'],
             'items' => ['nullable', 'array'],
             'items.*.description' => ['required', 'string', 'max:255'],

@@ -42,8 +42,12 @@
                                 <span class="text-neutral-500 font-normal ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                             @endif
                         </span>
-                        @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
-                            <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                        @if($transaction->status !== \App\Enums\TransactionStatus::Posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
+                            @if($transaction->status === \App\Enums\TransactionStatus::Draft)
+                                <span class="text-xxs uppercase font-bold text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded ring-1 ring-inset ring-neutral-300 shrink-0">Rascunho</span>
+                            @else
+                                <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                            @endif
                         @endif
                         @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
                             <span class="text-xxs uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
@@ -122,8 +126,12 @@
                                         <span class="text-neutral-500 font-normal text-sm ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                                     @endif
                                 </span>
-                                @if(!$transaction->is_posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
-                                    <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                                @if($transaction->status !== \App\Enums\TransactionStatus::Posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
+                                    @if($transaction->status === \App\Enums\TransactionStatus::Draft)
+                                        <span class="text-xxs uppercase font-bold text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded ring-1 ring-inset ring-neutral-300 shrink-0">Rascunho</span>
+                                    @else
+                                        <span class="text-xxs uppercase font-bold text-yellow-700 bg-yellow-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-yellow-600/20 shrink-0">Pendente</span>
+                                    @endif
                                 @endif
                                 @if(isset($transaction->is_recurrence) && $transaction->is_recurrence)
                                     <span class="text-xxs uppercase font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded ring-1 ring-inset ring-blue-600/20 shrink-0 flex items-center gap-1"><x-heroicon-o-arrow-path class="size-3" /> Recorrência</span>
