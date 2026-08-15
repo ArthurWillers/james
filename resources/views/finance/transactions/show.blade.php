@@ -57,11 +57,7 @@
                         {{ formatShort($transaction->date) }}
                     </x-badge>
                     
-                    @if($transaction->is_posted)
-                        <x-badge color="accent" size="sm">Efetivada</x-badge>
-                    @else
-                        <x-badge color="warning" size="sm">Pendente</x-badge>
-                    @endif
+                    <x-badge :color="$transaction->status->color()" size="sm">{{ $transaction->status->label() }}</x-badge>
 
                     @if($transaction->type === 'transfer')
                         <x-badge color="info" size="sm">Transferência</x-badge>
