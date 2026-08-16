@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\FinancialTagController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -16,6 +17,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/audit', [AuditController::class, 'index'])->name('audit.index');
     Route::get('/audit/{activity}', [AuditController::class, 'show'])->name('audit.show');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::patch('/notifications/{notification}', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
     require __DIR__.'/contacts.php';
     require __DIR__.'/financial.php';
