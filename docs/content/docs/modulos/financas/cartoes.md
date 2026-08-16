@@ -28,8 +28,8 @@ O módulo de **Cartões de Crédito** gerencia limites, datas de vencimento/fech
 | `id` | bigint | Chave primária. |
 | `financial_credit_card_id` | foreignId | Vínculo com o cartão originador. |
 | `reference_month` | date | Mês/Ano base da fatura (dia é sempre 01). |
-| `closing_date` | date | Data *ajustada* real de fechamento. |
-| `due_date` | date | Data *ajustada* real de vencimento. |
+| `closing_date` | date | Data *ajustada* real de fechamento (respeita personalizações e feriados). |
+| `due_date` | date | Data *ajustada* real de vencimento (respeita dias úteis). |
 | `amount_paid` | decimal | Valor já pago nesta fatura. |
 | `paid_at` | date | Data em que a fatura foi totalmente quitada. |
 | `interest_transaction_id`| foreignId | Vínculo com a despesa de juros, caso haja pagamento em atraso. |
@@ -51,11 +51,15 @@ erDiagram
         bigint id PK
         bigint financial_credit_card_id FK
         date reference_month
+        date closing_date
+        date due_date
+        decimal amount_paid
     }
     FINANCIAL_TRANSACTIONS {
         bigint id PK
         bigint financial_credit_card_invoice_id FK
         bigint financial_account_id FK
+        enum status "draft, pending, posted"
     }
 
     FINANCIAL_ACCOUNTS ||--o{ FINANCIAL_CREDIT_CARDS : "paga a fatura"
@@ -65,23 +69,45 @@ erDiagram
 
 ## Regras de Negócio e Comportamento
 
+### Ciclo de Vida e Status da Fatura (`InvoiceStatus`)
+
+O estado da fatura é computado dinamicamente através do Enum `App\Enums\InvoiceStatus`:
+
+| Status | Case | Cor | Descrição |
+| --- | --- | --- | --- |
+| **Paga** | `InvoiceStatus::Paid` | Verde | Fatura totalmente quitada (`amount_paid >= total`). |
+| **Parcialmente Paga** | `InvoiceStatus::PartiallyPaid` | Amarelo | Houve pagamento parcial antes do fechamento/vencimento. |
+| **Aberta** | `InvoiceStatus::Open` | Azul | Fatura corrente ainda recebendo novas compras (antes do fechamento). |
+| **Fechada** | `InvoiceStatus::Closed` | Neutro / Cinza | Fatura fechada aguardando pagamento (após o fechamento e antes do vencimento). |
+| **Atrasada** | `InvoiceStatus::Overdue` | Vermelho | Fatura fechada com vencimento ultrapassado e saldo em aberto. |
+
+### Centralização da Fatura Corrente (`setCurrentInvoice`)
+
+O modelo `FinancialCreditCard` centraliza a lógica de resolução da fatura ativa no método `setCurrentInvoice()`. Essa abstração calcula dinamicamente o total da fatura aberta, a quantidade de lançamentos e o status de liquidez sem onerar o banco de dados com queries redundantes em loops de listagem.
+
 ### Lógica de Feriados e Dias Úteis
-O sistema integra com a `BrasilAPI` (via `BusinessDayHelper`) para buscar os feriados nacionais anuais, mantendo-os em cache permanente.
-- O **Fechamento** é empurrado retroativamente para o *dia útil anterior* caso caia em feriado/final de semana.
-- O **Vencimento** é empurrado para o *próximo dia útil* caso caia em feriado/final de semana.
+
+O sistema integra com a `BrasilAPI` (via `BusinessDayHelper`) para buscar os feriados nacionais anuais, mantendo-os em cache:
+- O **Fechamento** é antecipado para o *dia útil anterior* caso caia em feriado/final de semana.
+- O **Vencimento** é postergado para o *próximo dia útil* caso caia em feriado/final de semana.
+- **Fechamento Personalizado:** O sistema respeita fechamentos com data customizada (`closing_date`) definida pelo usuário ou ajustada no banco ao vincular novas transações.
 
 ### Rolagem e Vinculação de Compras
-Ao lançar uma nova compra, o sistema utiliza a função `resolveForDate`. Ela compara a data da transação com a data real (ajustada) de fechamento daquele mês. Se a transação for feita no dia ou antes do fechamento, entra na fatura atual. Se for depois, "rola" automaticamente para a fatura do mês seguinte.
-As compras parceladas iteram mês a mês chamando esta mesma função para alocar corretamente cada parcela em sua respectiva fatura.
+
+Ao lançar uma nova compra, o método `FinancialCreditCardInvoice::resolveForDate` compara a data da transação com a data real (ajustada) de fechamento daquele mês. Se a transação for feita no dia ou antes do fechamento, entra na fatura atual. Se for posterior, rola automaticamente para a fatura do mês subsequente.
 
 ### Automação (Cron)
-Existe um comando (`finance:rollover-invoices`) rodando diariamente à meia-noite via Laravel Schedule. Ele verifica todos os cartões não deletados e invoca `resolveForDate(today)` para garantir que a fatura do mês vigente/próximo mês exista no banco, mesmo que o usuário não faça compras (mantendo a consistência visual).
+
+O comando `php artisan finance:rollover-invoices` executa diariamente à meia-noite via Laravel Scheduler. Ele percorre todos os cartões ativos e garante que a fatura do mês de referência exista no banco de dados.
 
 ### Pagamento da Fatura
-Quando o pagamento é registrado, o sistema realiza várias ações em cascata:
-1. Gera uma despesa "real" na `Conta Corrente` vinculada ao cartão.
-2. Caso seja reportado um valor de **Juros**, gera uma despesa extra na conta, aplicando automaticamente a tag `Juros` (código fixo) para isolar este prejuízo nos relatórios.
-3. Se o pagamento cobrir o total da fatura, muda o status para `paid` e transforma todas as transações agregadas nela em transações consolidadas (`is_posted = true`), integrando-as de fato aos relatórios financeiros retroativos.
+
+Quando o pagamento total é confirmado:
+1. Uma despesa é gerada na Conta Bancária vinculada ao cartão.
+2. Caso informado valor de **Juros**, uma transação extra de juros é gerada aplicando a tag protegida `Juros`.
+3. Todas as transações atreladas à fatura têm seu status alterado para `TransactionStatus::Posted` (`posted`), consolidando o fluxo financeiro.
 
 ### Exclusão (Soft Deletes)
-Cartões não podem ser apagados permanentemente (`forceDelete`) se tiverem faturas ativas, garantindo a integridade dos dados históricos. O mesmo ocorre para contas financeiras que tenham cartões vinculados a elas.
+
+Cartões não podem ser excluídos permanentemente (`forceDelete`) se possuírem faturas ou transações ativas, garantindo a rastreabilidade contábil.
+

@@ -11,18 +11,29 @@ Visão geral consolidada dos indicadores e atalhos rápidos para as principais �
 [Ver documentação →](./dashboard/)
 
 ### Contatos
-Registro pessoal centralizado de contatos e relacionamentos, atuando como base (Single Source of Truth) do sistema.
+Registro pessoal centralizado de contatos, grupos e relacionamentos, atuando como a base relacional (Single Source of Truth) do sistema.
 
 [Ver documentação →](./contatos/)
 
 ### Finanças
-Gestão financeira pessoal com controle de contas, cartões, tags dinâmicas e leitura de notas fiscais.
+Gestão financeira pessoal com controle de contas, cartões, faturas, recorrências, tags dinâmicas, status de transação e relatórios analíticos (Sankey e evolução).
 
 [Ver documentação →](./financas/)
 
 ### Acertos
-Controle de dívidas informais e despesas compartilhadas com outras pessoas (regime de competência).
+Controle de dívidas informais e despesas compartilhadas em grupo com outras pessoas (regime de competência integrado ao fluxo financeiro).
 
 [Ver documentação →](./acertos/)
 
+### Notificações
+Pipeline unificado e multi-canal (Database, Telegram e E-mail) para avisos, lembretes de rotinas, faturas e ações do sistema.
+
+[Ver documentação →](./notificacoes/)
+
+### Auditoria e Logs
+Rastreabilidade completa e vitalícia de mutações em models de negócio (created, updated, deleted, restored, forceDeleted) com histórico de alterações.
+
+[Ver documentação →](./auditoria/)
+
 Para a lista completa de módulos planejados, consulte o [Roadmap](/james/docs/roadmap).
+

@@ -9,14 +9,17 @@ draft: false
 
 O módulo de Contatos é a fundação relacional do James. Ele atua como um registro pessoal de pessoas e entidades com as quais você se relaciona, servindo de Single Source of Truth (SSOT) passivo, ou seja, sem vínculo com a tabela de usuários autenticáveis.
 
-O cadastro oferece funcionalidades de CRUD completo (Criar, Ler, Atualizar, Excluir), busca em tempo real, suporte para múltiplos telefones e e-mails por contato, além de gerenciamento avançado de avatares com recorte automático.
+O cadastro oferece funcionalidades de CRUD completo (Criar, Ler, Atualizar, Excluir), agrupamento de contatos em **Grupos de Contatos**, busca em tempo real, suporte para múltiplos telefones e e-mails por contato, além de gerenciamento avançado de avatares com recorte automático.
 
 ### Modelagem de Dados
 
-Para maior flexibilidade e organização, dados secundários como `phones` e `emails` não necessitaram de tabelas auxiliares. Eles são armazenados de forma otimizada via colunas dinâmicas `JSONB` no PostgreSQL, garantindo que o banco permaneça com as consultas limpas.
+Para maior flexibilidade e organização, dados secundários como `phones` e `emails` não necessitaram de tabelas auxiliares. Eles são armazenados de forma otimizada via colunas dinâmicas `JSONB` no PostgreSQL. Além disso, o sistema conta com agrupamento N:N via `contact_groups`.
 
 ```mermaid
 erDiagram
+    CONTACTS ||--o{ CONTACT_CONTACT_GROUP : "pertence a"
+    CONTACT_GROUPS ||--o{ CONTACT_CONTACT_GROUP : "agrupa"
+
     CONTACTS {
         bigint id PK
         varchar name "Obrigatório, max 255"
@@ -29,12 +32,26 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+
+    CONTACT_GROUPS {
+        bigint id PK
+        varchar name "Obrigatório, max 255"
+        text notes "Opcional"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CONTACT_CONTACT_GROUP {
+        bigint contact_id FK
+        bigint contact_group_id FK
+    }
 ```
 
 > **Nota sobre o Avatar**: O avatar do contato não é uma coluna física na tabela `contacts`. A gestão dos arquivos é feita de forma polimórfica pela biblioteca externa `Spatie MediaLibrary` na tabela `media`, vinculada através do `model_type` e `model_id`.
 
 ### Funcionalidades e Bibliotecas Implementadas
 
+* **Grupos de Contatos (`contact_groups`)**: Permite criar conjuntos temáticos de pessoas (ex: "Família", "Amigos da Faculdade", "Colegas de Trabalho") para facilitar a organização visual e acelerar a criação de despesas compartilhadas no [Módulo de Acertos](/docs/modulos/acertos/).
 * **Campos Múltiplos via AlpineJS**: Inserção dinâmica no frontend de \(N\) telefones e \(N\) e-mails, gerenciados via estados reativos e submetidos numa estrutura de Array.
 * **Busca e Pesquisa Inteligente**: Integração com a Trait [`Searchable`](/james/docs/traits-e-helpers/#searchable) no Laravel, usando consultas recursivas nas colunas textuais nativas e nas raízes dos atributos JSON via consultas nativas (ex: `phones::text ILIKE`).
 * **Anotações em Markdown**: Integração com a biblioteca JS `EasyMDE`, que sobrepõe de forma invisível as `textarea`s, convertendo-as em blocos ricos de escrita com barra de ferramentas e syntax highlight, persistidos como raw-text no banco de dados.
@@ -73,3 +90,4 @@ Você pode conferir a anatomia exata das telas abaixo:
 - [Roadmap — Módulo Contatos](/james/docs/roadmap/#fase-2-módulo-contatos)
 - [Decisão 006 — Spatie Media Library](/james/docs/decisoes/#006--adoção-da-spatie-media-library-com-armazenamento-privado)
 - [Decisão 009 — Editor Visual Markdown](/james/docs/decisoes/#009--editor-visual-markdown)
+

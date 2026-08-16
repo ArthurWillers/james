@@ -290,3 +290,54 @@ Para manter o rigor e a padronização no desenvolvimento do projeto, precisáva
 **Decisão:**
 Foi criada a skill estruturada `.agents/skills/project-conventions/SKILL.md`. Essa documentação atua como a fonte de verdade absoluta e deve ser lida ativamente (via o comando `/project-conventions` ou gatilhos de contexto) antes e durante a criação ou refatoração de views. Ela documenta regras rígidas como a proibição de valores arbitrários no Tailwind, ordem estrita de atributos do AlpineJS e uso mandatório de componentes Blade específicos, garantindo consistência sem depender apenas da memória de contexto.
 
+## 021 — Módulo de Auditoria com Spatie Activitylog
+
+**Data:** 18 de Julho de 2026
+
+**Contexto:**
+Em um ERP pessoal que agrega finanças, contatos e dívidas, é fundamental ter total transparência sobre o histórico de modificações, permitindo auditar o que mudou, quando mudou e identificar eventuais erros operacionais ou mutações automáticas do sistema.
+
+**Decisão:**
+Adoção da biblioteca `spatie/laravel-activitylog` (v5+) em todas as Models de negócio principais. O sistema registra os eventos de ciclo de vida (`created`, `updated`, `deleted`, `restored`, `forceDeleted`) salvando o diff exato (`old` vs `attributes`). Além disso, foi criada a interface visual em `/audit` com suporte a tradução de atributos, formatação de valores e diferenciação visual entre o usuário autenticado e ações disparadas pelo "Sistema / Rotina Automática" (`causer_id = null`).
+
+## 022 — Sistema de Notificações Multi-canal e Bot do Telegram
+
+**Data:** 16 de Agosto de 2026
+
+**Contexto:**
+Determinados eventos no James (como fechamento de faturas de cartão de crédito, lembretes de despesas recorrentes e liquidações de acertos) exigem proatividade para que o usuário não precise verificar o sistema manualmente todos os dias. Além disso, notificações internas no banco de dados não alcançam o usuário quando ele está longe do computador.
+
+**Decisão:**
+Criação de um pipeline unificado de notificações centrado na classe `GeneralNotification` e no enum `NotificationLevel` (`Info`, `Success`, `Warning`, `Danger`). O sistema sempre grava a notificação internamente (alimentando o painel `/notifications` e o contador na sidebar) e, opcionalmente, espelha a mensagem de forma transparente para o canal do **Telegram** (`notification-channels/telegram`) e **E-mail**. Foi implementado tratamento para evitar falhas com links locais (localhost) e garantir entrega segura (*fail-gracefully*) caso chaves de API não estejam configuradas.
+
+## 023 — Padronização de Status com Enums Nativos do PHP (`TransactionStatus` e `InvoiceStatus`)
+
+**Data:** 14 de Agosto de 2026
+
+**Contexto:**
+O controle de efetivação de transações financeiras era feito através de uma flag booleana (`is_posted`), o que limitava a expressividade do modelo para estados intermediários (como rascunhos de conciliação ou lançamentos parciais). Da mesma forma, o status das faturas de cartão de crédito dependia de verificações manuais de datas e valores espalhadas pelo código.
+
+**Decisão:**
+Adoção de Enums tipados do PHP (`App\Enums\TransactionStatus` com `Draft`, `Pending`, `Posted` e `App\Enums\InvoiceStatus` com `Paid`, `PartiallyPaid`, `Open`, `Overdue`, `Closed`). A coluna `is_posted` foi migrada e substituída por `status` na tabela `financial_transactions`. Os enums encapsulam métodos utilitários de UI (`label()` e `color()`), centralizando regras visuais e garantindo *type-safety* nas queries e nos serviços.
+
+## 024 — Centralização da Fatura Corrente no Modelo de Cartão de Crédito
+
+**Data:** 14 de Agosto de 2026
+
+**Contexto:**
+O cálculo de qual fatura deveria ser exibida no painel de cartões ou vinculada a uma nova compra exigia consultas redundantes e lógica dispersa entre controllers e services, gerando inconsistências quando faturas possuíam datas de fechamento personalizadas ou ajustadas por feriados.
+
+**Decisão:**
+Centralização da lógica de resolução de fatura no método `setCurrentInvoice()` do modelo `FinancialCreditCard`. O modelo agora orquestra o cálculo do saldo aberto, quantidade de transações e status da fatura de forma atômica e performática, permitindo que a view e os serviços consumam o estado consolidado diretamente da entidade.
+
+## 025 — Automação de Atualizações e Deploy Zero-Touch (`app:update`)
+
+**Data:** 14 de Julho de 2026 (Atualizado em 16 de Agosto de 2026)
+
+**Contexto:**
+Atualizar o sistema em produção envolvia múltiplos comandos manuais sequenciais (modo de manutenção, git pull, composer install, npm build, migrações, clear/cache, restart de processos). O esquecimento de qualquer etapa poderia deixar o sistema em estado inconsistente ou travar workers em execução.
+
+**Decisão:**
+Criação do comando Artisan `php artisan app:update`. Ele automatiza toda a esteira de atualização com animações de progresso (`spin`), detecção de alterações no Git, compilação de assets, migrações com `--force`, geração de caches e reinicialização automática do **Supervisor** sem solicitação de senha via concessão restrita no `sudoers`.
+
+
