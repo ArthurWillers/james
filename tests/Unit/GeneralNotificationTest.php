@@ -34,20 +34,73 @@ it('does not include telegram when only token is set', function () {
     expect($notification->via($user))->toBe(['database']);
 });
 
-it('returns correct toDatabase payload', function () {
-    $notification = new GeneralNotification('Meu Título', 'Minha Mensagem', 'https://example.com');
+it('includes mail channel when requested and user has email', function () {
+    $notification = new GeneralNotification(
+        title: 'Título',
+        message: 'Mensagem',
+        channels: ['database', 'mail']
+    );
+    $user = new User(['email' => 'teste@exemplo.com']);
+
+    expect($notification->via($user))->toContain('database', 'mail');
+});
+
+it('returns correct toDatabase payload with level and details', function () {
+    $notification = new GeneralNotification(
+        title: 'Meu Título',
+        message: 'Minha Mensagem',
+        actionUrl: 'https://example.com',
+        level: 'warning',
+        details: ['Valor' => 'R$ 100,00']
+    );
     $user = new User;
 
     expect($notification->toDatabase($user))->toBe([
         'title' => 'Meu Título',
         'message' => 'Minha Mensagem',
         'action_url' => 'https://example.com',
+        'level' => 'warning',
+        'details' => ['Valor' => 'R$ 100,00'],
     ]);
 });
 
-it('returns null action_url when not provided', function () {
-    $notification = new GeneralNotification('Título', 'Mensagem');
+it('formats telegram message with emoji, bold title and details', function () {
+    config(['services.telegram-bot-api.chat_id' => '999999']);
+
+    $notification = new GeneralNotification(
+        title: 'Fatura Fechada',
+        message: 'Sua fatura fechou.',
+        actionUrl: 'https://example.com/fatura',
+        level: 'warning',
+        details: ['Total' => 'R$ 500,00', 'Vencimento' => '25/08']
+    );
     $user = new User;
 
-    expect($notification->toDatabase($user)['action_url'])->toBeNull();
+    $telegram = $notification->toTelegram($user);
+    $payload = $telegram->toArray();
+
+    expect($payload['chat_id'])->toBe('999999');
+    expect($payload['text'])->toContain('⚠️ *Fatura Fechada*');
+    expect($payload['text'])->toContain('• *Total:* R$ 500,00');
+    expect($payload['text'])->toContain('• *Vencimento:* 25/08');
+});
+
+it('formats mail message with subject, greeting, details and action', function () {
+    $notification = new GeneralNotification(
+        title: 'Transação Aprovada',
+        message: 'Pagamento confirmado com sucesso.',
+        actionUrl: 'https://example.com/tx/1',
+        level: 'success',
+        details: ['Valor' => 'R$ 250,00']
+    );
+    $user = new User(['name' => 'Arthur', 'email' => 'arthur@example.com']);
+
+    $mail = $notification->toMail($user);
+
+    expect($mail->subject)->toBe('[James] Transação Aprovada');
+    expect($mail->greeting)->toContain('Arthur');
+    expect($mail->introLines)->toContain('Pagamento confirmado com sucesso.');
+    expect($mail->introLines)->toContain('**Valor:** R$ 250,00');
+    expect($mail->actionText)->toBe('Acessar no Sistema');
+    expect($mail->actionUrl)->toBe('https://example.com/tx/1');
 });

@@ -20,6 +20,23 @@
             $title = $notification->data['title'] ?? 'Sem título';
             $message = $notification->data['message'] ?? '';
             $actionUrl = $notification->data['action_url'] ?? null;
+            $level = $notification->data['level'] ?? 'info';
+            $details = $notification->data['details'] ?? [];
+
+            $levelColors = [
+                'success' => 'green',
+                'warning' => 'yellow',
+                'danger' => 'red',
+                'info' => 'blue',
+            ];
+            $levelLabels = [
+                'success' => 'Sucesso',
+                'warning' => 'Alerta',
+                'danger' => 'Atenção',
+                'info' => 'Informativo',
+            ];
+            $levelColor = $levelColors[$level] ?? 'blue';
+            $levelLabel = $levelLabels[$level] ?? ucfirst($level);
         @endphp
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -35,6 +52,13 @@
                                 @else
                                     <x-badge color="neutral" size="sm">Lida</x-badge>
                                 @endif
+                            </div>
+                        </div>
+
+                        <div class="px-5 py-4">
+                            <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">NÍVEL</p>
+                            <div>
+                                <x-badge :color="$levelColor" size="sm">{{ $levelLabel }}</x-badge>
                             </div>
                         </div>
 
@@ -65,31 +89,43 @@
                 <x-card class="space-y-4">
                     <div>
                         <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">MENSAGEM</p>
-                        <h3 class="text-lg font-semibold text-neutral-900">{{ $title }}</h3>
+                        <h3 class="text-xl font-bold text-neutral-900">{{ $title }}</h3>
                         @if($message)
-                            <p class="text-sm text-neutral-700 mt-2 leading-relaxed whitespace-pre-line">{{ $message }}</p>
+                            <p class="text-sm text-neutral-700 mt-3 leading-relaxed whitespace-pre-line">{{ $message }}</p>
                         @endif
                     </div>
 
                     @if($actionUrl)
                         <div class="pt-4 border-t border-neutral-100 flex items-center justify-between">
-                            <span class="text-xs text-neutral-500">Link associado à notificação:</span>
+                            <span class="text-xs text-neutral-500">Ação recomendada:</span>
                             <x-button :href="$actionUrl" target="_blank">
                                 <x-heroicon-m-arrow-top-right-on-square class="size-4!" />
-                                Acessar link de ação
+                                Acessar no Sistema
                             </x-button>
                         </div>
                     @endif
                 </x-card>
 
-                <!-- Payload de Dados -->
-                <x-card>
-                    <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-3">DADOS DO EVENTO</p>
-                    <div class="bg-neutral-50 rounded-lg p-4 font-mono text-xs text-neutral-700 overflow-x-auto border border-neutral-200">
-                        <pre>{{ json_encode($notification->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
-                    </div>
-                </x-card>
+                <!-- Informações Estruturadas (Detalhes) -->
+                @if(!empty($details))
+                    <x-card class="!p-0 overflow-hidden">
+                        <div class="px-5 py-3.5 border-b border-neutral-100 bg-neutral-50">
+                            <p class="text-xs font-bold text-neutral-700 uppercase tracking-wider">Informações Adicionais</p>
+                        </div>
+                        <div class="divide-y divide-neutral-100">
+                            @foreach($details as $key => $val)
+                                <div class="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm">
+                                    <span class="text-neutral-500 font-medium">{{ $key }}</span>
+                                    <span class="text-neutral-900 font-semibold">
+                                        {{ is_array($val) ? json_encode($val, JSON_UNESCAPED_UNICODE) : $val }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </x-card>
+                @endif
             </div>
         </div>
     </div>
 </x-layouts.app>
+
