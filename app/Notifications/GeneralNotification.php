@@ -98,15 +98,22 @@ class GeneralNotification extends Notification implements ShouldQueue
             }
         }
 
-        $content = implode("\n", $lines);
-
         $telegram = TelegramMessage::create()
-            ->to(config('services.telegram-bot-api.chat_id'))
-            ->content($content);
+            ->to(config('services.telegram-bot-api.chat_id'));
 
         if ($this->actionUrl) {
-            $telegram->button('Acessar no Sistema', $this->actionUrl);
+            $isLocalUrl = str_contains($this->actionUrl, 'localhost') || str_contains($this->actionUrl, '127.0.0.1');
+
+            if ($isLocalUrl) {
+                $lines[] = '';
+                $lines[] = "🔗 *Link:* {$this->actionUrl}";
+            } else {
+                $telegram->button('Acessar no Sistema', $this->actionUrl);
+            }
         }
+
+        $content = implode("\n", $lines);
+        $telegram->content($content);
 
         return $telegram;
     }
