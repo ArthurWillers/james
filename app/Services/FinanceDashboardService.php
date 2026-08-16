@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\FinancialAccountType;
-use App\Enums\InvoiceStatus;
 use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
@@ -304,42 +303,7 @@ class FinanceDashboardService
     public function getCreditCardsWidget(Carbon $referenceDate): Collection
     {
         return $this->getCreditCards()
-            ->map(function ($card) use ($referenceDate) {
-                $referenceMonth = $this->resolveReferenceMonth($card, $referenceDate);
-
-                // Try exact match by reference_month first
-                $currentInvoice = $card->invoices
-                    ->first(fn ($inv) => $inv->reference_month && $inv->reference_month->copy()->startOfMonth()->eq($referenceMonth));
-
-                // Fallback: pick the most recent unpaid invoice
-                if (! $currentInvoice) {
-                    $currentInvoice = $card->invoices
-                        ->filter(fn ($inv) => $inv->paid_at === null)
-                        ->sortByDesc('due_date')
-                        ->first();
-                }
-
-                $card->current_invoice_total = $currentInvoice ? $currentInvoice->total() : 0;
-                $card->current_invoice_status = $currentInvoice ? $currentInvoice->status() : InvoiceStatus::Open;
-
-                return $card;
-            });
-    }
-
-    /**
-     * Resolve the reference month for a credit card invoice based on the purchase date.
-     * Pure calculation — no database queries.
-     */
-    private function resolveReferenceMonth(FinancialCreditCard $card, Carbon $date): Carbon
-    {
-        $candidateMonth = $date->copy()->startOfMonth();
-        $closingDate = $candidateMonth->copy()->day((int) min($card->closing_day, $candidateMonth->daysInMonth));
-
-        if ($date->copy()->startOfDay()->lte($closingDate)) {
-            return $candidateMonth;
-        }
-
-        return $candidateMonth->addMonth()->startOfMonth();
+            ->each(fn ($card) => $card->setCurrentInvoice($referenceDate));
     }
 
     public function getJamesRadar(Carbon $referenceDate): Collection
