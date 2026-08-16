@@ -23,7 +23,7 @@ class GeneralNotification extends Notification implements ShouldQueue
         public readonly ?string $actionUrl = null,
         public readonly string $level = 'info',
         public readonly array $details = [],
-        public readonly array $channels = ['database', 'telegram'],
+        public readonly array $channels = ['database', 'telegram', 'mail'],
     ) {}
 
     /**

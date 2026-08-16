@@ -98,7 +98,7 @@
                     @if($actionUrl)
                         <div class="pt-4 border-t border-neutral-100 flex items-center justify-between">
                             <span class="text-xs text-neutral-500">Ação recomendada:</span>
-                            <x-button :href="$actionUrl" target="_blank">
+                            <x-button :href="$actionUrl">
                                 <x-heroicon-m-arrow-top-right-on-square class="size-4!" />
                                 Acessar no Sistema
                             </x-button>
