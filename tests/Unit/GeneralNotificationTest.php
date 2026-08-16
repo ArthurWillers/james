@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\NotificationLevel;
 use App\Models\User;
 use App\Notifications\GeneralNotification;
 use NotificationChannels\Telegram\TelegramChannel;
@@ -79,14 +80,14 @@ it('returns correct toDatabase payload with level and details', function () {
     ]);
 });
 
-it('formats telegram message with emoji, bold title and details', function () {
+it('formats telegram message with clean bold title, prefix and details', function () {
     config(['services.telegram-bot-api.chat_id' => '999999']);
 
     $notification = new GeneralNotification(
         title: 'Fatura Fechada',
         message: 'Sua fatura fechou.',
         actionUrl: 'https://example.com/fatura',
-        level: 'warning',
+        level: NotificationLevel::Warning,
         details: ['Total' => 'R$ 500,00', 'Vencimento' => '25/08']
     );
     $user = new User;
@@ -95,7 +96,7 @@ it('formats telegram message with emoji, bold title and details', function () {
     $payload = $telegram->toArray();
 
     expect($payload['chat_id'])->toBe('999999');
-    expect($payload['text'])->toContain('⚠️ *Fatura Fechada*');
+    expect($payload['text'])->toContain('*ALERTA: Fatura Fechada*');
     expect($payload['text'])->toContain('• *Total:* R$ 500,00');
     expect($payload['text'])->toContain('• *Vencimento:* 25/08');
 });
