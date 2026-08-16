@@ -8,10 +8,12 @@ Visão geral dos módulos desenvolvidos e planejados para o James.
 
 ## Módulos Ativos
 
-- **Core / Fundação**: Autenticação, configurações de conta.
-- **Contatos**: Gestão centralizada de pessoas, avatares (MediaLibrary) e anotações em Markdown.
-- **Financeiro**: Gestão de contas, cartões de crédito, transações, transações recorrentes e relatórios visuais (Dashboard e Sankey).
-- **Acertos**: Divisão de despesas (Eu Devo/Me Devem) integrada com os Contatos e o módulo Financeiro.
+- **Core / Fundação**: Autenticação headless (Fortify), layout responsivo desktop-first e pipeline automatizado de deploy (`app:update`).
+- **Contatos & Grupos**: Gestão centralizada de pessoas e grupos de divisão, avatares no disco privado (MediaLibrary) e anotações em Markdown.
+- **Financeiro**: Gestão de contas, cartões de crédito, ciclo de vida de faturas, transações com status tipados (`TransactionStatus`), recorrências automáticas, tags com cores e ícones dinâmicos, e relatórios analíticos em Regime de Caixa (Evolução de Saldo e Diagrama de Sankey).
+- **Acertos**: Divisão de despesas individuais e em grupo (Eu Devo/Me Devem) com liquidação, arquivamento e integração com o fluxo financeiro.
+- **Notificações & Telegram**: Pipeline de notificações multi-canal (Database, Telegram Bot e E-mail) com níveis de alerta, metadados estruturados e contador em tempo real.
+- **Auditoria & Logs**: Rastreabilidade completa de alterações em models de negócio (Spatie Activitylog) com visualizador de diffs de valores e identificação de rotinas automáticas.
 
 ## Módulos Futuros
 
