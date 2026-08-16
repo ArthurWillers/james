@@ -2,9 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\NotificationLevel;
 use App\Enums\TransactionStatus;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialRecurrence;
+use App\Models\User;
+use App\Notifications\GeneralNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -33,7 +36,8 @@ class ProcessFinancialRecurrences extends Command
         $today = Carbon::today();
 
         $this->info("Iniciando processamento de recorrências para: {$today->toDateString()}");
-        $recurrences = FinancialRecurrence::where('is_active', true)
+        $recurrences = FinancialRecurrence::with(['financialAccount', 'financialCreditCard'])
+            ->where('is_active', true)
             ->where('next_processing_date', '<=', $today)
             ->where(function ($query) use ($today) {
                 $query->whereNull('end_date')
@@ -42,6 +46,8 @@ class ProcessFinancialRecurrences extends Command
             ->get();
 
         $processedCount = 0;
+        $totalAmount = 0.0;
+        $processedItems = [];
 
         foreach ($recurrences as $recurrence) {
             $nextDate = $recurrence->next_processing_date->copy();
@@ -54,6 +60,17 @@ class ProcessFinancialRecurrences extends Command
 
                 $this->processRecurrence($recurrence, $nextDate->copy());
                 $processedCount++;
+                $totalAmount += (float) $recurrence->amount;
+
+                $destination = $recurrence->financialCreditCard
+                    ? "Cartão {$recurrence->financialCreditCard->name}"
+                    : ($recurrence->financialAccount ? "Conta {$recurrence->financialAccount->name}" : '');
+
+                $processedItems[] = [
+                    'title' => $recurrence->title,
+                    'amount' => (float) $recurrence->amount,
+                    'destination' => $destination,
+                ];
 
                 $nextDate = $this->calculateNextDate($recurrence, $nextDate);
                 $recurrence->update(['next_processing_date' => $nextDate]);
@@ -61,6 +78,10 @@ class ProcessFinancialRecurrences extends Command
         }
 
         $this->info("Processamento concluído. Transações geradas: {$processedCount}");
+
+        if ($processedCount > 0) {
+            $this->notifyRecurrencesProcessed($processedCount, $totalAmount, $processedItems);
+        }
     }
 
     private function calculateNextDate(FinancialRecurrence $recurrence, Carbon $lastProcessedDate): ?Carbon
@@ -122,6 +143,37 @@ class ProcessFinancialRecurrences extends Command
         } catch (\Exception $e) {
             Log::error("Erro ao processar recorrência ID {$recurrence->id}: ".$e->getMessage());
             $this->error("Erro ao processar recorrência '{$recurrence->title}'");
+        }
+    }
+
+    /**
+     * Envia notificação detalhada informando quais recorrências foram geradas no período.
+     *
+     * @param  array<int, array{title: string, amount: float, destination: string}>  $processedItems
+     */
+    private function notifyRecurrencesProcessed(int $count, float $totalAmount, array $processedItems): void
+    {
+        $details = [
+            'Quantidade' => "{$count} ".($count !== 1 ? 'lançamentos' : 'lançamento'),
+            'Valor Total' => formatCurrency($totalAmount),
+        ];
+
+        foreach ($processedItems as $index => $item) {
+            $dest = $item['destination'] ? " ({$item['destination']})" : '';
+            $key = ($index + 1).'. '.$item['title'];
+            $details[$key] = formatCurrency($item['amount']).$dest;
+        }
+
+        $notification = new GeneralNotification(
+            title: 'Recorrências Processadas',
+            message: 'As transações recorrentes do período foram geradas com sucesso.',
+            actionUrl: route('financial.transactions.index'),
+            level: NotificationLevel::Info,
+            details: $details,
+        );
+
+        foreach (User::all() as $user) {
+            $user->notify($notification);
         }
     }
 }
