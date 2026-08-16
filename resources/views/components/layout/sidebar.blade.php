@@ -19,11 +19,7 @@
             {{ $slot }}
         </nav>
 
-        <div class="mt-auto hidden lg:flex items-center gap-2 px-1 pb-1">
-            <x-notification-bell />
-        </div>
-
-        <x-dropdown position="top" class="hidden lg:block" accent contentClass="w-full">
+        <x-dropdown position="top" class="mt-auto hidden lg:block" accent contentClass="w-full">
             <x-slot name="trigger">
                 <button class="w-full flex items-center rounded-lg p-1 hover:bg-neutral-800/5 group cursor-pointer">
                     <x-avatar :model="auth()->user()" />
@@ -74,10 +70,7 @@
             <x-heroicon-o-bars-3 class="w-6 h-6" />
         </button>
 
-        <div class="ms-auto flex items-center gap-1">
-            <x-notification-bell />
-
-            <x-dropdown position="bottom-end" accent contentClass="w-60">
+        <x-dropdown position="bottom-end" class="ms-auto" accent contentClass="w-60">
             <x-slot name="trigger">
                 <button
                     class="w-full flex items-center rounded-lg p-1 hover:bg-neutral-800/5 group cursor-pointer gap-2">
@@ -116,6 +109,6 @@
 
             </x-slot>
         </x-dropdown>
-        </div>
     </header>
 </div>
+

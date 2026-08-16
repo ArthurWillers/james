@@ -2,24 +2,65 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\Notifications\DatabaseNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
     /**
-     * Exibe todas as notificações do usuário autenticado.
+     * Exibe todas as notificações do usuário autenticado com filtros.
      */
     public function index(Request $request): View
     {
-        $notifications = $request->user()
-            ->notifications()
-            ->latest()
-            ->paginate(20);
+        $query = $request->user()->notifications()->latest();
 
-        return view('notifications.index', compact('notifications'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('data', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'unread') {
+                $query->whereNull('read_at');
+            } elseif ($request->status === 'read') {
+                $query->whereNotNull('read_at');
+            }
+        }
+
+        if ($request->filled('date_start')) {
+            $query->whereDate('created_at', '>=', $request->date_start);
+        }
+
+        if ($request->filled('date_end')) {
+            $query->whereDate('created_at', '<=', $request->date_end);
+        }
+
+        if ($request->filled('sort') && $request->sort === 'oldest') {
+            $query->reorder()->oldest();
+        }
+
+        $notifications = $query->paginate(20)->withQueryString();
+        $unreadCount = $request->user()->unreadNotifications()->count();
+
+        return view('notifications.index', compact('notifications', 'unreadCount'));
+    }
+
+    /**
+     * Exibe os detalhes de uma notificação e a marca como lida.
+     */
+    public function show(Request $request, DatabaseNotification $notification): View
+    {
+        abort_unless($notification->notifiable_id === $request->user()->id, 403);
+
+        if ($notification->unread()) {
+            $notification->markAsRead();
+        }
+
+        return view('notifications.show', compact('notification'));
     }
 
     /**
@@ -33,9 +74,11 @@ class NotificationController extends Controller
 
         $actionUrl = $notification->data['action_url'] ?? null;
 
-        return $actionUrl
-            ? redirect($actionUrl)
-            : back();
+        if ($request->boolean('redirect_action') && $actionUrl) {
+            return redirect($actionUrl);
+        }
+
+        return back()->with('success', 'Notificação marcada como lida.');
     }
 
     /**
@@ -45,6 +88,18 @@ class NotificationController extends Controller
     {
         $request->user()->unreadNotifications->markAsRead();
 
-        return back();
+        return back()->with('success', 'Todas as notificações foram marcadas como lidas.');
+    }
+
+    /**
+     * Exclui uma notificação.
+     */
+    public function destroy(Request $request, DatabaseNotification $notification): RedirectResponse
+    {
+        abort_unless($notification->notifiable_id === $request->user()->id, 403);
+
+        $notification->delete();
+
+        return redirect()->route('notifications.index')->with('success', 'Notificação removida com sucesso.');
     }
 }

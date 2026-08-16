@@ -1,107 +1,118 @@
 <x-layouts.app>
     <x-page-header title="Notificações">
-        @if ($notifications->isNotEmpty())
+        @if ($unreadCount > 0)
             <form method="POST" action="{{ route('notifications.markAllAsRead') }}">
                 @csrf
-                <x-button type="submit" color="secondary">
-                    <x-heroicon-o-check-circle class="size-5!" />
+                <x-button type="submit" color="secondary" class="w-full sm:w-auto">
+                    <x-heroicon-o-check-badge class="size-5!" />
                     Marcar todas como lidas
                 </x-button>
             </form>
         @endif
     </x-page-header>
 
-    <x-table>
-        <x-table.header class="grid-cols-[1fr_220px] hidden sm:grid">
-            <x-table.column>NOTIFICAÇÃO</x-table.column>
-            <x-table.column>DATA</x-table.column>
-        </x-table.header>
+    <div class="mt-6">
+        <x-filter-bar action="{{ route('notifications.index') }}" :filters="['status', 'date_start', 'date_end', 'sort']">
+            <div class="flex flex-col sm:flex-row w-full sm:w-auto divide-y sm:divide-y-0 sm:divide-x divide-neutral-200">
+                <x-filter-bar.select name="status">
+                    <option value="">Todos os status</option>
+                    <option value="unread" @selected(request('status') === 'unread')>Não lidas</option>
+                    <option value="read" @selected(request('status') === 'read')>Lidas</option>
+                </x-filter-bar.select>
 
-        <div class="divide-y divide-neutral-100">
-            @forelse ($notifications as $notification)
-                @php
-                    $isUnread = is_null($notification->read_at);
-                    $actionUrl = $notification->data['action_url'] ?? null;
-                @endphp
+                <x-filter-bar.date name="date_start" value="{{ request('date_start') }}" title="Data Inicial" />
+                <x-filter-bar.date name="date_end" value="{{ request('date_end') }}" title="Data Final" />
 
-                <x-table.row class="grid-cols-[1fr_220px] hidden sm:grid items-center {{ $isUnread ? 'bg-blue-50/50' : '' }}">
-                    <x-table.cell>
-                        <div class="flex items-start gap-3">
-                            @if ($isUnread)
-                                <div class="mt-2 flex-shrink-0 w-2 h-2 rounded-full bg-blue-500"></div>
+                <x-filter-bar.select name="sort">
+                    <option value="newest" @selected(request('sort', 'newest') === 'newest')>Mais recentes</option>
+                    <option value="oldest" @selected(request('sort') === 'oldest')>Mais antigas</option>
+                </x-filter-bar.select>
+            </div>
+        </x-filter-bar>
+
+        <x-table>
+            <x-table.header class="grid-cols-[140px_1fr_200px] hidden sm:grid">
+                <x-table.column>STATUS</x-table.column>
+                <x-table.column>TÍTULO &amp; MENSAGEM</x-table.column>
+                <x-table.column>DATA/HORA</x-table.column>
+            </x-table.header>
+            <div class="divide-y divide-neutral-100">
+                @forelse($notifications as $notification)
+                    @php
+                        $isUnread = is_null($notification->read_at);
+                        $title = $notification->data['title'] ?? 'Sem título';
+                        $message = $notification->data['message'] ?? '';
+                        $actionUrl = $notification->data['action_url'] ?? null;
+                    @endphp
+                    <x-table.row href="{{ route('notifications.show', $notification) }}" class="grid-cols-[140px_1fr_200px] hidden sm:grid items-center {{ $isUnread ? 'bg-blue-50/40' : '' }}">
+                        <x-table.cell>
+                            @if($isUnread)
+                                <x-badge color="blue" size="sm">Não lida</x-badge>
                             @else
-                                <div class="mt-2 flex-shrink-0 w-2 h-2 rounded-full bg-neutral-200"></div>
+                                <x-badge color="neutral" size="sm">Lida</x-badge>
                             @endif
-                            <div>
-                                <p class="font-medium text-neutral-900 {{ $isUnread ? '' : 'text-neutral-600' }}">
-                                    {{ $notification->data['title'] }}
-                                </p>
-                                <p class="text-sm text-neutral-500 mt-0.5">{{ $notification->data['message'] }}</p>
-                                @if ($actionUrl)
-                                    <a href="{{ $actionUrl }}" class="text-xs text-blue-600 hover:underline mt-1 inline-block">
-                                        Ver detalhes →
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </x-table.cell>
-                    <x-table.cell class="text-sm text-neutral-500">
-                        <div class="flex items-center justify-between gap-2">
-                            <span>{{ formatDateTime($notification->created_at) }}</span>
-                            @if ($isUnread)
-                                <form method="POST" action="{{ route('notifications.markAsRead', $notification) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit"
-                                        class="text-xs text-neutral-400 hover:text-neutral-700 cursor-pointer whitespace-nowrap">
-                                        Marcar como lida
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </x-table.cell>
-
-                    <x-slot:mobile>
-                        <div class="flex items-start gap-3">
-                            @if ($isUnread)
-                                <div class="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full bg-blue-500"></div>
-                            @else
-                                <div class="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full bg-neutral-200"></div>
-                            @endif
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-start justify-between gap-2">
-                                    <p class="text-sm font-medium text-neutral-900 truncate">
-                                        {{ $notification->data['title'] }}
-                                    </p>
-                                    @if ($isUnread)
-                                        <form method="POST" action="{{ route('notifications.markAsRead', $notification) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="text-xxs text-neutral-400 hover:text-neutral-700 cursor-pointer shrink-0">
-                                                Lida
-                                            </button>
-                                        </form>
+                        </x-table.cell>
+                        <x-table.cell>
+                            <div class="flex items-center gap-2">
+                                <div class="min-w-0">
+                                    <div class="text-sm font-medium {{ $isUnread ? 'text-neutral-900 font-semibold' : 'text-neutral-700' }} truncate">
+                                        {{ $title }}
+                                    </div>
+                                    @if($message)
+                                        <div class="text-xs text-neutral-500 truncate mt-0.5">
+                                            {{ $message }}
+                                        </div>
                                     @endif
                                 </div>
-                                <p class="text-xs text-neutral-500 mt-0.5">{{ $notification->data['message'] }}</p>
-                                <p class="text-xxs text-neutral-400 mt-1">{{ formatDateTime($notification->created_at) }}</p>
+                                @if($actionUrl)
+                                    <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                @endif
                             </div>
-                        </div>
-                    </x-slot:mobile>
-                </x-table.row>
-            @empty
-                <x-empty-state
-                    icon="heroicon-o-bell"
-                    title="Nenhuma notificação"
-                    description="Você não possui notificações no momento."
-                />
-            @endforelse
-        </div>
-    </x-table>
+                        </x-table.cell>
+                        <x-table.cell class="text-neutral-600 text-sm font-medium">
+                            {{ formatDateTime($notification->created_at) }}
+                        </x-table.cell>
 
-    @if ($notifications->hasPages())
-        <div class="mt-4">
-            {{ $notifications->links() }}
-        </div>
-    @endif
+                        <x-slot:mobile>
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col gap-1.5 min-w-0 pr-2">
+                                    <div class="flex items-center gap-2">
+                                        @if($isUnread)
+                                            <x-badge color="blue" size="sm">Não lida</x-badge>
+                                        @else
+                                            <x-badge color="neutral" size="sm">Lida</x-badge>
+                                        @endif
+                                        <span class="text-sm font-medium {{ $isUnread ? 'text-neutral-900 font-semibold' : 'text-neutral-700' }} truncate">
+                                            {{ $title }}
+                                        </span>
+                                    </div>
+                                    @if($message)
+                                        <div class="text-xs text-neutral-500 line-clamp-2">
+                                            {{ $message }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="text-right text-xs text-neutral-500 shrink-0">
+                                    {{ formatDateTime($notification->created_at) }}
+                                </div>
+                            </div>
+                        </x-slot:mobile>
+                    </x-table.row>
+                @empty
+                    <x-empty-state
+                        icon="heroicon-o-bell"
+                        title="Nenhuma notificação encontrada"
+                        description="Não há notificações registradas para você no momento."
+                    />
+                @endforelse
+            </div>
+        </x-table>
+
+        @if($notifications->hasPages())
+            <div class="mt-4">
+                {{ $notifications->links() }}
+            </div>
+        @endif
+    </div>
 </x-layouts.app>
+
