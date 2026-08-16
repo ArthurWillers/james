@@ -62,8 +62,8 @@ class FinancialTransactionController extends Controller
 
         $transactions = $query->orderBy('date', 'desc')->orderBy('updated_at', 'desc')->paginate(25)->withQueryString();
 
-        $accounts = FinancialAccount::all();
-        $tags = FinancialTag::all();
+        $accounts = FinancialAccount::orderBy('name')->get();
+        $tags = FinancialTag::orderBy('name')->get();
         $hasTrashed = FinancialTransaction::onlyTrashed()->exists();
 
         return view('finance.transactions.index', compact('transactions', 'accounts', 'tags', 'hasTrashed'));
@@ -71,9 +71,9 @@ class FinancialTransactionController extends Controller
 
     public function create()
     {
-        $accounts = FinancialAccount::all();
-        $cards = FinancialCreditCard::all();
-        $tags = FinancialTag::all()->map(function ($tag) {
+        $accounts = FinancialAccount::orderBy('name')->get();
+        $cards = FinancialCreditCard::orderBy('name')->get();
+        $tags = FinancialTag::orderBy('name')->get()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,
@@ -264,9 +264,9 @@ class FinancialTransactionController extends Controller
     public function edit(FinancialTransaction $transaction)
     {
         $transaction->load(['tags', 'items.tags', 'invoice.creditCard']);
-        $accounts = FinancialAccount::all();
-        $cards = FinancialCreditCard::all();
-        $tags = FinancialTag::all()->map(function ($tag) {
+        $accounts = FinancialAccount::orderBy('name')->get();
+        $cards = FinancialCreditCard::orderBy('name')->get();
+        $tags = FinancialTag::orderBy('name')->get()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,

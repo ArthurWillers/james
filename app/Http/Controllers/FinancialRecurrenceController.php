@@ -49,7 +49,7 @@ class FinancialRecurrenceController extends Controller
     {
         $accounts = FinancialAccount::orderBy('name')->get();
         $cards = FinancialCreditCard::orderBy('name')->get();
-        $tags = FinancialTag::all()->map(function ($tag) {
+        $tags = FinancialTag::orderBy('name')->get()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,
@@ -87,7 +87,7 @@ class FinancialRecurrenceController extends Controller
         $recurrence->load('tags');
         $accounts = FinancialAccount::orderBy('name')->get();
         $cards = FinancialCreditCard::orderBy('name')->get();
-        $tags = FinancialTag::all()->map(function ($tag) {
+        $tags = FinancialTag::orderBy('name')->get()->map(function ($tag) {
             return [
                 'id' => $tag->id,
                 'name' => $tag->name,

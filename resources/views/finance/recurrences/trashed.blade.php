@@ -67,7 +67,7 @@
                             </x-table.cell>
 
                             <x-table.cell>
-                                <span class="font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
+                                <span class="font-bold tracking-tight text-base {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                     {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                                 </span>
                             </x-table.cell>
@@ -126,7 +126,7 @@
                                                 {{ $recurrence->title }}
                                             </h3>
                                             <div class="flex flex-col gap-1 text-sm text-neutral-500 mt-1">
-                                                <div class="truncate text-xs font-medium {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
+                                                <div class="truncate font-bold tracking-tight text-base {{ $recurrence->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                                     {{ $recurrence->type === 'income' ? '+' : '-' }}{{ formatCurrency($recurrence->amount) }}
                                                 </div>
                                                 <span class="text-xs">Excluída: {{ formatShort($recurrence->deleted_at) }}</span>

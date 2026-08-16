@@ -191,8 +191,8 @@ class SettlementController extends Controller
      */
     public function create(Request $request, Contact $contact)
     {
-        $accounts = FinancialAccount::all();
-        $cards = FinancialCreditCard::all();
+        $accounts = FinancialAccount::orderBy('name')->get();
+        $cards = FinancialCreditCard::orderBy('name')->get();
 
         $settlement = null;
         $isSettling = $request->boolean('settle');
@@ -259,8 +259,8 @@ class SettlementController extends Controller
 
         $settlement->load('media');
         $contact = $settlement->contact;
-        $accounts = FinancialAccount::all();
-        $cards = FinancialCreditCard::all();
+        $accounts = FinancialAccount::orderBy('name')->get();
+        $cards = FinancialCreditCard::orderBy('name')->get();
 
         return view('settlements.edit', compact('settlement', 'contact', 'accounts', 'cards'));
     }

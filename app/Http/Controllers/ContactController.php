@@ -27,9 +27,7 @@ class ContactController extends Controller
             ->paginate(18)
             ->withQueryString();
 
-        $categories = Contact::whereNotNull('relationship_category')
-            ->distinct()
-            ->pluck('relationship_category');
+        $categories = Contact::relationshipCategories();
 
         $groups = ContactGroup::orderBy('name')->get();
 
