@@ -10,7 +10,9 @@ namespace App\Helpers {
          */
         public static function format(int|float $value, string $currency = '', ?string $locale = null): string
         {
-            return Number::currency($value, in: $currency, locale: $locale);
+            $formatted = Number::currency($value, in: $currency, locale: $locale);
+
+            return str_replace(["\u{A0}", "\xc2\xa0", '&nbsp;'], ' ', $formatted);
         }
     }
 }
