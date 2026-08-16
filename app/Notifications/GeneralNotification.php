@@ -40,7 +40,11 @@ class GeneralNotification extends Notification implements ShouldQueue
         }
 
         if (in_array('mail', $this->channels, true) && ! empty($notifiable->email)) {
-            $activeChannels[] = 'mail';
+            $isMailEnabled = (bool) config('services.notifications.mail', false);
+
+            if ($isMailEnabled) {
+                $activeChannels[] = 'mail';
+            }
         }
 
         if (in_array('telegram', $this->channels, true)) {

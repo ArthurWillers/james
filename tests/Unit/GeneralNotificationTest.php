@@ -34,7 +34,22 @@ it('does not include telegram when only token is set', function () {
     expect($notification->via($user))->toBe(['database']);
 });
 
-it('includes mail channel when requested and user has email', function () {
+it('does not include mail channel when notifications.mail is disabled', function () {
+    config(['services.notifications.mail' => false]);
+
+    $notification = new GeneralNotification(
+        title: 'Título',
+        message: 'Mensagem',
+        channels: ['database', 'mail']
+    );
+    $user = new User(['email' => 'teste@exemplo.com']);
+
+    expect($notification->via($user))->toBe(['database']);
+});
+
+it('includes mail channel when notifications.mail is enabled and user has email', function () {
+    config(['services.notifications.mail' => true]);
+
     $notification = new GeneralNotification(
         title: 'Título',
         message: 'Mensagem',
