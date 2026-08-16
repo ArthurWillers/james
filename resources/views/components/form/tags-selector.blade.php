@@ -49,6 +49,7 @@
     openModal() {
         this.search = '';
         this.open = true;
+        this.$nextTick(() => this.$refs.searchInput?.focus());
     },
     
     closeModal() {
@@ -156,7 +157,7 @@
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
                                 <x-heroicon-o-magnifying-glass class="size-5 text-neutral-400" />
                             </div>
-                            <x-input placeholder="Buscar tags pelo nome..." x-model="search" class="pl-10" />
+                            <x-input placeholder="Buscar tags pelo nome..." x-model="search" x-ref="searchInput" class="pl-10" />
                         </div>
                     </div>
                     

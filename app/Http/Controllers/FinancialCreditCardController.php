@@ -40,7 +40,7 @@ class FinancialCreditCardController extends Controller
      */
     public function create(): View
     {
-        $accounts = FinancialAccount::all();
+        $accounts = FinancialAccount::orderBy('name')->get();
 
         return view('finance.cards.create', compact('accounts'));
     }
@@ -77,7 +77,7 @@ class FinancialCreditCardController extends Controller
      */
     public function edit(FinancialCreditCard $card): View
     {
-        $accounts = FinancialAccount::all();
+        $accounts = FinancialAccount::orderBy('name')->get();
 
         return view('finance.cards.edit', compact('card', 'accounts'));
     }
