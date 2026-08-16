@@ -29,6 +29,16 @@
             Acertos
         </x-nav-link>
 
+        <x-nav-link :href="route('notifications.index')" :current="request()->routeIs('notifications.*')">
+            <x-heroicon-o-bell class="w-4 h-4" />
+            <span>Notificações</span>
+            @if(auth()->user()->unreadNotifications()->count() > 0)
+                <span class="ms-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xxs font-bold leading-none">
+                    {{ auth()->user()->unreadNotifications()->count() > 99 ? '99+' : auth()->user()->unreadNotifications()->count() }}
+                </span>
+            @endif
+        </x-nav-link>
+
         <x-nav-link :href="route('audit.index')" :current="request()->routeIs('audit.*')" class="hidden! lg:flex!">
             <x-heroicon-o-document-text class="w-4 h-4" />
             Logs do Sistema
