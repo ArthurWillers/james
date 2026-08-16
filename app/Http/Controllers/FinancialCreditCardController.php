@@ -8,6 +8,7 @@ use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class FinancialCreditCardController extends Controller
@@ -17,6 +18,8 @@ class FinancialCreditCardController extends Controller
      */
     public function index(): View
     {
+        $today = Carbon::today();
+
         $cards = FinancialCreditCard::query()
             ->when(request('search'), fn ($query, $search) => $query->search($search, ['name']))
             ->withUsedLimit()
@@ -24,6 +27,8 @@ class FinancialCreditCardController extends Controller
             ->latest()
             ->paginate(18)
             ->withQueryString();
+
+        $cards->each(fn (FinancialCreditCard $card) => $card->setCurrentInvoice($today));
 
         $hasTrashed = FinancialCreditCard::onlyTrashed()->exists();
 

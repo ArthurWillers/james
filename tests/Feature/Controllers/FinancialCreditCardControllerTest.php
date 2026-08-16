@@ -1,8 +1,13 @@
 <?php
 
+use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
+use App\Models\FinancialCreditCardInvoice;
+use App\Models\FinancialTransaction;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -107,4 +112,65 @@ it('can force delete credit card', function () {
     $this->assertDatabaseMissing('financial_credit_cards', [
         'id' => $card->id,
     ]);
+});
+
+it('index shows current open invoice, not the previous paid one', function () {
+    // Card with closing on the 10th and due on the 15th
+    $card = FinancialCreditCard::factory()->create([
+        'closing_day' => 10,
+        'due_day' => 15,
+    ]);
+
+    // Travel to a day inside the current open invoice period (e.g. the 5th of this month)
+    Carbon::setTestNow(Carbon::create(2025, 8, 5));
+
+    $previousMonth = Carbon::create(2025, 7, 1);
+    $currentMonth = Carbon::create(2025, 8, 1);
+
+    // Previous invoice (July) – already paid
+    $paidInvoice = FinancialCreditCardInvoice::factory()->create([
+        'financial_credit_card_id' => $card->id,
+        'reference_month' => $previousMonth->toDateString(),
+        'closing_date' => $previousMonth->copy()->day(10)->toDateString(),
+        'due_date' => $previousMonth->copy()->day(15)->toDateString(),
+        'paid_at' => $previousMonth->copy()->day(15)->toDateString(),
+        'amount_paid' => 500.00,
+    ]);
+
+    FinancialTransaction::factory()->create([
+        'financial_credit_card_invoice_id' => $paidInvoice->id,
+        'financial_account_id' => null,
+        'type' => 'expense',
+        'amount' => 500.00,
+        'date' => $previousMonth->copy()->day(5)->toDateString(),
+        'status' => TransactionStatus::Posted,
+    ]);
+
+    // Current invoice (August) – open with a different amount
+    $currentInvoice = FinancialCreditCardInvoice::factory()->create([
+        'financial_credit_card_id' => $card->id,
+        'reference_month' => $currentMonth->toDateString(),
+        'closing_date' => $currentMonth->copy()->day(10)->toDateString(),
+        'due_date' => $currentMonth->copy()->day(15)->toDateString(),
+        'paid_at' => null,
+    ]);
+
+    FinancialTransaction::factory()->create([
+        'financial_credit_card_invoice_id' => $currentInvoice->id,
+        'financial_account_id' => null,
+        'type' => 'expense',
+        'amount' => 250.00,
+        'date' => $currentMonth->copy()->day(3)->toDateString(),
+        'status' => TransactionStatus::Pending,
+    ]);
+
+    $response = $this->get(route('financial.cards.index'))->assertSuccessful();
+
+    $cards = $response->viewData('cards');
+    $viewCard = $cards->firstWhere('id', $card->id);
+
+    expect($viewCard->current_invoice_status)->toBe(InvoiceStatus::Open)
+        ->and($viewCard->current_invoice_total)->toBe(250.0);
+
+    Carbon::setTestNow();
 });

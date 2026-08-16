@@ -111,26 +111,63 @@ class FinancialCreditCard extends Model
     }
 
     /**
+     * Resolve the reference month for a given date based on the card's closing day.
+     *
+     * Determines which invoice period a date belongs to: if the date falls on or
+     * before the closing day, it belongs to the current month's invoice; otherwise
+     * it belongs to the next month's invoice. Pure calculation — no database queries.
+     */
+    public function resolveReferenceMonth(Carbon $date): Carbon
+    {
+        $candidateMonth = $date->copy()->startOfMonth();
+        $closingDate = $candidateMonth->copy()->day((int) min($this->closing_day, $candidateMonth->daysInMonth));
+
+        if ($date->copy()->startOfDay()->lte($closingDate)) {
+            return $candidateMonth;
+        }
+
+        return $candidateMonth->copy()->addMonth()->startOfMonth();
+    }
+
+    /**
      * Resolve the invoice due date for a given purchase/processing date.
      *
-     * Given a date (e.g., a recurrence's next_processing_date), determines
-     * which invoice it falls into based on the closing day, then returns the
-     * due date of that invoice. Pure calculation — no database queries.
+     * Determines which invoice period the date belongs to, then returns the
+     * corresponding due date. Pure calculation — no database queries.
      */
     public function resolveInvoiceDueDate(Carbon $purchaseDate): Carbon
     {
-        $candidateMonth = $purchaseDate->copy()->startOfMonth();
-        $closingDate = $candidateMonth->copy()->day((int) min($this->closing_day, $candidateMonth->daysInMonth));
-
-        $referenceMonth = $purchaseDate->copy()->startOfDay()->lte($closingDate)
-            ? $candidateMonth
-            : $candidateMonth->copy()->addMonth()->startOfMonth();
+        $referenceMonth = $this->resolveReferenceMonth($purchaseDate);
 
         $dueMonth = $this->due_day <= $this->closing_day
             ? $referenceMonth->copy()->addMonth()
             : $referenceMonth->copy();
 
         return $dueMonth->day((int) min($this->due_day, $dueMonth->daysInMonth));
+    }
+
+    /**
+     * Resolve the current invoice from the already-eager-loaded invoices relation and
+     * set current_invoice_total and current_invoice_status on this model instance.
+     *
+     * Expects the invoices relation to be loaded with withTotalAmount().
+     */
+    public function setCurrentInvoice(Carbon $date): void
+    {
+        $referenceMonth = $this->resolveReferenceMonth($date);
+
+        $currentInvoice = $this->invoices
+            ->first(fn ($inv) => $inv->reference_month && $inv->reference_month->copy()->startOfMonth()->eq($referenceMonth));
+
+        if (! $currentInvoice) {
+            $currentInvoice = $this->invoices
+                ->filter(fn ($inv) => $inv->paid_at === null)
+                ->sortByDesc('due_date')
+                ->first();
+        }
+
+        $this->current_invoice_total = $currentInvoice ? $currentInvoice->total() : 0;
+        $this->current_invoice_status = $currentInvoice ? $currentInvoice->status() : InvoiceStatus::Open;
     }
 
     /**
