@@ -43,27 +43,12 @@
                         $title = $notification->data['title'] ?? 'Sem título';
                         $message = $notification->data['message'] ?? '';
                         $actionUrl = $notification->data['action_url'] ?? null;
-                        $level = $notification->data['level'] ?? 'info';
-
-                        $levelColors = [
-                            'success' => 'green',
-                            'warning' => 'yellow',
-                            'danger' => 'red',
-                            'info' => 'blue',
-                        ];
-                        $levelLabels = [
-                            'success' => 'Sucesso',
-                            'warning' => 'Alerta',
-                            'danger' => 'Atenção',
-                            'info' => 'Informativo',
-                        ];
-                        $levelColor = $levelColors[$level] ?? 'blue';
-                        $levelLabel = $levelLabels[$level] ?? ucfirst($level);
+                        $levelEnum = \App\Enums\NotificationLevel::tryFrom($notification->data['level'] ?? 'info') ?? \App\Enums\NotificationLevel::Info;
                     @endphp
                     <x-table.row href="{{ route('notifications.show', $notification) }}" class="grid-cols-[140px_1fr_200px] hidden sm:grid items-center {{ $isUnread ? 'bg-blue-50/40' : '' }}">
                         <x-table.cell>
                             @if($isUnread)
-                                <x-badge :color="$levelColor" size="sm">{{ $levelLabel }}</x-badge>
+                                <x-badge :color="$levelEnum->color()" size="sm">{{ $levelEnum->label() }}</x-badge>
                             @else
                                 <x-badge color="neutral" size="sm">Lida</x-badge>
                             @endif
@@ -94,7 +79,7 @@
                                 <div class="flex flex-col gap-1.5 min-w-0 pr-2">
                                     <div class="flex items-center gap-2">
                                         @if($isUnread)
-                                            <x-badge :color="$levelColor" size="sm">{{ $levelLabel }}</x-badge>
+                                            <x-badge :color="$levelEnum->color()" size="sm">{{ $levelEnum->label() }}</x-badge>
                                         @else
                                             <x-badge color="neutral" size="sm">Lida</x-badge>
                                         @endif

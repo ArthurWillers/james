@@ -20,23 +20,8 @@
             $title = $notification->data['title'] ?? 'Sem título';
             $message = $notification->data['message'] ?? '';
             $actionUrl = $notification->data['action_url'] ?? null;
-            $level = $notification->data['level'] ?? 'info';
+            $levelEnum = \App\Enums\NotificationLevel::tryFrom($notification->data['level'] ?? 'info') ?? \App\Enums\NotificationLevel::Info;
             $details = $notification->data['details'] ?? [];
-
-            $levelColors = [
-                'success' => 'green',
-                'warning' => 'yellow',
-                'danger' => 'red',
-                'info' => 'blue',
-            ];
-            $levelLabels = [
-                'success' => 'Sucesso',
-                'warning' => 'Alerta',
-                'danger' => 'Atenção',
-                'info' => 'Informativo',
-            ];
-            $levelColor = $levelColors[$level] ?? 'blue';
-            $levelLabel = $levelLabels[$level] ?? ucfirst($level);
         @endphp
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -58,7 +43,7 @@
                         <div class="px-5 py-4">
                             <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">NÍVEL</p>
                             <div>
-                                <x-badge :color="$levelColor" size="sm">{{ $levelLabel }}</x-badge>
+                                <x-badge :color="$levelEnum->color()" size="sm">{{ $levelEnum->label() }}</x-badge>
                             </div>
                         </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\NotificationLevel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,6 +14,8 @@ class GeneralNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public readonly NotificationLevel $level;
+
     /**
      * @param  array<string, mixed>  $details  Dados adicionais chave-valor (ex: ['Valor' => 'R$ 150,00', 'Vencimento' => '20/08/2026'])
      * @param  array<int, string>  $channels  Canais de entrega desejados ('database', 'telegram', 'mail')
@@ -21,10 +24,14 @@ class GeneralNotification extends Notification implements ShouldQueue
         public readonly string $title,
         public readonly string $message,
         public readonly ?string $actionUrl = null,
-        public readonly string $level = 'info',
+        NotificationLevel|string $level = NotificationLevel::Info,
         public readonly array $details = [],
         public readonly array $channels = ['database', 'telegram', 'mail'],
-    ) {}
+    ) {
+        $this->level = is_string($level)
+            ? (NotificationLevel::tryFrom($level) ?? NotificationLevel::Info)
+            : $level;
+    }
 
     /**
      * Canais de entrega ativos da notificação.
@@ -70,7 +77,7 @@ class GeneralNotification extends Notification implements ShouldQueue
             'title' => $this->title,
             'message' => $this->message,
             'action_url' => $this->actionUrl,
-            'level' => $this->level,
+            'level' => $this->level->value,
             'details' => $this->details,
         ];
     }
@@ -80,18 +87,12 @@ class GeneralNotification extends Notification implements ShouldQueue
      */
     public function toTelegram(object $notifiable): TelegramMessage
     {
-        $emoji = match ($this->level) {
-            'success' => '✅',
-            'warning' => '⚠️',
-            'danger' => '🚨',
-            default => '🔔',
-        };
-
-        $lines = ["{$emoji} *{$this->title}*", '', $this->message];
+        $prefix = strtoupper($this->level->label());
+        $lines = ["*{$prefix}: {$this->title}*", '', $this->message];
 
         if (! empty($this->details)) {
             $lines[] = '';
-            $lines[] = '📋 *Detalhes:*';
+            $lines[] = '*Informações:*';
             foreach ($this->details as $key => $value) {
                 $formattedValue = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : (string) $value;
                 $lines[] = "• *{$key}:* {$formattedValue}";
@@ -106,7 +107,7 @@ class GeneralNotification extends Notification implements ShouldQueue
 
             if ($isLocalUrl) {
                 $lines[] = '';
-                $lines[] = "🔗 *Link:* {$this->actionUrl}";
+                $lines[] = "Link: {$this->actionUrl}";
             } else {
                 $telegram->button('Acessar no Sistema', $this->actionUrl);
             }
@@ -127,7 +128,7 @@ class GeneralNotification extends Notification implements ShouldQueue
             ->subject("[James] {$this->title}")
             ->greeting('Olá, '.($notifiable->name ?? 'usuário').'!');
 
-        if ($this->level === 'danger') {
+        if ($this->level === NotificationLevel::Danger) {
             $mail->error();
         }
 
