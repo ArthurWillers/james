@@ -117,7 +117,7 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
 
     private function transactionAlreadyExists(): bool
     {
-        return FinancialTransaction::query()
+        return FinancialTransaction::withTrashed()
             ->where('nfce_access_key', $this->accessKey)
             ->exists();
     }

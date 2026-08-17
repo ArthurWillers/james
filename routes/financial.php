@@ -47,6 +47,7 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::patch('/transactions/{transaction}/restore', [FinancialTransactionController::class, 'restore'])->name('transactions.restore')->withTrashed();
     Route::delete('/transactions/{transaction}/force', [FinancialTransactionController::class, 'forceDestroy'])->name('transactions.forceDestroy')->withTrashed();
     Route::post('transactions/transfer', [FinancialTransactionController::class, 'storeTransfer'])->name('transactions.transfer.store');
+    Route::post('transactions/import-nfce', [FinancialTransactionController::class, 'importNfce'])->name('transactions.nfce.import');
     Route::resource('transactions', FinancialTransactionController::class)->parameters([
         'transactions' => 'transaction',
     ]);

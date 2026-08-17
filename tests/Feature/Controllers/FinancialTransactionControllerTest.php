@@ -1,9 +1,11 @@
 <?php
 
+use App\Jobs\ScrapeNfceInvoiceJob;
 use App\Models\FinancialAccount;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\User;
+use Illuminate\Support\Facades\Bus;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -154,3 +156,68 @@ it('can store a transfer between accounts', function () {
         'amount' => 500.00,
     ]);
 });
+
+it('requires authentication to request an NFC-e import', function () {
+    auth()->logout();
+
+    $this->post(route('financial.transactions.nfce.import'), ['url' => nfceImportUrl()])
+        ->assertRedirect(route('login'));
+});
+
+it('validates the NFC-e import URL', function () {
+    Bus::fake();
+
+    $this->post(route('financial.transactions.nfce.import'), [])
+        ->assertSessionHasErrors('url');
+
+    Bus::assertNothingDispatched();
+});
+
+it('rejects unsupported NFC-e URLs', function () {
+    Bus::fake();
+
+    $this->from(route('financial.transactions.create'))
+        ->post(route('financial.transactions.nfce.import'), ['url' => 'https://untrusted.example.test/nfce?p=43111111111111111111111111111111111111111111'])
+        ->assertRedirect(route('financial.transactions.create'))
+        ->assertSessionHasErrors('url');
+
+    Bus::assertNothingDispatched();
+});
+
+it('rejects NFC-e access keys that already exist, including trashed transactions', function () {
+    Bus::fake();
+    FinancialTransaction::factory()
+        ->nfce('43111111111111111111111111111111111111111111')
+        ->trashed()
+        ->create();
+
+    $this->from(route('financial.transactions.create'))
+        ->post(route('financial.transactions.nfce.import'), ['url' => nfceImportUrl()])
+        ->assertRedirect(route('financial.transactions.create'))
+        ->assertSessionHasErrors('url');
+
+    Bus::assertNothingDispatched();
+});
+
+it('dispatches the NFC-e import job and redirects immediately', function () {
+    Bus::fake();
+
+    $this->post(route('financial.transactions.nfce.import'), ['url' => nfceImportUrl()])
+        ->assertRedirect(route('financial.transactions.index'))
+        ->assertSessionHas('success', 'Importação enviada para processamento. Você será notificado quando terminar.');
+
+    Bus::assertDispatched(ScrapeNfceInvoiceJob::class, function (ScrapeNfceInvoiceJob $job): bool {
+        return $job->requesterId === $this->user->id
+            && $job->provider === 'svrs'
+            && $job->accessKey === '43111111111111111111111111111111111111111111'
+            && $job->uf === 'RS'
+            && $job->sourceEndpoint === 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce'
+            && $job->requestParameterSuffix === '|3|1'
+            && ! str_contains(serialize($job), nfceImportUrl());
+    });
+});
+
+function nfceImportUrl(): string
+{
+    return 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1';
+}

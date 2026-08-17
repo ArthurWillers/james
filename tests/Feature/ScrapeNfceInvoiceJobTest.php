@@ -65,15 +65,16 @@ test('it prevents concurrent jobs for the same NFC-e without serializing its com
         ->and(serialize($job))->not->toContain(jobNfceRequestUrl());
 });
 
-test('it does not duplicate an NFC-e that was already imported', function () {
+test('it does not duplicate an NFC-e that was already imported, including a trashed transaction', function () {
     $requester = User::factory()->create();
     $existingTransaction = FinancialTransaction::factory()
         ->nfce('43111111111111111111111111111111111111111111')
+        ->trashed()
         ->create();
 
     nfceImportJob($requester)->handle(app(NfceScraperResolver::class));
 
-    expect(FinancialTransaction::query()->count())->toBe(1);
+    expect(FinancialTransaction::withTrashed()->count())->toBe(1);
     $this->assertModelExists($existingTransaction);
     Notification::assertNothingSent();
 });
