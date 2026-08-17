@@ -27,6 +27,7 @@ class GeneralNotification extends Notification implements ShouldQueue
         NotificationLevel|string $level = NotificationLevel::Info,
         public readonly array $details = [],
         public readonly array $channels = ['database', 'telegram', 'mail'],
+        public readonly string $actionLabel = 'Acessar no Sistema',
     ) {
         $this->level = is_string($level)
             ? (NotificationLevel::tryFrom($level) ?? NotificationLevel::Info)
@@ -69,7 +70,7 @@ class GeneralNotification extends Notification implements ShouldQueue
     /**
      * Payload persistido na tabela notifications.
      *
-     * @return array{title: string, message: string, action_url: string|null, level: string, details: array<string, mixed>}
+     * @return array{title: string, message: string, action_url: string|null, action_label: string, level: string, details: array<string, mixed>}
      */
     public function toDatabase(object $notifiable): array
     {
@@ -77,6 +78,7 @@ class GeneralNotification extends Notification implements ShouldQueue
             'title' => $this->title,
             'message' => $this->message,
             'action_url' => $this->actionUrl,
+            'action_label' => $this->actionLabel,
             'level' => $this->level->value,
             'details' => $this->details,
         ];
@@ -109,7 +111,7 @@ class GeneralNotification extends Notification implements ShouldQueue
                 $lines[] = '';
                 $lines[] = "Link: {$this->actionUrl}";
             } else {
-                $telegram->button('Acessar no Sistema', $this->actionUrl);
+                $telegram->button($this->actionLabel, $this->actionUrl);
             }
         }
 
@@ -144,7 +146,7 @@ class GeneralNotification extends Notification implements ShouldQueue
         }
 
         if ($this->actionUrl) {
-            $mail->action('Acessar no Sistema', $this->actionUrl);
+            $mail->action($this->actionLabel, $this->actionUrl);
         }
 
         $mail->salutation('Atenciosamente, James');

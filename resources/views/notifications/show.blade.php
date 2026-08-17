@@ -17,6 +17,7 @@
             $title = $notification->data['title'] ?? 'Sem título';
             $message = $notification->data['message'] ?? '';
             $actionUrl = $notification->data['action_url'] ?? null;
+            $actionLabel = $notification->data['action_label'] ?? 'Acessar no Sistema';
             $levelEnum = \App\Enums\NotificationLevel::tryFrom($notification->data['level'] ?? 'info') ?? \App\Enums\NotificationLevel::Info;
             $details = $notification->data['details'] ?? [];
         @endphp
@@ -82,7 +83,7 @@
                             <span class="text-xs text-neutral-500">Ação recomendada:</span>
                             <x-button :href="$actionUrl">
                                 <x-heroicon-m-arrow-top-right-on-square class="size-4!" />
-                                Acessar no Sistema
+                                {{ $actionLabel }}
                             </x-button>
                         </div>
                     @endif

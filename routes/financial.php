@@ -48,6 +48,7 @@ Route::prefix('financial')->name('financial.')->group(function () {
     Route::delete('/transactions/{transaction}/force', [FinancialTransactionController::class, 'forceDestroy'])->name('transactions.forceDestroy')->withTrashed();
     Route::post('transactions/transfer', [FinancialTransactionController::class, 'storeTransfer'])->name('transactions.transfer.store');
     Route::post('transactions/import-nfce', [FinancialTransactionController::class, 'importNfce'])->name('transactions.nfce.import');
+    Route::get('transactions/import-nfce/retry', [FinancialTransactionController::class, 'retryNfceImport'])->name('transactions.nfce.retry')->middleware('signed');
     Route::resource('transactions', FinancialTransactionController::class)->parameters([
         'transactions' => 'transaction',
     ]);

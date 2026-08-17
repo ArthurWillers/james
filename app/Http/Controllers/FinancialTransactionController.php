@@ -18,9 +18,12 @@ use App\Services\Nfce\Exceptions\InvalidNfceUrlException;
 use App\Services\Nfce\Exceptions\UnsupportedNfceProviderException;
 use App\Services\Nfce\NfceSourceResolver;
 use App\Traits\HandlesAttachments;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Crypt;
 
 class FinancialTransactionController extends Controller
 {
@@ -255,6 +258,30 @@ class FinancialTransactionController extends Controller
             ->with('success', 'Importação enviada para processamento. Você será notificado quando terminar.');
     }
 
+    public function retryNfceImport(Request $request): RedirectResponse
+    {
+        $payload = $this->retryNfcePayload($request);
+
+        abort_unless($payload['requester_id'] === $request->user()->id, 403);
+
+        if (FinancialTransaction::withTrashed()->where('nfce_access_key', $payload['access_key'])->exists()) {
+            return redirect()->route('notifications.index')
+                ->with('success', 'Esta NFC-e já foi importada.');
+        }
+
+        ScrapeNfceInvoiceJob::dispatch(
+            requesterId: $payload['requester_id'],
+            provider: $payload['provider'],
+            accessKey: $payload['access_key'],
+            uf: $payload['uf'],
+            sourceEndpoint: $payload['source_endpoint'],
+            requestParameterSuffix: $payload['request_parameter_suffix'],
+        );
+
+        return redirect()->route('notifications.index')
+            ->with('success', 'Importação reenviada para processamento. Você será notificado quando terminar.');
+    }
+
     public function storeTransfer(StoreFinancialTransferRequest $request)
     {
         $validated = $request->validated();
@@ -417,6 +444,34 @@ class FinancialTransactionController extends Controller
         $transaction->forceDelete();
 
         return redirect()->back()->with('success', 'Transação excluída permanentemente.');
+    }
+
+    /**
+     * @return array{requester_id: int, provider: string, access_key: string, uf: string|null, source_endpoint: string, request_parameter_suffix: string}
+     */
+    private function retryNfcePayload(Request $request): array
+    {
+        $encryptedPayload = $request->query('payload');
+
+        abort_unless(is_string($encryptedPayload), 404);
+
+        try {
+            $payload = Crypt::decrypt($encryptedPayload);
+        } catch (DecryptException) {
+            abort(404);
+        }
+
+        $isValidPayload = is_array($payload)
+            && is_int($payload['requester_id'] ?? null)
+            && is_string($payload['provider'] ?? null)
+            && is_string($payload['access_key'] ?? null)
+            && (is_string($payload['uf'] ?? null) || ($payload['uf'] ?? null) === null)
+            && is_string($payload['source_endpoint'] ?? null)
+            && is_string($payload['request_parameter_suffix'] ?? null);
+
+        abort_unless($isValidPayload, 404);
+
+        return $payload;
     }
 
     private function syncTagsWithPrimary(mixed $model, array $tags, ?int $primaryId)
