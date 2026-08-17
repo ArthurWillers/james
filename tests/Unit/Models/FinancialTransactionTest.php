@@ -101,11 +101,9 @@ it('stores nfce metadata through the factory state', function () {
     expect($transaction->nfce_access_key)->toHaveLength(44)
         ->and($transaction->type)->toBe('expense')
         ->and($transaction->status)->toBe(TransactionStatus::Draft)
-        ->and($transaction->nfce_provider)->toBe('svrs')
-        ->and($transaction->nfce_uf)->toBe('RS')
         ->and($transaction->nfce_issuer_document)->toBe('12345678000195')
-        ->and($transaction->nfce_source_endpoint)
-        ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce');
+        ->and($transaction->nfce_source_url)->toContain('?p=')
+        ->and($transaction->nfceSourceUrl())->toContain('%7C3%7C1');
 });
 
 it('prevents duplicate nfce access keys at the database level', function () {

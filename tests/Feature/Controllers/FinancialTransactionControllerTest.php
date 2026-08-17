@@ -66,14 +66,15 @@ it('can view edit transaction page', function () {
 
 it('shows the imported nfce portal and formatted issuer document', function () {
     $transaction = FinancialTransaction::factory()->create([
-        'nfce_source_endpoint' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
+        'nfce_source_url' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1',
         'nfce_issuer_document' => '12345678000195',
     ]);
 
     $this->get(route('financial.transactions.show', $transaction))
         ->assertSuccessful()
         ->assertSee('Dados da NFC-e')
-        ->assertSee('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce', false)
+        ->assertSee('Abrir NFC-e')
+        ->assertSee('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=', false)
         ->assertSee('12.345.678/0001-95');
 });
 

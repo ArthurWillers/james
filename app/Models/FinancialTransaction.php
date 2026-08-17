@@ -33,10 +33,8 @@ class FinancialTransaction extends Model implements HasMedia
         'date',
         'status',
         'nfce_access_key',
-        'nfce_provider',
-        'nfce_uf',
         'nfce_issuer_document',
-        'nfce_source_endpoint',
+        'nfce_source_url',
         'transfer_pair_id',
         'installment_current',
         'installment_total',
@@ -63,6 +61,11 @@ class FinancialTransaction extends Model implements HasMedia
     {
         $this->addMediaCollection('attachments')
             ->useDisk('attachments');
+    }
+
+    public function nfceSourceUrl(): ?string
+    {
+        return $this->nfce_source_url;
     }
 
     /**

@@ -48,10 +48,8 @@ class FinancialTransactionFactory extends Factory
             'type' => 'expense',
             'status' => TransactionStatus::Draft,
             'nfce_access_key' => $accessKey ?? $this->faker->unique()->numerify(str_repeat('#', 44)),
-            'nfce_provider' => 'svrs',
-            'nfce_uf' => 'RS',
             'nfce_issuer_document' => '12345678000195',
-            'nfce_source_endpoint' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
+            'nfce_source_url' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1',
         ]);
     }
 }

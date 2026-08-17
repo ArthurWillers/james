@@ -62,7 +62,7 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
         $invoice = $scraperResolver->resolve($source)->scrape($source);
 
         try {
-            $transaction = DB::transaction(function () use ($invoice): ?FinancialTransaction {
+            $transaction = DB::transaction(function () use ($invoice, $source): ?FinancialTransaction {
                 if ($this->transactionAlreadyExists()) {
                     return null;
                 }
@@ -74,10 +74,8 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
                     'date' => $invoice->issuedAt->toDateString(),
                     'status' => TransactionStatus::Draft,
                     'nfce_access_key' => $this->accessKey,
-                    'nfce_provider' => $this->provider,
-                    'nfce_uf' => $this->uf,
                     'nfce_issuer_document' => $invoice->issuerDocument,
-                    'nfce_source_endpoint' => $this->sourceEndpoint,
+                    'nfce_source_url' => $source->requestUrl,
                 ]);
 
                 $transaction->items()->createMany($this->itemsFor($invoice));

@@ -30,9 +30,9 @@ O rascunho pode conter:
 - valor total e desconto;
 - itens, quantidade, preço unitário e total;
 - chave de acesso de 44 dígitos;
-- provedor, UF e endpoint do portal.
+- URL completa normalizada do portal.
 
-O documento do emitente é armazenado apenas com dígitos e formatado na apresentação. O endpoint exibido na transação é o endereço normalizado do portal. A URL completa recebida do usuário não é persistida nem incluída em logs.
+O documento do emitente é armazenado apenas com dígitos e formatado na apresentação. A URL completa normalizada, incluindo o parâmetro da NFC-e, é armazenada para permitir a consulta posterior da mesma nota; ela não é incluída em logs.
 
 ## Status e impacto financeiro
 

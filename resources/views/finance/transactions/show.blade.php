@@ -128,17 +128,17 @@
 
     </div>
 
-    @if($transaction->nfce_source_endpoint || $transaction->nfce_issuer_document)
+    @if($transaction->nfceSourceUrl() || $transaction->nfce_issuer_document)
         <x-card class="mb-6">
             <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-4">Dados da NFC-e</h3>
             <div class="flex flex-col gap-3 text-sm">
-                @if($transaction->nfce_source_endpoint)
+                @if($transaction->nfceSourceUrl())
                     <div class="flex items-start gap-2">
                         <x-heroicon-o-globe-alt class="size-5 shrink-0 text-neutral-400" />
                         <div class="min-w-0">
                             <p class="text-xs text-neutral-500">Portal da NFC-e</p>
-                            <a href="{{ $transaction->nfce_source_endpoint }}" target="_blank" rel="noopener noreferrer" class="inline-flex max-w-full items-center gap-1 font-medium text-accent hover:underline">
-                                <span class="truncate">{{ $transaction->nfce_source_endpoint }}</span>
+                            <a href="{{ $transaction->nfceSourceUrl() }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 font-medium text-accent hover:underline">
+                                <span>Abrir NFC-e</span>
                                 <x-heroicon-o-arrow-top-right-on-square class="size-4 shrink-0" />
                             </a>
                         </div>

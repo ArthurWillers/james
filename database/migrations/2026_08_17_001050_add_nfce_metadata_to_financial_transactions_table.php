@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::table('financial_transactions', function (Blueprint $table) {
             $table->string('nfce_access_key')->nullable()->unique();
-            $table->string('nfce_provider')->nullable();
-            $table->string('nfce_uf')->nullable();
-            $table->string('nfce_source_endpoint')->nullable();
+            $table->string('nfce_source_url')->nullable();
         });
     }
 
@@ -28,9 +26,7 @@ return new class extends Migration
             $table->dropUnique(['nfce_access_key']);
             $table->dropColumn([
                 'nfce_access_key',
-                'nfce_provider',
-                'nfce_uf',
-                'nfce_source_endpoint',
+                'nfce_source_url',
             ]);
         });
     }
