@@ -45,6 +45,11 @@ na transação pai quanto em itens filhos específicos.
 ### Relatórios e Dashboards (Apache ECharts)
 Visualizações analíticas em Regime de Caixa (Evolução de Saldo, Diagrama de Sankey do fluxo de dinheiro, drill-down dinâmico por tags e isolamento de investimentos).
 
+### Importação de NFC-e
+Importação assíncrona de notas fiscais de consumidor a partir de URLs públicas, inicialmente pelo portal SVRS. A nota é criada como rascunho, com emitente, documento, itens, descontos e metadados fiscais, sem afetar os cálculos financeiros até a revisão.
+
+Consulte a [documentação da Importação de NFC-e](./nfce/).
+
 ### Integrações
 - **Módulo Acertos** — pagamentos e liquidações refletem como transações financeiras.
 - **Módulo Notificações** — avisos de faturas fechadas, lembretes de vencimento e alertas via Telegram / E-mail.
@@ -54,4 +59,3 @@ Visualizações analíticas em Regime de Caixa (Evolução de Saldo, Diagrama de
 - [Roadmap — Módulo Finanças](/james/docs/roadmap/#fase-3-módulo-financeiro)
 - [Decisão 007 — Padronização de Data e Moeda](/james/docs/decisoes/#007--padronização-de-data-moeda-e-locale)
 - [Decisão 014 — Biblioteca Gráfica (Apache ECharts)](/james/docs/decisoes/#014--biblioteca-gráfica-apache-echarts)
-
