@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreSettlementGroupRequest extends FormRequest
 {
@@ -41,13 +42,13 @@ class StoreSettlementGroupRequest extends FormRequest
     {
         return [
             'description' => ['required', 'string', 'max:255'],
-            'total_amount' => ['required', 'numeric', 'min:0.01'],
-            'my_amount' => ['required', 'numeric', 'min:0'],
+            'total_amount' => ['required', 'numeric', 'decimal:0,2', 'min:0.01'],
+            'my_amount' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
             'date' => ['required', 'date'],
             'mode' => ['required', 'in:equal,exact'],
             'contacts' => ['required', 'array', 'min:1'],
-            'contacts.*.id' => ['required', 'exists:contacts,id'],
-            'contacts.*.amount' => ['required', 'numeric', 'min:0.01'],
+            'contacts.*.id' => ['required', 'integer', 'distinct:strict', 'exists:contacts,id'],
+            'contacts.*.amount' => ['required', 'numeric', 'decimal:0,2', 'min:0.01'],
             'create_transaction' => ['boolean'],
             'targetType' => ['exclude_if:create_transaction,0', 'exclude_if:create_transaction,false', 'required', 'in:account,card'],
             'financial_account_id' => ['exclude_if:create_transaction,0', 'exclude_if:create_transaction,false', 'nullable', 'required_if:targetType,account', 'exists:financial_accounts,id'],
@@ -58,6 +59,56 @@ class StoreSettlementGroupRequest extends FormRequest
             'attachments' => ['nullable', 'array', 'max:5'],
             'attachments.*' => ['file', 'mimes:jpeg,png,jpg,pdf', 'max:10240'], // 10MB max per file
         ];
+    }
+
+    /**
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $validated = $validator->validated();
+                $totalCents = $this->amountToCents($validated['total_amount']);
+                $myAmountCents = $this->amountToCents($validated['my_amount']);
+                $contactAmounts = array_map(
+                    fn (array $contact): int => $this->amountToCents($contact['amount']),
+                    $validated['contacts'],
+                );
+
+                if ($myAmountCents + array_sum($contactAmounts) !== $totalCents) {
+                    $validator->errors()->add('total_amount', 'A soma das partes deve ser igual ao valor total.');
+
+                    return;
+                }
+
+                if ($validated['mode'] !== 'equal') {
+                    return;
+                }
+
+                $contactShareCents = intdiv($totalCents, count($contactAmounts) + 1);
+                $expectedMyAmountCents = $totalCents - ($contactShareCents * count($contactAmounts));
+
+                if ($myAmountCents !== $expectedMyAmountCents) {
+                    $validator->errors()->add('my_amount', 'A sua parte não corresponde à divisão igual.');
+                }
+
+                foreach ($contactAmounts as $index => $amountCents) {
+                    if ($amountCents !== $contactShareCents) {
+                        $validator->errors()->add("contacts.$index.amount", 'O valor não corresponde à divisão igual.');
+                    }
+                }
+            },
+        ];
+    }
+
+    private function amountToCents(mixed $amount): int
+    {
+        return (int) round((float) $amount * 100);
     }
 
     public function messages(): array
