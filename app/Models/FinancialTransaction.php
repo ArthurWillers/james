@@ -32,6 +32,9 @@ class FinancialTransaction extends Model implements HasMedia
         'description',
         'date',
         'status',
+        'nfce_access_key',
+        'nfce_issuer_document',
+        'nfce_source_url',
         'transfer_pair_id',
         'installment_current',
         'installment_total',
@@ -58,6 +61,11 @@ class FinancialTransaction extends Model implements HasMedia
     {
         $this->addMediaCollection('attachments')
             ->useDisk('attachments');
+    }
+
+    public function nfceSourceUrl(): ?string
+    {
+        return $this->nfce_source_url;
     }
 
     /**
@@ -183,6 +191,14 @@ class FinancialTransaction extends Model implements HasMedia
     public function scopeDraft(Builder $query): Builder
     {
         return $query->where('status', TransactionStatus::Draft);
+    }
+
+    /**
+     * Scope a query to exclude transactions that are still under review.
+     */
+    public function scopeWithoutDrafts(Builder $query): Builder
+    {
+        return $query->where('status', '!=', TransactionStatus::Draft);
     }
 
     /**

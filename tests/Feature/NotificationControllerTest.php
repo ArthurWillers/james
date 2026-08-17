@@ -45,7 +45,8 @@ it('can view a notification and marks it as read automatically', function () {
         ->get(route('notifications.show', $notification))
         ->assertSuccessful()
         ->assertViewIs('notifications.show')
-        ->assertViewHas('notification');
+        ->assertViewHas('notification')
+        ->assertSee('Tem certeza que deseja excluir esta notificação?');
 
     expect($notification->fresh()->read_at)->not->toBeNull();
 });

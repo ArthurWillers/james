@@ -86,10 +86,11 @@ class FinancialCreditCard extends Model
             'used_limit' => FinancialCreditCardInvoice::selectRaw("COALESCE(SUM(
                 GREATEST(0, (
                     SELECT COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)
-                    FROM financial_transactions 
+                    FROM financial_transactions
                     WHERE financial_credit_card_invoice_id = financial_credit_card_invoices.id
+                        AND status != ?
                 ) - amount_paid)
-            ), 0)")
+            ), 0)", [TransactionStatus::Draft->value])
                 ->whereColumn('financial_credit_card_id', 'financial_credit_cards.id')
                 ->whereNull('paid_at'),
         ]);

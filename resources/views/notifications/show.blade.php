@@ -3,14 +3,11 @@
         <div class="flex items-center gap-2">
             <x-back-button fallback="{{ route('notifications.index') }}" />
 
-            <form method="POST" action="{{ route('notifications.destroy', $notification) }}" onsubmit="return confirm('Deseja realmente excluir esta notificação?');">
-                @csrf
-                @method('DELETE')
-                <x-button type="submit" color="danger">
-                    <x-heroicon-o-trash class="size-5!" />
-                    Excluir
-                </x-button>
-            </form>
+            <x-delete-modal
+                action="{{ route('notifications.destroy', $notification) }}"
+                item-name="esta notificação"
+                title="Excluir Notificação"
+            />
         </div>
     </x-page-header>
 
@@ -113,4 +110,3 @@
         </div>
     </div>
 </x-layouts.app>
-

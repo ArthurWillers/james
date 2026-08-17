@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use App\Enums\TransactionStatus;
 use App\Http\Requests\StoreFinancialTransactionRequest;
 use App\Http\Requests\StoreFinancialTransferRequest;
+use App\Http\Requests\StoreNfceImportRequest;
 use App\Http\Requests\UpdateFinancialTransactionRequest;
+use App\Jobs\ScrapeNfceInvoiceJob;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\SettlementGroup;
+use App\Services\Nfce\Exceptions\InvalidNfceUrlException;
+use App\Services\Nfce\Exceptions\UnsupportedNfceProviderException;
+use App\Services\Nfce\NfceSourceResolver;
 use App\Traits\HandlesAttachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -223,6 +228,33 @@ class FinancialTransactionController extends Controller
         return redirect()->route('financial.transactions.index')->with('success', 'Transação criada com sucesso.');
     }
 
+    public function importNfce(StoreNfceImportRequest $request, NfceSourceResolver $sourceResolver)
+    {
+        $validated = $request->validated();
+
+        try {
+            $source = $sourceResolver->resolve($validated['url']);
+        } catch (InvalidNfceUrlException|UnsupportedNfceProviderException $exception) {
+            return back()->withErrors(['url' => $exception->getMessage()])->withInput();
+        }
+
+        if (FinancialTransaction::withTrashed()->where('nfce_access_key', $source->accessKey)->exists()) {
+            return back()->withErrors(['url' => 'Esta NFC-e já foi importada.'])->withInput();
+        }
+
+        ScrapeNfceInvoiceJob::dispatch(
+            requesterId: $request->user()->id,
+            provider: $source->provider,
+            accessKey: $source->accessKey,
+            uf: $source->uf,
+            sourceEndpoint: $source->sourceEndpoint,
+            requestParameterSuffix: $source->requestParameterSuffix,
+        );
+
+        return redirect()->route('financial.transactions.index')
+            ->with('success', 'Importação enviada para processamento. Você será notificado quando terminar.');
+    }
+
     public function storeTransfer(StoreFinancialTransferRequest $request)
     {
         $validated = $request->validated();
@@ -300,6 +332,7 @@ class FinancialTransactionController extends Controller
                 'amount' => $validated['amount'],
                 'description' => $validated['description'],
                 'date' => $date,
+                'status' => TransactionStatus::Pending,
             ]);
         } else {
             $date = Carbon::parse($validated['date']);

@@ -97,7 +97,8 @@ class FinancialCreditCardInvoice extends Model
     {
         return $query->addSelect([
             'total_amount' => FinancialTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0)")
-                ->whereColumn('financial_credit_card_invoice_id', 'financial_credit_card_invoices.id'),
+                ->whereColumn('financial_credit_card_invoice_id', 'financial_credit_card_invoices.id')
+                ->withoutDrafts(),
         ]);
     }
 
@@ -138,6 +139,7 @@ class FinancialCreditCardInvoice extends Model
         }
 
         return (float) $this->transactions()
+            ->withoutDrafts()
             ->selectRaw("COALESCE(SUM(CASE WHEN type = 'expense' THEN amount WHEN type = 'income' THEN -amount ELSE 0 END), 0) as total")
             ->value('total');
     }
@@ -191,7 +193,7 @@ class FinancialCreditCardInvoice extends Model
                 $this->paymentTransaction?->delete();
             }
 
-            $this->transactions()->update([
+            $this->transactions()->withoutDrafts()->update([
                 'financial_account_id' => $this->creditCard->financial_account_id,
                 'status' => TransactionStatus::Posted->value,
             ]);
@@ -259,7 +261,7 @@ class FinancialCreditCardInvoice extends Model
         }
 
         // Revert transactions to unposted
-        $this->transactions()->update([
+        $this->transactions()->withoutDrafts()->update([
             'financial_account_id' => null,
             'status' => TransactionStatus::Pending->value,
         ]);

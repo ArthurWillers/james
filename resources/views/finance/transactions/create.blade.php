@@ -37,11 +37,83 @@
         </div>
 
         <x-page-header title="Nova Transação" mobileBottom>
+            <x-modal.trigger name="nfce-import-modal">
+                <x-button type="button" color="outline" class="w-full sm:w-auto">
+                    <x-heroicon-o-document-arrow-down class="size-4" />
+                    <span>Importar NFC-e</span>
+                </x-button>
+            </x-modal.trigger>
             <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" />
         </x-page-header>
 
         @include('finance.transactions.partials.form')
 
+        <div class="flex md:hidden mt-6">
+            <x-modal.trigger name="nfce-import-modal" class="w-full">
+                <x-button type="button" color="outline" class="w-full">
+                    <x-heroicon-o-document-arrow-down class="size-4" />
+                    <span>Importar NFC-e</span>
+                </x-button>
+            </x-modal.trigger>
+        </div>
+
         <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" mobile />
     </form>
+
+    <x-modal name="nfce-import-modal" title="Importar NFC-e" confirmVariant="none">
+        <form action="{{ route('financial.transactions.nfce.import') }}" method="POST" class="mt-4 space-y-4" x-data="{
+            loading: false,
+            url: @js(old('url', '')),
+            pasteError: '',
+            async pasteUrl() {
+                this.pasteError = '';
+
+                if (! navigator.clipboard?.readText) {
+                    this.pasteError = 'Seu navegador não permite ler a área de transferência automaticamente.';
+                    return;
+                }
+
+                try {
+                    this.url = (await navigator.clipboard.readText()).trim();
+                } catch (error) {
+                    this.pasteError = 'Não foi possível acessar a área de transferência. Cole a URL manualmente.';
+                }
+            }
+        }" @submit="if (loading) { $event.preventDefault(); return; } loading = true">
+            @csrf
+
+            <x-form-input
+                label="URL pública da NFC-e"
+                name="url"
+                type="url"
+                x-model="url"
+                placeholder="https://..."
+                autocomplete="url"
+            />
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <x-button type="button" color="outline" class="w-full" @click="pasteUrl()">
+                    <x-heroicon-o-clipboard-document class="size-4" />
+                    Colar URL
+                </x-button>
+                <p class="text-xs text-red-600" x-show="pasteError" x-text="pasteError"></p>
+            </div>
+
+            <p class="text-sm text-neutral-500">Cole a URL exibida no portal da nota fiscal.</p>
+
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
+                <x-button type="button" color="outline" @click="$dispatch('modal-close', 'nfce-import-modal')">
+                    Cancelar
+                </x-button>
+                <x-button type="submit">
+                    <x-heroicon-o-arrow-down-tray class="size-4" />
+                    Enviar para importação
+                </x-button>
+            </div>
+        </form>
+    </x-modal>
+
+    @if ($errors->has('url'))
+        <div class="contents" x-data x-init="$dispatch('modal-open', 'nfce-import-modal')"></div>
+    @endif
 </x-layouts.financial>

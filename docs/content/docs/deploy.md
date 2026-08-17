@@ -15,7 +15,7 @@ O James foi construído utilizando tecnologias modernas. O servidor de produçã
 - **PostgreSQL 15+ (Obrigatório)**: O sistema exige PostgreSQL devido ao uso intensivo de busca textual agnóstica a acentos (através das extensões `unaccent` e `pg_trgm`). Não utilize MySQL ou SQLite em produção.
 - **Nginx**
 - **Composer**
-- **Supervisor** (Para manter o Scheduler em background)
+- **Supervisor** (Para manter o Scheduler e o worker da fila em background)
 
 ## 2. Passo a Passo Inicial
 
@@ -73,6 +73,11 @@ MAIL_PASSWORD=sua_senha
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS="notificacoes@seu-dominio.com"
 MAIL_FROM_NAME="${APP_NAME}"
+
+# Fila de importações e notificações
+QUEUE_CONNECTION=database
+DB_QUEUE=default
+DB_QUEUE_RETRY_AFTER=90
 ```
 
 Gere a chave da aplicação:
@@ -176,17 +181,22 @@ server {
 
 ## 7. Schedulers e Processos em Background (Supervisor)
 
-O James depende de tarefas executadas periodicamente para manter a integridade temporal do módulo financeiro:
+O James depende de dois processos contínuos gerenciados pelo **Supervisor**:
+
+- O **Scheduler**, responsável por disparar as rotinas agendadas.
+- O **worker da fila**, responsável por processar importações de NFC-e e notificações assíncronas.
+
+As tarefas agendadas mantêm a integridade temporal do módulo financeiro:
 - `finance:rollover-invoices`: Abre e rola faturas de cartão de crédito.
 - `finance:rollover-transactions`: Rola despesas pendentes do passado para a data presente.
 - `finance:process-recurrences`: Materializa recorrências financeiras em transações reais.
 
-Para manter o *Task Scheduler* rodando continuamente, utilize o **Supervisor**. Crie o arquivo `/etc/supervisor/conf.d/james-scheduler.conf`:
+Crie o arquivo `/etc/supervisor/conf.d/james.conf` com os dois programas:
 
 ```ini
 [program:james-scheduler]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/james/artisan schedule:work
+command=/usr/bin/php8.5 /var/www/james/artisan schedule:work
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -196,6 +206,19 @@ numprocs=1
 redirect_stderr=true
 stdout_logfile=/var/www/james/storage/logs/scheduler.log
 stopwaitsecs=3600
+
+[program:james-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=/usr/bin/php8.5 /var/www/james/artisan queue:work database --sleep=3 --tries=3 --timeout=60 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/james/storage/logs/worker.log
+stopwaitsecs=3600
 ```
 
 Carregue e inicie o serviço:
@@ -203,7 +226,18 @@ Carregue e inicie o serviço:
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl start james-scheduler:*
+sudo supervisorctl start james-worker:*
 ```
+
+Verifique o estado dos dois processos e acompanhe os logs quando necessário:
+
+```bash
+sudo supervisorctl status james-scheduler:*
+sudo supervisorctl status james-worker:*
+tail -f /var/www/james/storage/logs/worker.log
+```
+
+O worker usa `--timeout=60`, alinhado ao timeout do job de importação de NFC-e, enquanto `DB_QUEUE_RETRY_AFTER=90` garante que uma execução ainda não seja liberada para outro worker antes de terminar. Os atrasos transitórios da importação são definidos no próprio job (`5`, `15` e `30` segundos).
 
 ### Configuração do Sudoers (Restart Automático)
 

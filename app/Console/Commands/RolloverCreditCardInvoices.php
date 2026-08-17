@@ -50,7 +50,10 @@ class RolloverCreditCardInvoices extends Command
      */
     private function notifyClosedInvoices(Carbon $today): void
     {
-        $closedInvoices = FinancialCreditCardInvoice::with(['creditCard', 'transactions'])
+        $closedInvoices = FinancialCreditCardInvoice::with([
+            'creditCard',
+            'transactions' => fn ($query) => $query->withoutDrafts(),
+        ])
             ->withTotalAmount()
             ->whereDate('closing_date', $today)
             ->get();

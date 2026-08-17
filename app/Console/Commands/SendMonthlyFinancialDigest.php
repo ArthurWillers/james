@@ -36,6 +36,7 @@ class SendMonthlyFinancialDigest extends Command
 
         $totals = FinancialTransaction::withoutTransfers()
             ->withoutPartialPayments()
+            ->withoutDrafts()
             ->whereBetween('date', [$startOfLastMonth, $endOfLastMonth])
             ->toBase()
             ->selectRaw("

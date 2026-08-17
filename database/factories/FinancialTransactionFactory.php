@@ -41,4 +41,15 @@ class FinancialTransactionFactory extends Factory
     {
         return $this->state(['status' => TransactionStatus::Draft]);
     }
+
+    public function nfce(?string $accessKey = null): static
+    {
+        return $this->state(fn () => [
+            'type' => 'expense',
+            'status' => TransactionStatus::Draft,
+            'nfce_access_key' => $accessKey ?? $this->faker->unique()->numerify(str_repeat('#', 44)),
+            'nfce_issuer_document' => '12345678000195',
+            'nfce_source_url' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1',
+        ]);
+    }
 }

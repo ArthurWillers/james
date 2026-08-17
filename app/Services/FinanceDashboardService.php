@@ -386,6 +386,7 @@ class FinanceDashboardService
         $endDate = $referenceDate->copy();
 
         $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
+            ->withoutDrafts()
             ->where(function ($q) {
                 $q->where('status', TransactionStatus::Posted)
                     ->orWhereNotNull('financial_credit_card_invoice_id');
@@ -453,6 +454,7 @@ class FinanceDashboardService
     public function getRecentTransactions(): Collection
     {
         $transactions = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
+            ->withoutDrafts()
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->limit(10)
@@ -479,7 +481,7 @@ class FinanceDashboardService
             '3m' => $today->copy()->subMonths(3),
             '6m' => $today->copy()->subMonths(6),
             '1y' => $today->copy()->subYear(),
-            'all' => Carbon::parse(FinancialTransaction::min('date') ?? $today->copy()->subYears(5)),
+            'all' => Carbon::parse(FinancialTransaction::withoutDrafts()->min('date') ?? $today->copy()->subYears(5)),
             default => $today->copy()->subMonth(),
         };
 

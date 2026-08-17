@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Helpers\DateHelper;
+use App\Services\Nfce\NfceScraperResolver;
+use App\Services\Nfce\NfceSourceResolver;
+use App\Services\Nfce\Scrapers\SvrsNfceScraper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
@@ -16,7 +19,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->when(SvrsNfceScraper::class)
+            ->needs('$httpConfig')
+            ->giveConfig('services.nfce.http');
+
+        $this->app->tag([SvrsNfceScraper::class], 'nfce.scrapers');
+
+        $this->app->when(NfceScraperResolver::class)
+            ->needs('$scrapers')
+            ->giveTagged('nfce.scrapers');
+
+        $this->app->when(NfceSourceResolver::class)
+            ->needs('$sources')
+            ->giveConfig('services.nfce.sources');
+
+        $this->app->when(NfceSourceResolver::class)
+            ->needs('$ufCodes')
+            ->giveConfig('services.nfce.uf_codes');
     }
 
     /**
@@ -40,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
         require_once app_path('Helpers/DateHelper.php');
         require_once app_path('Helpers/CurrencyHelper.php');
+        require_once app_path('Helpers/DocumentHelper.php');
 
         Carbon::macro('formatDate', function () {
             return DateHelper::format($this);
