@@ -6,9 +6,11 @@ use App\Helpers\DateHelper;
 use App\Services\Nfce\NfceScraperResolver;
 use App\Services\Nfce\NfceSourceResolver;
 use App\Services\Nfce\Scrapers\SvrsNfceScraper;
+use App\View\Composers\AppLayoutComposer;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
@@ -43,6 +45,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('components.layouts.app', AppLayoutComposer::class);
+
         // Garante que componentes nas subpastas possam ser chamados sem o prefixo (retrocompatibilidade)
         Blade::anonymousComponentPath(resource_path('views/components/ui'));
         Blade::anonymousComponentPath(resource_path('views/components/form'));
