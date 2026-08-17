@@ -2,20 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FinancialTransaction;
+use App\Models\Settlement;
+use App\Models\SettlementGroup;
+use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttachmentController extends Controller
 {
     /**
      * Retorna o arquivo anexado para download ou visualização in-line.
      */
-    public function download(Media $media, $filename = null)
+    public function download(Request $request, Media $media, ?string $filename = null): StreamedResponse
     {
-        // Garante que é da coleção de anexos, apenas por segurança.
-        abort_if($media->collection_name !== 'attachments', 404);
+        $allowedModelTypes = [
+            FinancialTransaction::class,
+            Settlement::class,
+            SettlementGroup::class,
+        ];
 
-        return response()->file($media->getPath(), [
-            'Content-Disposition' => 'inline; filename="'.$media->file_name.'"',
-        ]);
+        abort_unless(
+            $media->collection_name === 'attachments'
+            && in_array($media->model_type, $allowedModelTypes, true),
+            404
+        );
+
+        return $media->toInlineResponse($request);
     }
 }

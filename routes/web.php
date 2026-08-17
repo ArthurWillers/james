@@ -13,7 +13,9 @@ Route::middleware('auth')->group(function () {
     Route::view('/settings', 'settings')->name('settings');
 
     Route::get('/ui/icons/{name}', [FinancialTagController::class, 'fetchIcon'])->name('ui.icons.show');
-    Route::get('/attachments/{media}/{filename?}', [AttachmentController::class, 'download'])->name('attachments.download');
+    Route::get('/attachments/{media}/{filename?}', [AttachmentController::class, 'download'])
+        ->middleware('signed')
+        ->name('attachments.download');
 
     Route::get('/audit', [AuditController::class, 'index'])->name('audit.index');
     Route::get('/audit/{activity}', [AuditController::class, 'show'])->name('audit.show');
