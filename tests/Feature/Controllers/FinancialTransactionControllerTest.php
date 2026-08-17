@@ -6,10 +6,14 @@ use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
+use App\Models\FinancialTransactionItem;
 use App\Models\User;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Js;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -66,6 +70,29 @@ it('can view edit transaction page', function () {
         ->assertViewIs('finance.transactions.edit');
 });
 
+it('renders transaction items safely inside Alpine data', function () {
+    $transaction = FinancialTransaction::factory()->create();
+    $item = $transaction->items()->create([
+        'description' => "Item O'Reilly </script><script>alert('xss')</script>",
+        'quantity' => 1,
+        'unit_price' => 10,
+        'total' => 10,
+    ]);
+
+    $expectedItems = [[
+        'id' => $item->id,
+        'description' => $item->description,
+        'quantity' => $item->quantity,
+        'unit_price' => number_format($item->unit_price, 2, '.', ''),
+        'tags' => [],
+        'primary_tag_id' => null,
+    ]];
+
+    $this->get(route('financial.transactions.edit', $transaction))
+        ->assertSuccessful()
+        ->assertSee(Js::from($expectedItems)->toHtml(), false);
+});
+
 it('shows the imported nfce portal and formatted issuer document', function () {
     $transaction = FinancialTransaction::factory()->create([
         'nfce_source_url' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1',
@@ -106,6 +133,86 @@ it('can update transaction', function () {
         'amount' => 300.00,
     ]);
 });
+
+it('preserves transaction items when items are omitted from an update', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
+    $item = $transaction->items()->create([
+        'description' => 'Item existente',
+        'quantity' => 2,
+        'unit_price' => 15,
+        'total' => 30,
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 30,
+        'description' => 'Descrição atualizada',
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Posted->value,
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    $this->assertModelExists($item);
+});
+
+it('clears transaction items when an empty items array is explicitly submitted', function () {
+    $account = FinancialAccount::factory()->create();
+    $tag = FinancialTag::factory()->create();
+    $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
+    $item = $transaction->items()->create([
+        'description' => 'Item removido',
+        'quantity' => 1,
+        'unit_price' => 30,
+        'total' => 30,
+    ]);
+    $item->tags()->attach($tag, ['is_primary' => true]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 30,
+        'description' => 'Sem itemização',
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Posted->value,
+        'items' => [],
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    expect($transaction->items()->count())->toBe(0);
+    $this->assertDatabaseMissing('financial_taggables', [
+        'financial_taggable_type' => FinancialTransactionItem::class,
+        'financial_taggable_id' => $item->id,
+    ]);
+});
+
+it('rejects non-positive item values', function (string $field, int $value) {
+    $account = FinancialAccount::factory()->create();
+
+    $item = [
+        'description' => 'Item inválido',
+        'quantity' => 1,
+        'unit_price' => 10,
+    ];
+    $item[$field] = $value;
+
+    $this->post(route('financial.transactions.store'), [
+        'mode' => 'single',
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 10,
+        'description' => 'Compra inválida',
+        'date' => '2026-08-17',
+        'items' => [$item],
+    ])->assertSessionHasErrors("items.0.{$field}");
+})->with([
+    'negative quantity' => ['quantity', -1],
+    'zero quantity' => ['quantity', 0],
+    'negative unit price' => ['unit_price', -10],
+    'zero unit price' => ['unit_price', 0],
+]);
 
 it('finalizes an imported draft as posted on an account', function () {
     $account = FinancialAccount::factory()->create();
@@ -219,6 +326,31 @@ it('can force delete transaction', function () {
     ]);
 });
 
+it('cleans transaction and item tag pivots when force deleting', function () {
+    $tag = FinancialTag::factory()->create();
+    $transaction = FinancialTransaction::factory()->trashed()->create();
+    $item = $transaction->items()->create([
+        'description' => 'Item com tag',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'total' => 10,
+    ]);
+    $transaction->tags()->attach($tag, ['is_primary' => true]);
+    $item->tags()->attach($tag, ['is_primary' => true]);
+
+    $this->delete(route('financial.transactions.forceDestroy', $transaction))
+        ->assertRedirect();
+
+    $this->assertDatabaseMissing('financial_taggables', [
+        'financial_taggable_type' => FinancialTransaction::class,
+        'financial_taggable_id' => $transaction->id,
+    ]);
+    $this->assertDatabaseMissing('financial_taggables', [
+        'financial_taggable_type' => FinancialTransactionItem::class,
+        'financial_taggable_id' => $item->id,
+    ]);
+});
+
 it('can store a transfer between accounts', function () {
     FinancialTag::factory()->create([
         'id' => FinancialTag::TRANSFERENCIA_ID,
@@ -250,6 +382,95 @@ it('can store a transfer between accounts', function () {
         'financial_account_id' => $accountTo->id,
         'type' => 'income',
         'amount' => 500.00,
+    ]);
+});
+
+it('uses the selected fee tag when storing a transfer', function () {
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::TRANSFERENCIA_ID,
+        'name' => 'Transferência',
+    ]);
+    $feeTag = FinancialTag::factory()->create();
+    $accountFrom = FinancialAccount::factory()->create();
+    $accountTo = FinancialAccount::factory()->create();
+
+    $this->post(route('financial.transactions.transfer.store'), [
+        'from_account_id' => $accountFrom->id,
+        'to_account_id' => $accountTo->id,
+        'amount' => 500,
+        'date' => '2026-08-17',
+        'description' => 'Transferência com taxa',
+        'fee_amount' => 5,
+        'fee_tag_id' => $feeTag->id,
+    ])->assertRedirect();
+
+    $fee = FinancialTransaction::where('description', 'Taxa/imposto — Transferência com taxa')->firstOrFail();
+
+    expect($fee->tags()->whereKey($feeTag->id)->exists())->toBeTrue();
+});
+
+it('uses the interest tag as the transfer fee fallback', function () {
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::JUROS_ID,
+        'name' => 'Juros',
+    ]);
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::TRANSFERENCIA_ID,
+        'name' => 'Transferência',
+    ]);
+    $accountFrom = FinancialAccount::factory()->create();
+    $accountTo = FinancialAccount::factory()->create();
+
+    $this->post(route('financial.transactions.transfer.store'), [
+        'from_account_id' => $accountFrom->id,
+        'to_account_id' => $accountTo->id,
+        'amount' => 500,
+        'date' => '2026-08-17',
+        'description' => 'Transferência com taxa padrão',
+        'fee_amount' => 5,
+    ])->assertRedirect();
+
+    $fee = FinancialTransaction::where('description', 'Taxa/imposto — Transferência com taxa padrão')->firstOrFail();
+
+    expect($fee->tags()->whereKey(FinancialTag::JUROS_ID)->exists())->toBeTrue();
+});
+
+it('rolls back every transfer entry when a related tag cannot be attached', function () {
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::TRANSFERENCIA_ID,
+        'name' => 'Transferência',
+    ]);
+    $accountFrom = FinancialAccount::factory()->create();
+    $accountTo = FinancialAccount::factory()->create();
+
+    expect(fn () => FinancialTransaction::createTransfer(
+        $accountFrom,
+        $accountTo,
+        500,
+        Carbon::parse('2026-08-17'),
+        'Transferência inválida',
+        5,
+        999999
+    ))->toThrow(QueryException::class);
+
+    expect(FinancialTransaction::query()->count())->toBe(0);
+});
+
+it('creates account installments without overflowing month ends', function () {
+    $account = FinancialAccount::factory()->create();
+
+    $transactions = FinancialTransaction::createInstallmentsOnAccount(
+        $account,
+        Carbon::parse('2025-01-31'),
+        300,
+        3,
+        'Compra parcelada'
+    );
+
+    expect($transactions->pluck('date')->map->format('Y-m-d')->all())->toBe([
+        '2025-01-31',
+        '2025-02-28',
+        '2025-03-31',
     ]);
 });
 

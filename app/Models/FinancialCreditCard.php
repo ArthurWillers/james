@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -114,20 +115,20 @@ class FinancialCreditCard extends Model
     /**
      * Resolve the reference month for a given date based on the card's closing day.
      *
-     * Determines which invoice period a date belongs to: if the date falls on or
-     * before the closing day, it belongs to the current month's invoice; otherwise
-     * it belongs to the next month's invoice. Pure calculation — no database queries.
+     * Dates before the closing day belong to the current month's invoice. The
+     * closing day itself and later dates belong to the next month's invoice.
+     * Pure calculation — no database queries.
      */
     public function resolveReferenceMonth(Carbon $date): Carbon
     {
         $candidateMonth = $date->copy()->startOfMonth();
         $closingDate = $candidateMonth->copy()->day((int) min($this->closing_day, $candidateMonth->daysInMonth));
 
-        if ($date->copy()->startOfDay()->lte($closingDate)) {
+        if ($date->copy()->startOfDay()->lt($closingDate)) {
             return $candidateMonth;
         }
 
-        return $candidateMonth->copy()->addMonth()->startOfMonth();
+        return $candidateMonth->copy()->addMonthNoOverflow()->startOfMonth();
     }
 
     /**
@@ -141,7 +142,7 @@ class FinancialCreditCard extends Model
         $referenceMonth = $this->resolveReferenceMonth($purchaseDate);
 
         $dueMonth = $this->due_day <= $this->closing_day
-            ? $referenceMonth->copy()->addMonth()
+            ? $referenceMonth->copy()->addMonthNoOverflow()
             : $referenceMonth->copy();
 
         return $dueMonth->day((int) min($this->due_day, $dueMonth->daysInMonth));
@@ -176,16 +177,19 @@ class FinancialCreditCard extends Model
      */
     public function updateClosingSchedule(int $closingDay, int $dueDay): void
     {
-        $this->update([
-            'closing_day' => $closingDay,
-            'due_day' => $dueDay,
-        ]);
+        DB::transaction(function () use ($closingDay, $dueDay): void {
+            $this->update([
+                'closing_day' => $closingDay,
+                'due_day' => $dueDay,
+            ]);
 
-        $this->invoices()
-            ->whereNull('paid_at')
-            ->get()
-            ->filter(fn ($invoice) => $invoice->status() === InvoiceStatus::Open)
-            ->each(fn ($invoice) => $invoice->recalculateDates());
+            $this->invoices()
+                ->whereNull('paid_at')
+                ->get()
+                ->each(fn (FinancialCreditCardInvoice $invoice) => $invoice->setRelation('creditCard', $this))
+                ->filter(fn (FinancialCreditCardInvoice $invoice) => $invoice->status() === InvoiceStatus::Open)
+                ->each(fn (FinancialCreditCardInvoice $invoice) => $invoice->recalculateDates());
+        });
     }
 
     /**
@@ -197,39 +201,40 @@ class FinancialCreditCard extends Model
         int $installments,
         string $description
     ): Collection {
-        $firstInvoice = FinancialCreditCardInvoice::resolveForDate($this, $purchaseDate);
-        $installmentAmount = round($totalAmount / $installments, 2);
+        return DB::transaction(function () use ($purchaseDate, $totalAmount, $installments, $description): Collection {
+            $firstInvoice = FinancialCreditCardInvoice::resolveForDate($this, $purchaseDate);
+            $installmentAmount = round($totalAmount / $installments, 2);
 
-        $transactions = collect();
+            $transactions = collect();
 
-        for ($i = 1; $i <= $installments; $i++) {
-            if ($i === 1) {
-                $invoice = $firstInvoice;
-            } else {
-                $invoice = FinancialCreditCardInvoice::resolveForDate(
-                    $this,
-                    $purchaseDate->copy()->addMonthsNoOverflow($i - 1)
-                );
+            for ($i = 1; $i <= $installments; $i++) {
+                if ($i === 1) {
+                    $invoice = $firstInvoice;
+                } else {
+                    $invoice = FinancialCreditCardInvoice::resolveForDate(
+                        $this,
+                        $purchaseDate->copy()->addMonthsNoOverflow($i - 1)
+                    );
+                }
+
+                $amount = $i === $installments
+                    ? $totalAmount - ($installmentAmount * ($installments - 1))
+                    : $installmentAmount;
+
+                $transactions->push($invoice->transactions()->create([
+                    'financial_account_id' => null,
+                    'date' => $purchaseDate,
+                    'type' => 'expense',
+                    'amount' => $amount,
+                    'description' => $description,
+                    'status' => TransactionStatus::Pending,
+                    'installment_current' => $i,
+                    'installment_total' => $installments,
+                ]));
             }
 
-            // Adjust amount for the last installment if there are rounding diffs
-            $amount = $i === $installments
-                ? $totalAmount - ($installmentAmount * ($installments - 1))
-                : $installmentAmount;
-
-            $transactions->push($invoice->transactions()->create([
-                'financial_account_id' => null,
-                'date' => $purchaseDate,
-                'type' => 'expense',
-                'amount' => $amount,
-                'description' => $description,
-                'status' => TransactionStatus::Pending,
-                'installment_current' => $i,
-                'installment_total' => $installments,
-            ]));
-        }
-
-        return $transactions;
+            return $transactions;
+        });
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];

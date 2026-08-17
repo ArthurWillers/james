@@ -9,6 +9,7 @@ use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Models\Activity;
 
 it('scopes forAccounts correctly filters transactions', function () {
     $account1 = FinancialAccount::factory()->create();
@@ -115,4 +116,18 @@ it('prevents duplicate nfce access keys at the database level', function () {
     }))->toThrow(QueryException::class);
 
     $this->assertModelExists($transaction);
+});
+
+it('logs both transactions when a transfer pair is deleted', function () {
+    $pairId = 999;
+    $from = FinancialTransaction::factory()->create(['transfer_pair_id' => $pairId]);
+    $to = FinancialTransaction::factory()->create(['transfer_pair_id' => $pairId]);
+
+    $from->delete();
+
+    expect(Activity::query()
+        ->where('subject_type', FinancialTransaction::class)
+        ->where('event', 'deleted')
+        ->whereIn('subject_id', [$from->id, $to->id])
+        ->count())->toBe(2);
 });

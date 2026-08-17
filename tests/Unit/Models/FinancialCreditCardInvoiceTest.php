@@ -1,10 +1,14 @@
 <?php
 
 use App\Enums\TransactionStatus;
+use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
+use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 it('calculates total invoice amount correctly', function () {
     $card = FinancialCreditCard::factory()->create();
@@ -65,6 +69,69 @@ it('excludes drafts from invoice totals and the card used limit', function () {
     $invoice->registerPayment(75, Carbon::parse('2026-08-17'));
 
     expect($draft->refresh()->status)->toBe(TransactionStatus::Draft);
+});
+
+it('registers and undoes partial payments without lazy loading violations', function () {
+    $account = FinancialAccount::factory()->create();
+    $card = FinancialCreditCard::factory()->create(['financial_account_id' => $account->id]);
+    $invoice = FinancialCreditCardInvoice::factory()->create([
+        'financial_credit_card_id' => $card->id,
+        'reference_month' => '2026-08-01',
+    ]);
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::PAGAMENTO_PARCIAL_ID,
+        'name' => 'Pagamento parcial',
+    ]);
+    FinancialTransaction::factory()->create([
+        'financial_credit_card_invoice_id' => $invoice->id,
+        'financial_account_id' => null,
+        'type' => 'expense',
+        'amount' => 100,
+        'status' => TransactionStatus::Pending,
+    ]);
+
+    $invoice->registerPayment(40, Carbon::parse('2026-08-17'));
+    $paymentTransactionId = $invoice->refresh()->payment_transaction_id;
+
+    expect($paymentTransactionId)->not->toBeNull()
+        ->and((float) $invoice->amount_paid)->toBe(40.0);
+
+    $invoice->undoPayment();
+
+    expect($invoice->refresh())
+        ->payment_transaction_id->toBeNull()
+        ->amount_paid->toBe('0.00');
+    $this->assertSoftDeleted('financial_transactions', ['id' => $paymentTransactionId]);
+});
+
+it('locks the invoice row while registering a payment', function () {
+    $account = FinancialAccount::factory()->create();
+    $card = FinancialCreditCard::factory()->create(['financial_account_id' => $account->id]);
+    $invoice = FinancialCreditCardInvoice::factory()->create([
+        'financial_credit_card_id' => $card->id,
+    ]);
+    FinancialTransaction::factory()->create([
+        'financial_credit_card_invoice_id' => $invoice->id,
+        'amount' => 100,
+        'type' => 'expense',
+        'status' => TransactionStatus::Pending,
+    ]);
+
+    $queries = [];
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        $queries[] = strtolower($query->sql);
+    });
+
+    $invoice->registerPayment(40, Carbon::parse('2026-08-17'));
+
+    expect(collect($queries)->contains(fn (string $query): bool => str_contains($query, 'for update')))->toBeTrue();
+});
+
+it('treats the closing day as part of the next invoice period', function () {
+    $card = FinancialCreditCard::factory()->create(['closing_day' => 10, 'due_day' => 15]);
+
+    expect($card->resolveReferenceMonth(Carbon::parse('2026-08-09'))->format('Y-m'))->toBe('2026-08')
+        ->and($card->resolveReferenceMonth(Carbon::parse('2026-08-10'))->format('Y-m'))->toBe('2026-09');
 });
 
 describe('resolveForDate', function () {

@@ -13,7 +13,7 @@ class StoreFinancialTransactionRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
         if ($this->has('amount') && is_string($this->amount)) {
             $this->merge(['amount' => str_replace(',', '.', $this->amount)]);
@@ -51,8 +51,8 @@ class StoreFinancialTransactionRequest extends FormRequest
             'installments' => ['required_if:mode,installment', 'integer', 'min:2'],
             'items' => ['nullable', 'array'],
             'items.*.description' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'numeric', 'not_in:0'],
-            'items.*.unit_price' => ['required', 'numeric', 'not_in:0'],
+            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'items.*.unit_price' => ['required', 'numeric', 'gt:0'],
             'items.*.tags' => ['nullable', 'array'],
             'items.*.tags.*' => ['exists:financial_tags,id'],
             'items.*.primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
@@ -72,9 +72,9 @@ class StoreFinancialTransactionRequest extends FormRequest
             'installments.required_if' => 'O número de parcelas é obrigatório para transações parceladas.',
             'items.*.description.required' => 'Preencha a descrição de todos os itens adicionados.',
             'items.*.quantity.required' => 'A quantidade é obrigatória nos itens.',
-            'items.*.quantity.not_in' => 'A quantidade do item não pode ser zero.',
+            'items.*.quantity.gt' => 'A quantidade do item deve ser maior que zero.',
             'items.*.unit_price.required' => 'O valor é obrigatório nos itens.',
-            'items.*.unit_price.not_in' => 'O valor do item não pode ser zero.',
+            'items.*.unit_price.gt' => 'O valor do item deve ser maior que zero.',
         ];
     }
 }

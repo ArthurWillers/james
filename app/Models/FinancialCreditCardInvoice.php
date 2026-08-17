@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -185,64 +186,71 @@ class FinancialCreditCardInvoice extends Model
      */
     public function registerPayment(float $amount, Carbon $paidAt, ?float $interestAmount = null): void
     {
-        $newAmountPaid = $this->amount_paid + $amount;
-        $total = $this->total();
+        DB::transaction(function () use ($amount, $paidAt, $interestAmount): void {
+            self::query()
+                ->lockForUpdate()
+                ->findOrFail($this->getKey());
 
-        if ($newAmountPaid >= $total) {
-            if ($this->payment_transaction_id) {
-                $this->paymentTransaction?->delete();
+            $this->loadMissing(['creditCard.financialAccount', 'paymentTransaction', 'interestTransaction']);
+
+            $newAmountPaid = $this->amount_paid + $amount;
+            $total = $this->total();
+
+            if ($newAmountPaid >= $total) {
+                if ($this->payment_transaction_id) {
+                    $this->paymentTransaction?->delete();
+                }
+
+                $this->transactions()->withoutDrafts()->update([
+                    'financial_account_id' => $this->creditCard->financial_account_id,
+                    'status' => TransactionStatus::Posted->value,
+                ]);
+
+                $this->paid_at = $paidAt;
+                $this->amount_paid = $total;
+                $this->payment_transaction_id = null;
+            } else {
+                if ($this->payment_transaction_id) {
+                    $this->paymentTransaction()->update([
+                        'amount' => $newAmountPaid,
+                        'date' => $paidAt,
+                    ]);
+                } else {
+                    $paymentTransaction = $this->creditCard->financialAccount->transactions()->create([
+                        'date' => $paidAt,
+                        'type' => 'expense',
+                        'amount' => $newAmountPaid,
+                        'description' => "Pagamento parcial fatura {$this->reference_month->format('m/Y')}",
+                        'status' => TransactionStatus::Posted,
+                    ]);
+
+                    if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::PAGAMENTO_PARCIAL_ID')) {
+                        $paymentTransaction->tags()->attach(FinancialTag::PAGAMENTO_PARCIAL_ID, ['is_primary' => true]);
+                    }
+
+                    $this->payment_transaction_id = $paymentTransaction->id;
+                }
+                $this->amount_paid = $newAmountPaid;
             }
 
-            $this->transactions()->withoutDrafts()->update([
-                'financial_account_id' => $this->creditCard->financial_account_id,
-                'status' => TransactionStatus::Posted->value,
-            ]);
-
-            $this->paid_at = $paidAt;
-            $this->amount_paid = $total;
-            $this->payment_transaction_id = null;
-        } else {
-            if ($this->payment_transaction_id) {
-                $this->paymentTransaction()->update([
-                    'amount' => $newAmountPaid,
-                    'date' => $paidAt,
-                ]);
-            } else {
-                $paymentTransaction = $this->creditCard->financialAccount->transactions()->create([
+            if ($interestAmount !== null && $interestAmount > 0 && $this->interest_transaction_id === null) {
+                $interestTransaction = $this->creditCard->financialAccount->transactions()->create([
                     'date' => $paidAt,
                     'type' => 'expense',
-                    'amount' => $newAmountPaid,
-                    'description' => "Pagamento parcial fatura {$this->reference_month->format('m/Y')}",
+                    'amount' => $interestAmount,
+                    'description' => "Juros da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
                     'status' => TransactionStatus::Posted,
                 ]);
 
-                if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::PAGAMENTO_PARCIAL_ID')) {
-                    $paymentTransaction->tags()->attach(FinancialTag::PAGAMENTO_PARCIAL_ID, ['is_primary' => true]);
+                if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::JUROS_ID')) {
+                    $interestTransaction->tags()->attach(FinancialTag::JUROS_ID, ['is_primary' => true]);
                 }
 
-                $this->payment_transaction_id = $paymentTransaction->id;
-            }
-            $this->amount_paid = $newAmountPaid;
-        }
-
-        if ($interestAmount !== null && $interestAmount > 0 && $this->interest_transaction_id === null) {
-            $interestTransaction = $this->creditCard->financialAccount->transactions()->create([
-                'date' => $paidAt,
-                'type' => 'expense',
-                'amount' => $interestAmount,
-                'description' => "Juros da fatura {$this->reference_month->format('m/Y')} do cartão {$this->creditCard->name}",
-                'status' => TransactionStatus::Posted,
-            ]);
-
-            // Attach JUROS_ID tag as primary
-            if (class_exists(FinancialTag::class) && defined('\App\Models\FinancialTag::JUROS_ID')) {
-                $interestTransaction->tags()->attach(FinancialTag::JUROS_ID, ['is_primary' => true]);
+                $this->interest_transaction_id = $interestTransaction->id;
             }
 
-            $this->interest_transaction_id = $interestTransaction->id;
-        }
-
-        $this->save();
+            $this->save();
+        });
     }
 
     /**
@@ -250,25 +258,28 @@ class FinancialCreditCardInvoice extends Model
      */
     public function undoPayment(): void
     {
-        if ($this->payment_transaction_id) {
-            $this->paymentTransaction?->delete();
-            $this->payment_transaction_id = null;
-        }
+        DB::transaction(function (): void {
+            $this->loadMissing(['paymentTransaction', 'interestTransaction']);
 
-        if ($this->interest_transaction_id) {
-            $this->interestTransaction?->delete();
-            $this->interest_transaction_id = null;
-        }
+            if ($this->payment_transaction_id) {
+                $this->paymentTransaction?->delete();
+                $this->payment_transaction_id = null;
+            }
 
-        // Revert transactions to unposted
-        $this->transactions()->withoutDrafts()->update([
-            'financial_account_id' => null,
-            'status' => TransactionStatus::Pending->value,
-        ]);
+            if ($this->interest_transaction_id) {
+                $this->interestTransaction?->delete();
+                $this->interest_transaction_id = null;
+            }
 
-        $this->paid_at = null;
-        $this->amount_paid = 0;
-        $this->save();
+            $this->transactions()->withoutDrafts()->update([
+                'financial_account_id' => null,
+                'status' => TransactionStatus::Pending->value,
+            ]);
+
+            $this->paid_at = null;
+            $this->amount_paid = 0;
+            $this->save();
+        });
     }
 
     /**
@@ -276,6 +287,7 @@ class FinancialCreditCardInvoice extends Model
      */
     public function recalculateDates(): void
     {
+        $this->loadMissing('creditCard');
         $card = $this->creditCard;
 
         $closingDate = $this->reference_month->copy()->day(
@@ -283,7 +295,7 @@ class FinancialCreditCardInvoice extends Model
         );
 
         $dueMonth = $card->due_day <= $card->closing_day
-            ? $this->reference_month->copy()->addMonth()
+            ? $this->reference_month->copy()->addMonthNoOverflow()
             : $this->reference_month->copy();
 
         $dueDate = $dueMonth->day((int) min($card->due_day, $dueMonth->daysInMonth));
@@ -321,12 +333,12 @@ class FinancialCreditCardInvoice extends Model
             $referenceMonth = $candidateMonth;
         } else {
             // Purchase date is on or after the closing date, belongs to the next month's invoice
-            $referenceMonth = $candidateMonth->copy()->addMonth();
+            $referenceMonth = $candidateMonth->copy()->addMonthNoOverflow();
             $closingDate = $referenceMonth->copy()->day((int) min($card->closing_day, $referenceMonth->daysInMonth));
         }
 
         $dueMonth = $card->due_day <= $card->closing_day
-            ? $referenceMonth->copy()->addMonth()
+            ? $referenceMonth->copy()->addMonthNoOverflow()
             : $referenceMonth->copy();
 
         $dueDate = $dueMonth->day((int) min($card->due_day, $dueMonth->daysInMonth));

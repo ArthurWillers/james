@@ -17,9 +17,13 @@ use App\Models\FinancialTransaction;
 use App\Models\Settlement;
 use App\Models\SettlementGroup;
 use App\Traits\HandlesAttachments;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SettlementController extends Controller
 {
@@ -28,7 +32,7 @@ class SettlementController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $showArchived = $request->boolean('archived');
 
@@ -112,7 +116,7 @@ class SettlementController extends Controller
     /**
      * Display a global history of settlements.
      */
-    public function history(Request $request)
+    public function history(Request $request): View
     {
         $query = Settlement::with(['contact', 'contact.media']);
 
@@ -128,7 +132,7 @@ class SettlementController extends Controller
     /**
      * Display the ledger for a specific contact.
      */
-    public function showContact(Contact $contact)
+    public function showContact(Contact $contact): View
     {
         // Compute balances for this contact using the max(0, debt - payment) rule
         $debtTheyOweMe = Settlement::where('contact_id', $contact->id)->where('type', SettlementType::TheyOwe->value)->sum('amount');
@@ -189,7 +193,7 @@ class SettlementController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request, Contact $contact)
+    public function create(Request $request, Contact $contact): View
     {
         $accounts = FinancialAccount::orderBy('name')->get();
         $cards = FinancialCreditCard::orderBy('name')->get();
@@ -223,28 +227,29 @@ class SettlementController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSettlementRequest $request, Contact $contact)
+    public function store(StoreSettlementRequest $request, Contact $contact): RedirectResponse
     {
         $validated = $request->validated();
 
-        $settlement = new Settlement;
-        $settlement->contact_id = $contact->id;
-        $settlement->type = $validated['type'];
-        $settlement->amount = $validated['amount'];
-        $settlement->description = $validated['description'];
-        $settlement->date = Carbon::parse($validated['date']);
+        DB::transaction(function () use ($validated, $contact) {
+            $settlement = new Settlement;
+            $settlement->contact_id = $contact->id;
+            $settlement->type = $validated['type'];
+            $settlement->amount = $validated['amount'];
+            $settlement->description = $validated['description'];
+            $settlement->date = Carbon::parse($validated['date']);
 
-        // Transaction logic
-        if (! empty($validated['create_transaction'])) {
-            $transaction = $this->createOrUpdateTransaction(null, $validated, $contact);
-            if ($transaction) {
-                $settlement->financial_transaction_id = $transaction->id;
+            if (! empty($validated['create_transaction'])) {
+                $transaction = $this->createOrUpdateTransaction(null, $validated, $contact);
+                if ($transaction) {
+                    $settlement->financial_transaction_id = $transaction->id;
+                }
             }
-        }
 
-        $settlement->save();
+            $settlement->save();
 
-        $this->syncAttachments($settlement, $request->all());
+            $this->syncAttachments($settlement, $validated);
+        });
 
         return redirect()->route('settlements.contact.show', $contact)
             ->with('success', 'Lançamento registrado com sucesso.');
@@ -253,7 +258,7 @@ class SettlementController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Settlement $settlement)
+    public function edit(Settlement $settlement): View
     {
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
 
@@ -268,31 +273,30 @@ class SettlementController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSettlementRequest $request, Settlement $settlement)
+    public function update(UpdateSettlementRequest $request, Settlement $settlement): RedirectResponse
     {
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser editado individualmente.');
 
         $validated = $request->validated();
 
-        $settlement->type = $validated['type'];
-        $settlement->amount = $validated['amount'];
-        $settlement->description = $validated['description'];
-        $settlement->date = Carbon::parse($validated['date']);
+        DB::transaction(function () use ($validated, $settlement) {
+            $settlement->type = $validated['type'];
+            $settlement->amount = $validated['amount'];
+            $settlement->description = $validated['description'];
+            $settlement->date = Carbon::parse($validated['date']);
 
-        // Transaction logic
-        if (! empty($validated['create_transaction'])) {
-            $transaction = $this->createOrUpdateTransaction($settlement->financialTransaction, $validated, $settlement->contact);
-            $settlement->financial_transaction_id = $transaction->id;
-        } else {
-            if ($settlement->financial_transaction_id) {
+            if (! empty($validated['create_transaction'])) {
+                $transaction = $this->createOrUpdateTransaction($settlement->financialTransaction, $validated, $settlement->contact);
+                $settlement->financial_transaction_id = $transaction->id;
+            } elseif ($settlement->financial_transaction_id) {
                 $settlement->financialTransaction()->delete();
                 $settlement->financial_transaction_id = null;
             }
-        }
 
-        $settlement->save();
+            $settlement->save();
 
-        $this->syncAttachments($settlement, $validated);
+            $this->syncAttachments($settlement, $validated);
+        });
 
         return redirect()->route('settlements.contact.show', $settlement->contact_id)->with('success', 'Acerto atualizado com sucesso.');
     }
@@ -300,16 +304,19 @@ class SettlementController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Settlement $settlement)
+    public function destroy(Settlement $settlement): RedirectResponse
     {
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
 
-        if ($settlement->financialTransaction) {
-            $settlement->financialTransaction()->delete();
-        }
-
         $contactId = $settlement->contact_id;
-        $settlement->delete();
+
+        DB::transaction(function () use ($settlement) {
+            if ($settlement->financialTransaction) {
+                $settlement->financialTransaction()->delete();
+            }
+
+            $settlement->delete();
+        });
 
         return redirect()->route('settlements.contact.show', $contactId)
             ->with('success', 'Lançamento excluído com sucesso.');
@@ -368,7 +375,7 @@ class SettlementController extends Controller
         return $transaction;
     }
 
-    public function trashed()
+    public function trashed(): View
     {
         $settlements = Settlement::onlyTrashed()
             ->with(['contact', 'contact.media'])
@@ -378,7 +385,7 @@ class SettlementController extends Controller
         return view('settlements.trashed', compact('settlements'));
     }
 
-    public function restore($id)
+    public function restore(int $id): RedirectResponse
     {
         $settlement = Settlement::onlyTrashed()->findOrFail($id);
 
@@ -395,26 +402,27 @@ class SettlementController extends Controller
         return redirect()->route('settlements.trashed')->with('success', 'Acerto restaurado com sucesso.');
     }
 
-    public function forceDelete($id)
+    public function forceDelete(int $id): RedirectResponse
     {
         $settlement = Settlement::onlyTrashed()->findOrFail($id);
 
         abort_if($settlement->settlement_group_id !== null, 403, 'Este acerto faz parte de um grupo e não pode ser excluído individualmente.');
 
-        if ($settlement->financial_transaction_id) {
-            $transaction = FinancialTransaction::withTrashed()->find($settlement->financial_transaction_id);
-            if ($transaction) {
-                $transaction->items()->delete();
-                $transaction->forceDelete();
+        DB::transaction(function () use ($settlement): void {
+            if ($settlement->financial_transaction_id) {
+                $transaction = FinancialTransaction::withTrashed()->find($settlement->financial_transaction_id);
+                if ($transaction) {
+                    $transaction->forceDelete();
+                }
             }
-        }
 
-        $settlement->forceDelete();
+            $settlement->forceDelete();
+        });
 
         return redirect()->route('settlements.trashed')->with('success', 'Acerto excluído permanentemente.');
     }
 
-    public function show(Settlement $settlement)
+    public function show(Settlement $settlement): View
     {
         $settlement->load(['contact', 'financialTransaction.account', 'financialTransaction.invoice.creditCard', 'media']);
 
@@ -424,7 +432,7 @@ class SettlementController extends Controller
     /**
      * Serve the settlement's attachment.
      */
-    public function attachment(Settlement $settlement, $mediaId)
+    public function attachment(Settlement $settlement, int $mediaId): BinaryFileResponse
     {
         $media = $settlement->getMedia('attachments')->where('id', $mediaId)->first();
 

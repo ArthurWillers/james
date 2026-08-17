@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('financial_credit_card_invoices', function (Blueprint $table): void {
+            $table->index('payment_transaction_id');
+            $table->foreign('payment_transaction_id')
+                ->references('id')
+                ->on('financial_transactions')
+                ->nullOnDelete();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('financial_credit_card_invoices', function (Blueprint $table): void {
+            $table->dropForeign(['payment_transaction_id']);
+            $table->dropIndex(['payment_transaction_id']);
+        });
+    }
+};

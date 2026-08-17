@@ -13,6 +13,7 @@ use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
+use App\Models\FinancialTransactionItem;
 use App\Models\SettlementGroup;
 use App\Services\Nfce\Exceptions\InvalidNfceUrlException;
 use App\Services\Nfce\Exceptions\UnsupportedNfceProviderException;
@@ -24,12 +25,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FinancialTransactionController extends Controller
 {
     use HandlesAttachments;
 
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $query = FinancialTransaction::query()->with(['account', 'invoice.creditCard', 'tags']);
 
@@ -77,7 +81,7 @@ class FinancialTransactionController extends Controller
         return view('finance.transactions.index', compact('transactions', 'accounts', 'tags', 'hasTrashed'));
     }
 
-    public function create()
+    public function create(): View
     {
         $accounts = FinancialAccount::orderBy('name')->get();
         $cards = FinancialCreditCard::orderBy('name')->get();
@@ -93,145 +97,145 @@ class FinancialTransactionController extends Controller
         return view('finance.transactions.create', compact('accounts', 'cards', 'tags'));
     }
 
-    public function store(StoreFinancialTransactionRequest $request)
+    public function store(StoreFinancialTransactionRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $mode = $validated['mode'];
+        DB::transaction(function () use ($validated): void {
+            $mode = $validated['mode'];
 
-        if ($mode === 'single') {
-            if (! empty($validated['financial_credit_card_id'])) {
-                $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-                $date = Carbon::parse($validated['date']);
-                $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
+            if ($mode === 'single') {
+                if (! empty($validated['financial_credit_card_id'])) {
+                    $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+                    $date = Carbon::parse($validated['date']);
+                    $invoice = FinancialCreditCardInvoice::resolveForDate($card, $date);
 
-                $transaction = $invoice->transactions()->create([
-                    'type' => $validated['type'],
-                    'amount' => $validated['amount'],
-                    'description' => $validated['description'],
-                    'date' => $date,
-                    'status' => TransactionStatus::Pending,
-                ]);
-            } else {
-                $transaction = FinancialTransaction::create([
-                    'financial_account_id' => $validated['financial_account_id'],
-                    'type' => $validated['type'],
-                    'amount' => $validated['amount'],
-                    'description' => $validated['description'],
-                    'date' => Carbon::parse($validated['date']),
-                    'status' => $validated['status'] ?? TransactionStatus::Posted,
-                ]);
-            }
-
-            $hasItemTags = false;
-            if (! empty($validated['items'])) {
-                foreach ($validated['items'] as $itemData) {
-                    if (! empty($itemData['tags'])) {
-                        $hasItemTags = true;
-                        break;
-                    }
-                }
-            }
-
-            $globalTags = $validated['tags'] ?? [];
-            $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
-            $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
-
-            if (! empty($validated['items'])) {
-                foreach ($validated['items'] as $itemData) {
-                    $item = $transaction->items()->create([
-                        'description' => $itemData['description'],
-                        'quantity' => $itemData['quantity'],
-                        'unit_price' => $itemData['unit_price'],
-                        'total' => $itemData['quantity'] * $itemData['unit_price'],
+                    $transaction = $invoice->transactions()->create([
+                        'type' => $validated['type'],
+                        'amount' => $validated['amount'],
+                        'description' => $validated['description'],
+                        'date' => $date,
+                        'status' => TransactionStatus::Pending,
                     ]);
-                    $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+                } else {
+                    $transaction = FinancialTransaction::create([
+                        'financial_account_id' => $validated['financial_account_id'],
+                        'type' => $validated['type'],
+                        'amount' => $validated['amount'],
+                        'description' => $validated['description'],
+                        'date' => Carbon::parse($validated['date']),
+                        'status' => $validated['status'] ?? TransactionStatus::Posted,
+                    ]);
                 }
-            }
-        } elseif ($mode === 'installment') {
-            if (! empty($validated['financial_credit_card_id'])) {
-                $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-                $transactions = $card->createInstallmentPurchase(
-                    Carbon::parse($validated['date']),
-                    $validated['amount'],
-                    $validated['installments'],
-                    $validated['description']
-                );
-            } else {
-                $account = FinancialAccount::findOrFail($validated['financial_account_id']);
-                $transactions = FinancialTransaction::createInstallmentsOnAccount(
-                    $account,
-                    Carbon::parse($validated['date']),
-                    $validated['amount'],
-                    $validated['installments'],
-                    $validated['description'],
-                    $validated['type']
-                );
-            }
 
-            $hasItemTags = false;
-            if (! empty($validated['items'])) {
-                foreach ($validated['items'] as $itemData) {
-                    if (! empty($itemData['tags'])) {
-                        $hasItemTags = true;
-                        break;
+                $hasItemTags = false;
+                if (! empty($validated['items'])) {
+                    foreach ($validated['items'] as $itemData) {
+                        if (! empty($itemData['tags'])) {
+                            $hasItemTags = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            $globalTags = $validated['tags'] ?? [];
-            $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
+                $globalTags = $validated['tags'] ?? [];
+                $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
+                $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
-            if (! empty($validated['tags']) || ! empty($validated['items'])) {
-                foreach ($transactions as $t) {
-                    $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
+                if (! empty($validated['items'])) {
+                    foreach ($validated['items'] as $itemData) {
+                        $item = $transaction->items()->create([
+                            'description' => $itemData['description'],
+                            'quantity' => $itemData['quantity'],
+                            'unit_price' => $itemData['unit_price'],
+                            'total' => $itemData['quantity'] * $itemData['unit_price'],
+                        ]);
+                        $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+                    }
+                }
+            } elseif ($mode === 'installment') {
+                if (! empty($validated['financial_credit_card_id'])) {
+                    $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+                    $transactions = $card->createInstallmentPurchase(
+                        Carbon::parse($validated['date']),
+                        $validated['amount'],
+                        $validated['installments'],
+                        $validated['description']
+                    );
+                } else {
+                    $account = FinancialAccount::findOrFail($validated['financial_account_id']);
+                    $transactions = FinancialTransaction::createInstallmentsOnAccount(
+                        $account,
+                        Carbon::parse($validated['date']),
+                        $validated['amount'],
+                        $validated['installments'],
+                        $validated['description'],
+                        $validated['type']
+                    );
+                }
 
-                    if (! empty($validated['items'])) {
-                        $installmentItemsTotalCents = 0;
+                $hasItemTags = false;
+                if (! empty($validated['items'])) {
+                    foreach ($validated['items'] as $itemData) {
+                        if (! empty($itemData['tags'])) {
+                            $hasItemTags = true;
+                            break;
+                        }
+                    }
+                }
 
-                        foreach ($validated['items'] as $itemData) {
-                            $originalUnitPriceCents = (int) round($itemData['unit_price'] * 100);
-                            $unitPriceInstallmentCents = (int) floor($originalUnitPriceCents / $validated['installments']);
+                $globalTags = $validated['tags'] ?? [];
+                $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
 
-                            $isLastInstallment = $t->installment_current === $t->installment_total;
-                            if ($isLastInstallment) {
-                                $unitPriceRemainderCents = $originalUnitPriceCents - ($unitPriceInstallmentCents * $validated['installments']);
-                                $unitPriceInstallmentCents += $unitPriceRemainderCents;
+                if (! empty($validated['tags']) || ! empty($validated['items'])) {
+                    foreach ($transactions as $t) {
+                        $this->syncTagsWithPrimary($t, $globalTags, $globalPrimaryId);
+
+                        if (! empty($validated['items'])) {
+                            $installmentItemsTotalCents = 0;
+
+                            foreach ($validated['items'] as $itemData) {
+                                $originalUnitPriceCents = (int) round($itemData['unit_price'] * 100);
+                                $unitPriceInstallmentCents = (int) floor($originalUnitPriceCents / $validated['installments']);
+
+                                $isLastInstallment = $t->installment_current === $t->installment_total;
+                                if ($isLastInstallment) {
+                                    $unitPriceRemainderCents = $originalUnitPriceCents - ($unitPriceInstallmentCents * $validated['installments']);
+                                    $unitPriceInstallmentCents += $unitPriceRemainderCents;
+                                }
+
+                                $currentUnitPrice = round($unitPriceInstallmentCents / 100, 2);
+                                $currentItemTotal = round($itemData['quantity'] * $currentUnitPrice, 2);
+                                $installmentItemsTotalCents += (int) round($currentItemTotal * 100);
+
+                                $item = $t->items()->create([
+                                    'description' => $itemData['description'],
+                                    'quantity' => $itemData['quantity'],
+                                    'unit_price' => $currentUnitPrice,
+                                    'total' => $currentItemTotal,
+                                ]);
+                                $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
                             }
 
-                            $currentUnitPrice = round($unitPriceInstallmentCents / 100, 2);
-                            $currentItemTotal = round($itemData['quantity'] * $currentUnitPrice, 2);
-                            $installmentItemsTotalCents += (int) round($currentItemTotal * 100);
-
-                            $item = $t->items()->create([
-                                'description' => $itemData['description'],
-                                'quantity' => $itemData['quantity'],
-                                'unit_price' => $currentUnitPrice,
-                                'total' => $currentItemTotal,
-                            ]);
-                            $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+                            $t->update(['amount' => round($installmentItemsTotalCents / 100, 2)]);
                         }
-
-                        // Update the transaction amount to exactly match the sum of its items
-                        // This prevents 1-cent inconsistencies between the transaction amount and the items total
-                        $t->update(['amount' => round($installmentItemsTotalCents / 100, 2)]);
                     }
+                }
+
+                $firstTransaction = $transactions->first();
+                if ($firstTransaction) {
+                    $this->syncAttachments($firstTransaction, $validated);
                 }
             }
 
-            $firstTransaction = $transactions->first();
-            if ($firstTransaction) {
-                $this->syncAttachments($firstTransaction, $request->all());
+            if ($mode === 'single' && isset($transaction)) {
+                $this->syncAttachments($transaction, $validated);
             }
-        }
-
-        if ($mode === 'single' && isset($transaction)) {
-            $this->syncAttachments($transaction, $request->all());
-        }
+        });
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transação criada com sucesso.');
     }
 
-    public function importNfce(StoreNfceImportRequest $request, NfceSourceResolver $sourceResolver)
+    public function importNfce(StoreNfceImportRequest $request, NfceSourceResolver $sourceResolver): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -282,7 +286,7 @@ class FinancialTransactionController extends Controller
             ->with('success', 'Importação reenviada para processamento. Você será notificado quando terminar.');
     }
 
-    public function storeTransfer(StoreFinancialTransferRequest $request)
+    public function storeTransfer(StoreFinancialTransferRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -296,13 +300,13 @@ class FinancialTransactionController extends Controller
             Carbon::parse($validated['date']),
             $validated['description'],
             $validated['fee_amount'] ?? null,
-            ! empty($validated['fee_amount']) ? FinancialTag::JUROS_ID : null
+            ! empty($validated['fee_amount']) ? ($validated['fee_tag_id'] ?? FinancialTag::JUROS_ID) : null
         );
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transferência criada com sucesso.');
     }
 
-    public function show(FinancialTransaction $transaction)
+    public function show(FinancialTransaction $transaction): View
     {
         $transaction->load(['account', 'invoice.creditCard', 'tags', 'items.tags', 'settlements']);
 
@@ -320,7 +324,7 @@ class FinancialTransactionController extends Controller
         return view('finance.transactions.show', compact('transaction', 'settlementGroup', 'isSettlementTransaction', 'editRoute'));
     }
 
-    public function edit(FinancialTransaction $transaction)
+    public function edit(FinancialTransaction $transaction): View
     {
         $transaction->load(['tags', 'items.tags', 'invoice.creditCard']);
         $accounts = FinancialAccount::orderBy('name')->get();
@@ -337,85 +341,84 @@ class FinancialTransactionController extends Controller
         return view('finance.transactions.edit', compact('transaction', 'accounts', 'cards', 'tags'));
     }
 
-    public function update(UpdateFinancialTransactionRequest $request, FinancialTransaction $transaction)
+    public function update(UpdateFinancialTransactionRequest $request, FinancialTransaction $transaction): RedirectResponse
     {
         $validated = $request->validated();
+        DB::transaction(function () use ($request, $transaction, $validated): void {
+            if (! empty($validated['financial_credit_card_id'])) {
+                $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
+                $date = Carbon::parse($validated['date']);
 
-        if (! empty($validated['financial_credit_card_id'])) {
-            $card = FinancialCreditCard::findOrFail($validated['financial_credit_card_id']);
-            $date = Carbon::parse($validated['date']);
+                $invoiceDate = $date->copy();
+                if ($transaction->installment_current > 1) {
+                    $invoiceDate->addMonthsNoOverflow($transaction->installment_current - 1);
+                }
 
-            $invoiceDate = $date->copy();
-            if ($transaction->installment_current > 1) {
-                $invoiceDate->addMonthsNoOverflow($transaction->installment_current - 1);
+                $invoice = FinancialCreditCardInvoice::resolveForDate($card, $invoiceDate);
+
+                $transaction->update([
+                    'financial_account_id' => null,
+                    'financial_credit_card_invoice_id' => $invoice->id,
+                    'type' => $validated['type'],
+                    'amount' => $validated['amount'],
+                    'description' => $validated['description'],
+                    'date' => $date,
+                    'status' => TransactionStatus::Pending,
+                ]);
+            } else {
+                $date = Carbon::parse($validated['date']);
+                $transaction->update([
+                    'financial_account_id' => $validated['financial_account_id'],
+                    'financial_credit_card_invoice_id' => null,
+                    'type' => $validated['type'],
+                    'amount' => $validated['amount'],
+                    'description' => $validated['description'],
+                    'date' => $date,
+                    'status' => $validated['status'] ?? TransactionStatus::Posted,
+                ]);
             }
 
-            $invoice = FinancialCreditCardInvoice::resolveForDate($card, $invoiceDate);
-
-            $transaction->update([
-                'financial_account_id' => null,
-                'financial_credit_card_invoice_id' => $invoice->id,
-                'type' => $validated['type'],
-                'amount' => $validated['amount'],
-                'description' => $validated['description'],
-                'date' => $date,
-                'status' => TransactionStatus::Pending,
-            ]);
-        } else {
-            $date = Carbon::parse($validated['date']);
-            $transaction->update([
-                'financial_account_id' => $validated['financial_account_id'],
-                'financial_credit_card_invoice_id' => null,
-                'type' => $validated['type'],
-                'amount' => $validated['amount'],
-                'description' => $validated['description'],
-                'date' => $date,
-                'status' => $validated['status'] ?? TransactionStatus::Posted,
-            ]);
-        }
-
-        $hasItemTags = false;
-        if (! empty($validated['items'])) {
-            foreach ($validated['items'] as $itemData) {
-                if (! empty($itemData['tags'])) {
-                    $hasItemTags = true;
-                    break;
+            $hasItemTags = false;
+            if (! empty($validated['items'])) {
+                foreach ($validated['items'] as $itemData) {
+                    if (! empty($itemData['tags'])) {
+                        $hasItemTags = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        $globalTags = $validated['tags'] ?? [];
-        $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
-        $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
+            $globalTags = $validated['tags'] ?? [];
+            $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
+            $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
-        if ($request->has('items')) {
-            $transaction->items()->delete();
-            foreach ($validated['items'] as $itemData) {
-                $item = $transaction->items()->create([
-                    'description' => $itemData['description'],
-                    'quantity' => $itemData['quantity'],
-                    'unit_price' => $itemData['unit_price'],
-                    'total' => $itemData['quantity'] * $itemData['unit_price'],
-                ]);
-                $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+            if ($request->exists('items')) {
+                $this->deleteItemsWithTags($transaction);
+                foreach ($validated['items'] ?? [] as $itemData) {
+                    $item = $transaction->items()->create([
+                        'description' => $itemData['description'],
+                        'quantity' => $itemData['quantity'],
+                        'unit_price' => $itemData['unit_price'],
+                        'total' => $itemData['quantity'] * $itemData['unit_price'],
+                    ]);
+                    $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+                }
             }
-        } else {
-            $transaction->items()->delete();
-        }
 
-        $this->syncAttachments($transaction, $validated);
+            $this->syncAttachments($transaction, $validated);
+        });
 
         return redirect()->route('financial.transactions.show', $transaction)->with('success', 'Transação atualizada com sucesso.');
     }
 
-    public function destroy(FinancialTransaction $transaction)
+    public function destroy(FinancialTransaction $transaction): RedirectResponse
     {
         $transaction->delete();
 
         return redirect()->route('financial.transactions.index')->with('success', 'Transação movida para a lixeira.');
     }
 
-    public function trashed(Request $request)
+    public function trashed(Request $request): View
     {
         $transactions = FinancialTransaction::onlyTrashed()
             ->with([
@@ -432,14 +435,14 @@ class FinancialTransactionController extends Controller
         return view('finance.transactions.trashed', compact('transactions'));
     }
 
-    public function restore(FinancialTransaction $transaction)
+    public function restore(FinancialTransaction $transaction): RedirectResponse
     {
         $transaction->restore();
 
         return redirect()->back()->with('success', 'Transação restaurada com sucesso.');
     }
 
-    public function forceDestroy(FinancialTransaction $transaction)
+    public function forceDestroy(FinancialTransaction $transaction): RedirectResponse
     {
         $transaction->forceDelete();
 
@@ -474,7 +477,7 @@ class FinancialTransactionController extends Controller
         return $payload;
     }
 
-    private function syncTagsWithPrimary(mixed $model, array $tags, ?int $primaryId)
+    private function syncTagsWithPrimary(FinancialTransaction|FinancialTransactionItem $model, array $tags, ?int $primaryId): void
     {
         if (empty($tags)) {
             $model->tags()->detach();
@@ -489,7 +492,13 @@ class FinancialTransactionController extends Controller
         $model->tags()->sync($syncData);
     }
 
-    public function attachment(FinancialTransaction $transaction, $mediaId)
+    private function deleteItemsWithTags(FinancialTransaction $transaction): void
+    {
+        $transaction->items()->each(fn ($item) => $item->tags()->detach());
+        $transaction->items()->delete();
+    }
+
+    public function attachment(FinancialTransaction $transaction, int $mediaId): BinaryFileResponse
     {
         $media = $transaction->getMedia('attachments')->where('id', $mediaId)->first();
 

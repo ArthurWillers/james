@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
@@ -42,6 +43,8 @@ class FinancialTransaction extends Model implements HasMedia
     ];
 
     use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
+
+    protected static bool $deletingTransferPair = false;
 
     /**
      * Get the attributes that should be cast.
@@ -74,21 +77,32 @@ class FinancialTransaction extends Model implements HasMedia
     protected static function booted(): void
     {
         static::deleting(function (self $transaction) {
-            if ($transaction->transfer_pair_id) {
-                static::withoutEvents(function () use ($transaction) {
+            if ($transaction->isForceDeleting()) {
+                self::detachTagPivots($transaction);
+            }
+
+            if ($transaction->transfer_pair_id && ! static::$deletingTransferPair) {
+                static::$deletingTransferPair = true;
+
+                try {
                     if ($transaction->isForceDeleting()) {
                         static::withTrashed()
                             ->where('transfer_pair_id', $transaction->transfer_pair_id)
                             ->where('id', '!=', $transaction->id)
                             ->get()
-                            ->each(fn ($pair) => $pair->forceDelete());
+                            ->each(function (self $pair): void {
+                                self::detachTagPivots($pair);
+                                $pair->forceDelete();
+                            });
                     } else {
                         static::query()->where('transfer_pair_id', $transaction->transfer_pair_id)
                             ->where('id', '!=', $transaction->id)
                             ->get()
                             ->each(fn ($pair) => $pair->delete());
                     }
-                });
+                } finally {
+                    static::$deletingTransferPair = false;
+                }
             }
         });
     }
@@ -293,39 +307,41 @@ class FinancialTransaction extends Model implements HasMedia
         string $description,
         string $type = 'expense'
     ): Collection {
-        $totalCents = (int) round($totalAmount * 100);
-        $installmentCents = (int) floor($totalCents / $installments);
-        $remainderCents = $totalCents - ($installmentCents * $installments);
+        return DB::transaction(function () use ($account, $purchaseDate, $totalAmount, $installments, $description, $type): Collection {
+            $totalCents = (int) round($totalAmount * 100);
+            $installmentCents = (int) floor($totalCents / $installments);
+            $remainderCents = $totalCents - ($installmentCents * $installments);
 
-        $createdTransactions = collect();
+            $createdTransactions = collect();
 
-        for ($i = 1; $i <= $installments; $i++) {
-            $amountCents = $installmentCents;
-            if ($i === $installments) {
-                $amountCents += $remainderCents;
+            for ($i = 1; $i <= $installments; $i++) {
+                $amountCents = $installmentCents;
+                if ($i === $installments) {
+                    $amountCents += $remainderCents;
+                }
+
+                $amount = round($amountCents / 100, 2);
+                $date = $purchaseDate->copy()->addMonthsNoOverflow($i - 1);
+                $status = $date->copy()->startOfDay()->lte(Carbon::today())
+                    ? TransactionStatus::Posted
+                    : TransactionStatus::Pending;
+
+                $transaction = static::create([
+                    'financial_account_id' => $account->id,
+                    'type' => $type,
+                    'amount' => $amount,
+                    'description' => $description,
+                    'date' => $date,
+                    'status' => $status,
+                    'installment_current' => $i,
+                    'installment_total' => $installments,
+                ]);
+
+                $createdTransactions->push($transaction);
             }
 
-            $amount = round($amountCents / 100, 2);
-            $date = $purchaseDate->copy()->addMonths($i - 1);
-            $status = $date->copy()->startOfDay()->lte(Carbon::today())
-                ? TransactionStatus::Posted
-                : TransactionStatus::Pending;
-
-            $transaction = static::create([
-                'financial_account_id' => $account->id,
-                'type' => $type,
-                'amount' => $amount,
-                'description' => $description,
-                'date' => $date,
-                'status' => $status,
-                'installment_current' => $i,
-                'installment_total' => $installments,
-            ]);
-
-            $createdTransactions->push($transaction);
-        }
-
-        return $createdTransactions;
+            return $createdTransactions;
+        });
     }
 
     /**
@@ -340,54 +356,62 @@ class FinancialTransaction extends Model implements HasMedia
         ?float $feeAmount = null,
         ?int $feeTagId = null
     ): array {
-        $status = $date->copy()->startOfDay()->lte(Carbon::today())
-            ? TransactionStatus::Posted
-            : TransactionStatus::Pending;
+        return DB::transaction(function () use ($from, $to, $amount, $date, $description, $feeAmount, $feeTagId): array {
+            $status = $date->copy()->startOfDay()->lte(Carbon::today())
+                ? TransactionStatus::Posted
+                : TransactionStatus::Pending;
 
-        $expense = static::create([
-            'financial_account_id' => $from->id,
-            'type' => 'expense',
-            'amount' => $amount,
-            'description' => $description,
-            'date' => $date,
-            'status' => $status,
-        ]);
-
-        $expense->update(['transfer_pair_id' => $expense->id]);
-
-        $income = static::create([
-            'financial_account_id' => $to->id,
-            'type' => 'income',
-            'amount' => $amount,
-            'description' => $description,
-            'date' => $date,
-            'status' => $status,
-            'transfer_pair_id' => $expense->id,
-        ]);
-
-        $expense->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
-        $income->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
-
-        $transactions = [$expense, $income];
-
-        if ($feeAmount !== null && $feeAmount > 0) {
-            $fee = static::create([
+            $expense = static::create([
                 'financial_account_id' => $from->id,
                 'type' => 'expense',
-                'amount' => $feeAmount,
-                'description' => "Taxa/imposto — {$description}",
+                'amount' => $amount,
+                'description' => $description,
                 'date' => $date,
                 'status' => $status,
             ]);
 
-            if ($feeTagId !== null) {
-                $fee->tags()->attach($feeTagId, ['is_primary' => true]);
+            $expense->update(['transfer_pair_id' => $expense->id]);
+
+            $income = static::create([
+                'financial_account_id' => $to->id,
+                'type' => 'income',
+                'amount' => $amount,
+                'description' => $description,
+                'date' => $date,
+                'status' => $status,
+                'transfer_pair_id' => $expense->id,
+            ]);
+
+            $expense->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
+            $income->tags()->attach(FinancialTag::TRANSFERENCIA_ID, ['is_primary' => true]);
+
+            $transactions = [$expense, $income];
+
+            if ($feeAmount !== null && $feeAmount > 0) {
+                $fee = static::create([
+                    'financial_account_id' => $from->id,
+                    'type' => 'expense',
+                    'amount' => $feeAmount,
+                    'description' => "Taxa/imposto — {$description}",
+                    'date' => $date,
+                    'status' => $status,
+                ]);
+
+                if ($feeTagId !== null) {
+                    $fee->tags()->attach($feeTagId, ['is_primary' => true]);
+                }
+
+                $transactions[] = $fee;
             }
 
-            $transactions[] = $fee;
-        }
+            return $transactions;
+        });
+    }
 
-        return $transactions;
+    private static function detachTagPivots(self $transaction): void
+    {
+        $transaction->tags()->detach();
+        $transaction->items()->each(fn (FinancialTransactionItem $item) => $item->tags()->detach());
     }
 
     protected static array $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
