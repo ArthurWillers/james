@@ -23,7 +23,11 @@ it('can list transactions', function () {
 it('can view create transaction page', function () {
     $this->get(route('financial.transactions.create'))
         ->assertSuccessful()
-        ->assertViewIs('finance.transactions.create');
+        ->assertViewIs('finance.transactions.create')
+        ->assertSee('Importar NFC-e')
+        ->assertSee(route('financial.transactions.nfce.import'), false)
+        ->assertSee('name="url"', false)
+        ->assertSee('h-11', false);
 });
 
 it('can store transaction', function () {
