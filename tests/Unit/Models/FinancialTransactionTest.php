@@ -7,6 +7,8 @@ use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 it('scopes forAccounts correctly filters transactions', function () {
     $account1 = FinancialAccount::factory()->create();
@@ -91,4 +93,27 @@ it('casts status to TransactionStatus enum and filters correctly with scopes', f
 
     expect(FinancialTransaction::draft()->pluck('id'))->toContain($draft->id)
         ->and(FinancialTransaction::draft()->pluck('id'))->not->toContain($posted->id, $pending->id);
+});
+
+it('stores nfce metadata through the factory state', function () {
+    $transaction = FinancialTransaction::factory()->nfce()->create();
+
+    expect($transaction->nfce_access_key)->toHaveLength(44)
+        ->and($transaction->type)->toBe('expense')
+        ->and($transaction->status)->toBe(TransactionStatus::Draft)
+        ->and($transaction->nfce_provider)->toBe('svrs')
+        ->and($transaction->nfce_uf)->toBe('RS')
+        ->and($transaction->nfce_source_endpoint)
+        ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce');
+});
+
+it('prevents duplicate nfce access keys at the database level', function () {
+    $accessKey = '43260702247794000207650100003711221171005935';
+    $transaction = FinancialTransaction::factory()->nfce($accessKey)->create();
+
+    expect(fn () => DB::transaction(function () {
+        FinancialTransaction::factory()->nfce('43260702247794000207650100003711221171005935')->create();
+    }))->toThrow(QueryException::class);
+
+    $this->assertModelExists($transaction);
 });
