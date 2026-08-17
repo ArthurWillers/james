@@ -119,9 +119,9 @@ it('prevents duplicate nfce access keys at the database level', function () {
 });
 
 it('logs both transactions when a transfer pair is deleted', function () {
-    $pairId = 999;
-    $from = FinancialTransaction::factory()->create(['transfer_pair_id' => $pairId]);
-    $to = FinancialTransaction::factory()->create(['transfer_pair_id' => $pairId]);
+    $from = FinancialTransaction::factory()->create();
+    $from->update(['transfer_pair_id' => $from->id]);
+    $to = FinancialTransaction::factory()->create(['transfer_pair_id' => $from->id]);
 
     $from->delete();
 

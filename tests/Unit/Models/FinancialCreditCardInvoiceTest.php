@@ -110,6 +110,10 @@ it('locks the invoice row while registering a payment', function () {
     $invoice = FinancialCreditCardInvoice::factory()->create([
         'financial_credit_card_id' => $card->id,
     ]);
+    FinancialTag::factory()->create([
+        'id' => FinancialTag::PAGAMENTO_PARCIAL_ID,
+        'name' => 'Pagamento parcial',
+    ]);
     FinancialTransaction::factory()->create([
         'financial_credit_card_invoice_id' => $invoice->id,
         'amount' => 100,
