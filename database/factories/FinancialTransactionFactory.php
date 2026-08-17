@@ -50,6 +50,7 @@ class FinancialTransactionFactory extends Factory
             'nfce_access_key' => $accessKey ?? $this->faker->unique()->numerify(str_repeat('#', 44)),
             'nfce_provider' => 'svrs',
             'nfce_uf' => 'RS',
+            'nfce_issuer_document' => '12345678000195',
             'nfce_source_endpoint' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
         ]);
     }

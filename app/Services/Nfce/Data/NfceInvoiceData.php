@@ -11,6 +11,7 @@ final readonly class NfceInvoiceData
      */
     public function __construct(
         public string $issuer,
+        public ?string $issuerDocument,
         public CarbonImmutable $issuedAt,
         public string $totalAmount,
         public array $items,

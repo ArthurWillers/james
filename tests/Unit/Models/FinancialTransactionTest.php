@@ -103,6 +103,7 @@ it('stores nfce metadata through the factory state', function () {
         ->and($transaction->status)->toBe(TransactionStatus::Draft)
         ->and($transaction->nfce_provider)->toBe('svrs')
         ->and($transaction->nfce_uf)->toBe('RS')
+        ->and($transaction->nfce_issuer_document)->toBe('12345678000195')
         ->and($transaction->nfce_source_endpoint)
         ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce');
 });

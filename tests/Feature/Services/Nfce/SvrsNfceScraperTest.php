@@ -20,6 +20,7 @@ test('it extracts normalized invoice data from the svrs portal', function () {
     $invoice = app(SvrsNfceScraper::class)->scrape(svrsNfceSource());
 
     expect($invoice->issuer)->toBe('EMPRESA FICTICIA DE TESTE LTDA')
+        ->and($invoice->issuerDocument)->toBe('12345678000195')
         ->and($invoice->issuedAt->format('Y-m-d H:i:s'))->toBe('2026-07-14 15:25:55')
         ->and($invoice->totalAmount)->toBe('125.69')
         ->and($invoice->items)->toHaveCount(7)
@@ -81,6 +82,29 @@ test('it rejects incomplete portal html', function () {
 
     expect(fn () => app(SvrsNfceScraper::class)->scrape(svrsNfceSource()))
         ->toThrow(NfceInvoiceParsingException::class);
+});
+
+test('it rejects an invalid issuer document', function () {
+    $html = str_replace('12.345.678/0001-95', '12.345.678/0001', svrsFixture());
+
+    Http::fake([
+        'dfe-portal.svrs.rs.gov.br/*' => Http::response($html),
+    ]);
+
+    expect(fn () => app(SvrsNfceScraper::class)->scrape(svrsNfceSource()))
+        ->toThrow(NfceInvoiceParsingException::class);
+});
+
+test('it accepts an invoice without an issuer document', function () {
+    $html = str_replace('            <div class="text">CNPJ: 12.345.678/0001-95</div>'.PHP_EOL, '', svrsFixture());
+
+    Http::fake([
+        'dfe-portal.svrs.rs.gov.br/*' => Http::response($html),
+    ]);
+
+    $invoice = app(SvrsNfceScraper::class)->scrape(svrsNfceSource());
+
+    expect($invoice->issuerDocument)->toBeNull();
 });
 
 test('it accepts an invoice without discounts', function () {

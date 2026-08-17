@@ -79,6 +79,7 @@ class SvrsNfceScraper implements NfceScraperInterface
     {
         $crawler = new Crawler($html);
         $issuer = $this->requiredText($crawler, '//*[@id="u20"]', 'emitente');
+        $issuerDocument = $this->parseIssuerDocument($crawler);
         $accessKey = preg_replace(
             '/\D/',
             '',
@@ -127,6 +128,7 @@ class SvrsNfceScraper implements NfceScraperInterface
 
         return new NfceInvoiceData(
             issuer: $issuer,
+            issuerDocument: $issuerDocument,
             issuedAt: $issuedAt,
             totalAmount: $this->formatCents($netTotal),
             items: $items,
@@ -146,6 +148,26 @@ class SvrsNfceScraper implements NfceScraperInterface
         }
 
         return $issuedAt;
+    }
+
+    private function parseIssuerDocument(Crawler $crawler): ?string
+    {
+        $document = $this->optionalText(
+            $crawler,
+            '//*[@id="u20"]/following-sibling::*[contains(@class, "text")][contains(normalize-space(.), "CNPJ:") or contains(normalize-space(.), "CPF:")][1]',
+        );
+
+        if ($document === null) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', $document);
+
+        if (! in_array(strlen($digits), [11, 14], true)) {
+            throw new NfceInvoiceParsingException('O documento do emitente retornado pelo portal da NFC-e é inválido.');
+        }
+
+        return $digits;
     }
 
     /**

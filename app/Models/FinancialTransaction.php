@@ -35,6 +35,7 @@ class FinancialTransaction extends Model implements HasMedia
         'nfce_access_key',
         'nfce_provider',
         'nfce_uf',
+        'nfce_issuer_document',
         'nfce_source_endpoint',
         'transfer_pair_id',
         'installment_current',
