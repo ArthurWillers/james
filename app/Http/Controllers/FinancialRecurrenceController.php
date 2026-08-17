@@ -32,10 +32,10 @@ class FinancialRecurrenceController extends Controller
             ]);
 
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $query->search($request->search, ['title']);
         }
 
-        $recurrences = $query->orderBy('start_date', 'desc')->paginate(15);
+        $recurrences = $query->orderBy('start_date', 'desc')->paginate(15)->withQueryString();
 
         $hasTrashed = FinancialRecurrence::onlyTrashed()->exists();
 
@@ -150,10 +150,10 @@ class FinancialRecurrenceController extends Controller
             ]);
 
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $query->search($request->search, ['title']);
         }
 
-        $recurrences = $query->orderBy('deleted_at', 'desc')->paginate(15);
+        $recurrences = $query->orderBy('deleted_at', 'desc')->paginate(15)->withQueryString();
 
         return view('finance.recurrences.trashed', compact('recurrences'));
     }
@@ -181,7 +181,7 @@ class FinancialRecurrenceController extends Controller
             ->with('success', 'Recorrência excluída permanentemente.');
     }
 
-    private function syncTagsWithPrimary($model, array $tags, $primaryId)
+    private function syncTagsWithPrimary(FinancialRecurrence $model, array $tags, ?int $primaryId): void
     {
         if (empty($tags)) {
             $model->tags()->detach();
