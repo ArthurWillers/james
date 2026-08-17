@@ -59,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
         require_once app_path('Helpers/DateHelper.php');
         require_once app_path('Helpers/CurrencyHelper.php');
+        require_once app_path('Helpers/DocumentHelper.php');
 
         Carbon::macro('formatDate', function () {
             return DateHelper::format($this);
