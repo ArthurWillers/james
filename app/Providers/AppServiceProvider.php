@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Helpers\DateHelper;
+use App\Services\Nfce\NfceSourceResolver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
@@ -16,7 +17,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->when(NfceSourceResolver::class)
+            ->needs('$sources')
+            ->giveConfig('services.nfce.sources');
+
+        $this->app->when(NfceSourceResolver::class)
+            ->needs('$ufCodes')
+            ->giveConfig('services.nfce.uf_codes');
     }
 
     /**
