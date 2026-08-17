@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreContactRequest;
+use App\Http\Requests\SyncContactGroupsRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Models\Contact;
 use App\Models\ContactGroup;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -111,9 +111,9 @@ class ContactController extends Controller
     /**
      * Sync the groups for a contact.
      */
-    public function syncGroups(Request $request, Contact $contact): RedirectResponse
+    public function syncGroups(SyncContactGroupsRequest $request, Contact $contact): RedirectResponse
     {
-        $contact->groups()->sync($request->input('group_ids', []));
+        $contact->groups()->sync($request->validated('group_ids', []));
 
         return back()->with('success', 'Grupos atualizados com sucesso.');
     }

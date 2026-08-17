@@ -43,8 +43,6 @@ class UpdateContactRequest extends FormRequest
             'emails' => ['nullable', 'array'],
             'emails.*.label' => ['required', 'string', 'max:255'],
             'emails.*.value' => ['required', 'email', 'max:255'],
-            'pix_keys' => ['nullable', 'array'],
-            'addresses' => ['nullable', 'array'],
             'notes' => ['nullable', 'string'],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp,heic,heif', 'max:10240'],
         ];
