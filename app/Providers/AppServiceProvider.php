@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Helpers\DateHelper;
+use App\Services\Nfce\NfceScraperResolver;
 use App\Services\Nfce\NfceSourceResolver;
+use App\Services\Nfce\Scrapers\SvrsNfceScraper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
@@ -17,6 +19,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->when(SvrsNfceScraper::class)
+            ->needs('$httpConfig')
+            ->giveConfig('services.nfce.http');
+
+        $this->app->tag([SvrsNfceScraper::class], 'nfce.scrapers');
+
+        $this->app->when(NfceScraperResolver::class)
+            ->needs('$scrapers')
+            ->giveTagged('nfce.scrapers');
+
         $this->app->when(NfceSourceResolver::class)
             ->needs('$sources')
             ->giveConfig('services.nfce.sources');

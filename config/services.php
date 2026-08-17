@@ -38,6 +38,11 @@ return [
     ],
 
     'nfce' => [
+        'http' => [
+            'timeout' => 10,
+            'connect_timeout' => 3,
+            'retry_delays' => [100, 500, 1000],
+        ],
         'sources' => [
             [
                 'provider' => 'svrs',
