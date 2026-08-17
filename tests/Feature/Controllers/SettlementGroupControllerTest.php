@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\Contact;
+use App\Models\Settlement;
 use App\Models\SettlementGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
@@ -56,6 +58,75 @@ it('can store a settlement group', function () {
     ]);
 });
 
+it('rejects duplicate contacts and inconsistent totals', function () {
+    $contact = Contact::factory()->create();
+
+    $this->post(route('settlements.groups.store'), [
+        'description' => 'Pizza',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+        'my_amount' => 30,
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contact->id, 'amount' => 30],
+            ['id' => $contact->id, 'amount' => 30],
+        ],
+    ])->assertSessionHasErrors(['contacts.1.id']);
+
+    $this->post(route('settlements.groups.store'), [
+        'description' => 'Pizza',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+        'my_amount' => 30,
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contact->id, 'amount' => 60],
+        ],
+    ])->assertSessionHasErrors(['total_amount']);
+
+    expect(SettlementGroup::query()->exists())->toBeFalse();
+});
+
+it('uses the ui cent remainder policy for equal divisions', function () {
+    $contacts = Contact::factory()->count(2)->create();
+
+    $this->post(route('settlements.groups.store'), [
+        'description' => 'Conta de cem reais',
+        'total_amount' => '100.00',
+        'date' => '2023-01-01',
+        'mode' => 'equal',
+        'my_amount' => '33.34',
+        'create_transaction' => false,
+        'contacts' => $contacts->map(fn (Contact $contact): array => [
+            'id' => $contact->id,
+            'amount' => '33.33',
+        ])->all(),
+    ])->assertRedirect(route('settlements.index'));
+
+    $group = SettlementGroup::query()->sole();
+
+    expect($group->settlements()->pluck('amount')->all())->toEqual([33.33, 33.33]);
+});
+
+it('rejects equal divisions that do not follow the ui cent remainder policy', function () {
+    $contacts = Contact::factory()->count(2)->create();
+
+    $this->post(route('settlements.groups.store'), [
+        'description' => 'Conta de cem reais',
+        'total_amount' => '100.00',
+        'date' => '2023-01-01',
+        'mode' => 'equal',
+        'my_amount' => '33.33',
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contacts[0]->id, 'amount' => '33.34'],
+            ['id' => $contacts[1]->id, 'amount' => '33.33'],
+        ],
+    ])->assertSessionHasErrors(['my_amount', 'contacts.0.amount']);
+});
+
 it('can view edit screen', function () {
     $group = SettlementGroup::create([
         'description' => 'Test',
@@ -98,6 +169,30 @@ it('can update a settlement group', function () {
     ]);
 });
 
+it('rejects an inconsistent distribution when updating a settlement group', function () {
+    $contact = Contact::factory()->create();
+    $group = SettlementGroup::create([
+        'description' => 'Test',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+    ]);
+
+    $this->put(route('settlements.groups.update', $group), [
+        'description' => 'Invalid update',
+        'total_amount' => 200,
+        'date' => '2023-01-02',
+        'mode' => 'exact',
+        'my_amount' => 50,
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contact->id, 'amount' => 100],
+        ],
+    ])->assertSessionHasErrors(['total_amount']);
+
+    expect($group->fresh()->description)->toBe('Test');
+});
+
 it('can soft delete a settlement group', function () {
     $group = SettlementGroup::create([
         'description' => 'To Delete',
@@ -110,4 +205,36 @@ it('can soft delete a settlement group', function () {
         ->assertRedirect();
 
     $this->assertSoftDeleted('settlement_groups', ['id' => $group->id]);
+});
+
+it('force deletes settlement children through their models', function () {
+    $contact = Contact::factory()->create();
+    $group = SettlementGroup::create([
+        'description' => 'To Delete Permanently',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'equal',
+    ]);
+    $settlement = Settlement::create([
+        'contact_id' => $contact->id,
+        'settlement_group_id' => $group->id,
+        'type' => 'they_owe',
+        'amount' => 100,
+        'description' => 'Settlement',
+        'date' => '2023-01-01',
+    ]);
+
+    $group->delete();
+    $settlement->delete();
+
+    $this->delete(route('settlements.groups.force-delete', $group->id))
+        ->assertRedirect(route('settlements.groups.trashed'));
+
+    $this->assertDatabaseMissing('settlements', ['id' => $settlement->id]);
+    $this->assertDatabaseMissing('settlement_groups', ['id' => $group->id]);
+    expect(Activity::query()
+        ->where('subject_type', Settlement::class)
+        ->where('subject_id', $settlement->id)
+        ->where('event', 'forceDeleted')
+        ->exists())->toBeTrue();
 });

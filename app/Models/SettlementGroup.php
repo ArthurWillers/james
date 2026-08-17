@@ -39,6 +39,26 @@ class SettlementGroup extends Model implements HasMedia
         return $this->hasMany(Settlement::class);
     }
 
+    /**
+     * Soft-delete every settlement belonging to this group through the models.
+     */
+    public function deleteSettlements(): void
+    {
+        $this->settlements()->eachById(function (Settlement $settlement): void {
+            $settlement->delete();
+        });
+    }
+
+    /**
+     * Permanently delete every settlement belonging to this group through the models.
+     */
+    public function forceDeleteSettlements(): void
+    {
+        $this->settlements()->withTrashed()->eachById(function (Settlement $settlement): void {
+            $settlement->forceDelete();
+        });
+    }
+
     public function financialTransaction(): BelongsTo
     {
         return $this->belongsTo(FinancialTransaction::class);
