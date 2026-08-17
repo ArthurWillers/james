@@ -164,6 +164,7 @@ function svrsNfceSource(): NfceSource
         accessKey: '43111111111111111111111111111111111111111111',
         uf: 'RS',
         sourceEndpoint: 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
+        requestParameterSuffix: '|3|1',
     );
 }
 

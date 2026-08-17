@@ -10,5 +10,6 @@ final readonly class NfceSource
         public string $accessKey,
         public ?string $uf,
         public string $sourceEndpoint,
+        public string $requestParameterSuffix = '',
     ) {}
 }

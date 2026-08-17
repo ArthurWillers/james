@@ -48,6 +48,7 @@ final class NfceSourceResolver
             accessKey: $accessKey,
             uf: $this->ufCodes[substr($accessKey, 0, 2)] ?? null,
             sourceEndpoint: $sourceEndpoint,
+            requestParameterSuffix: Str::after($queryParameter, $accessKey),
         );
     }
 

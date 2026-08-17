@@ -18,6 +18,7 @@ it('resolves and normalizes a valid SVRS NFC-e URL', function () {
         ->and($source->accessKey)->toBe('43260702247794000207650100003711221171005935')
         ->and($source->uf)->toBe('RS')
         ->and($source->sourceEndpoint)->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce')
+        ->and($source->requestParameterSuffix)->toBe('|3|1')
         ->and($source->requestUrl)
         ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43260702247794000207650100003711221171005935%7C3%7C1');
 });
