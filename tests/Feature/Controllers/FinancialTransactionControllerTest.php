@@ -8,6 +8,8 @@ use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -311,7 +313,74 @@ it('dispatches the NFC-e import job and redirects immediately', function () {
     });
 });
 
+it('retries an NFC-e import from a signed notification action', function () {
+    Bus::fake();
+
+    $this->get(nfceRetryUrl($this->user))
+        ->assertRedirect(route('notifications.index'))
+        ->assertSessionHas('success', 'Importação reenviada para processamento. Você será notificado quando terminar.');
+
+    Bus::assertDispatched(ScrapeNfceInvoiceJob::class, function (ScrapeNfceInvoiceJob $job): bool {
+        return $job->requesterId === $this->user->id
+            && $job->provider === 'svrs'
+            && $job->accessKey === '43111111111111111111111111111111111111111111'
+            && $job->uf === 'RS'
+            && $job->sourceEndpoint === 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce'
+            && $job->requestParameterSuffix === '|3|1';
+    });
+});
+
+it('rejects NFC-e retries with an invalid signature', function () {
+    $this->get(route('financial.transactions.nfce.retry', [
+        'payload' => Crypt::encrypt([]),
+    ]))->assertForbidden();
+});
+
+it('rejects NFC-e retries with an invalid encrypted payload', function () {
+    $url = URL::signedRoute('financial.transactions.nfce.retry', [
+        'payload' => 'invalid',
+    ]);
+
+    $this->get($url)->assertNotFound();
+});
+
+it('rejects NFC-e retries requested by another user', function () {
+    Bus::fake();
+    $otherUser = User::factory()->create();
+
+    $this->get(nfceRetryUrl($otherUser))->assertForbidden();
+
+    Bus::assertNothingDispatched();
+});
+
+it('does not retry an NFC-e that is already imported', function () {
+    Bus::fake();
+    FinancialTransaction::factory()
+        ->nfce('43111111111111111111111111111111111111111111')
+        ->create();
+
+    $this->get(nfceRetryUrl($this->user))
+        ->assertRedirect(route('notifications.index'))
+        ->assertSessionHas('success', 'Esta NFC-e já foi importada.');
+
+    Bus::assertNothingDispatched();
+});
+
 function nfceImportUrl(): string
 {
     return 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1';
+}
+
+function nfceRetryUrl(User $requester): string
+{
+    return URL::signedRoute('financial.transactions.nfce.retry', [
+        'payload' => Crypt::encrypt([
+            'requester_id' => $requester->id,
+            'provider' => 'svrs',
+            'access_key' => '43111111111111111111111111111111111111111111',
+            'uf' => 'RS',
+            'source_endpoint' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
+            'request_parameter_suffix' => '|3|1',
+        ]),
+    ]);
 }

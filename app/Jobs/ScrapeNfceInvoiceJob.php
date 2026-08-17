@@ -17,7 +17,9 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Uri;
 use Throwable;
 
@@ -25,7 +27,7 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
-    public int $timeout = 60;
+    public int $timeout = 90;
 
     public int $tries = 3;
 
@@ -108,8 +110,15 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
         $requester->notify(new GeneralNotification(
             title: 'Falha ao importar NFC-e',
             message: $this->failureMessage($exception),
+            actionUrl: $this->retryUrl(),
             level: NotificationLevel::Danger,
+            details: [
+                'Portal' => $this->provider,
+                'UF' => $this->uf ?? 'Não identificada',
+                'Chave de acesso' => $this->accessKey,
+            ],
             channels: ['database', 'telegram'],
+            actionLabel: 'Tentar novamente',
         ));
     }
 
@@ -186,5 +195,19 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
             $exception instanceof NfceInvoiceParsingException => 'Não foi possível interpretar os dados retornados pelo portal da NFC-e.',
             default => 'A importação da NFC-e não pôde ser concluída.',
         };
+    }
+
+    private function retryUrl(): string
+    {
+        return URL::signedRoute('financial.transactions.nfce.retry', [
+            'payload' => Crypt::encrypt([
+                'requester_id' => $this->requesterId,
+                'provider' => $this->provider,
+                'access_key' => $this->accessKey,
+                'uf' => $this->uf,
+                'source_endpoint' => $this->sourceEndpoint,
+                'request_parameter_suffix' => $this->requestParameterSuffix,
+            ]),
+        ]);
     }
 }

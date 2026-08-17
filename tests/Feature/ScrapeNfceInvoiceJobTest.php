@@ -58,9 +58,12 @@ test('it prevents concurrent jobs for the same NFC-e without serializing its com
 
     expect($job)->toBeInstanceOf(ShouldBeUnique::class)
         ->and($job->uniqueId())->toBe('43111111111111111111111111111111111111111111')
-        ->and($job->timeout)->toBeLessThan(90)
+        ->and($job->timeout)->toBe(90)
         ->and($job->tries)->toBe(3)
         ->and($job->backoff)->toBe([5, 15, 30])
+        ->and(config('services.nfce.http.timeout'))->toBe(15)
+        ->and(config('services.nfce.http.connect_timeout'))->toBe(5)
+        ->and(config('queue.connections.database.retry_after'))->toBe(120)
         ->and(serialize($job))->not->toContain(jobNfceRequestUrl());
 });
 
@@ -101,7 +104,15 @@ test('it notifies the requester when the portal remains unavailable', function (
     Notification::assertSentTo($requester, GeneralNotification::class, function (GeneralNotification $notification): bool {
         return $notification->title === 'Falha ao importar NFC-e'
             && $notification->message === 'Não foi possível consultar o portal da NFC-e. Tente novamente mais tarde.'
-            && $notification->actionUrl === null
+            && $notification->actionLabel === 'Tentar novamente'
+            && $notification->actionUrl !== null
+            && str_contains($notification->actionUrl, 'signature=')
+            && ! str_contains($notification->actionUrl, '43111111111111111111111111111111111111111111')
+            && $notification->details === [
+                'Portal' => 'svrs',
+                'UF' => 'RS',
+                'Chave de acesso' => '43111111111111111111111111111111111111111111',
+            ]
             && $notification->channels === ['database', 'telegram'];
     });
 });

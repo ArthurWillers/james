@@ -75,6 +75,7 @@ it('returns correct toDatabase payload with level and details', function () {
         'title' => 'Meu Título',
         'message' => 'Minha Mensagem',
         'action_url' => 'https://example.com',
+        'action_label' => 'Acessar no Sistema',
         'level' => 'warning',
         'details' => ['Valor' => 'R$ 100,00'],
     ]);
@@ -88,7 +89,8 @@ it('formats telegram message with clean bold title, prefix and details', functio
         message: 'Sua fatura fechou.',
         actionUrl: 'https://example.com/fatura',
         level: NotificationLevel::Warning,
-        details: ['Total' => 'R$ 500,00', 'Vencimento' => '25/08']
+        details: ['Total' => 'R$ 500,00', 'Vencimento' => '25/08'],
+        actionLabel: 'Revisar fatura',
     );
     $user = new User;
 
@@ -99,6 +101,7 @@ it('formats telegram message with clean bold title, prefix and details', functio
     expect($payload['text'])->toContain('*ALERTA: Fatura Fechada*');
     expect($payload['text'])->toContain('• *Total:* R$ 500,00');
     expect($payload['text'])->toContain('• *Vencimento:* 25/08');
+    expect(json_decode($payload['reply_markup'], true)['inline_keyboard'][0][0]['text'])->toBe('Revisar fatura');
 });
 
 it('formats mail message with subject, greeting, details and action', function () {
@@ -107,7 +110,8 @@ it('formats mail message with subject, greeting, details and action', function (
         message: 'Pagamento confirmado com sucesso.',
         actionUrl: 'https://example.com/tx/1',
         level: 'success',
-        details: ['Valor' => 'R$ 250,00']
+        details: ['Valor' => 'R$ 250,00'],
+        actionLabel: 'Revisar transação',
     );
     $user = new User(['name' => 'Arthur', 'email' => 'arthur@example.com']);
 
@@ -117,6 +121,6 @@ it('formats mail message with subject, greeting, details and action', function (
     expect($mail->greeting)->toContain('Arthur');
     expect($mail->introLines)->toContain('Pagamento confirmado com sucesso.');
     expect($mail->introLines)->toContain('**Valor:** R$ 250,00');
-    expect($mail->actionText)->toBe('Acessar no Sistema');
+    expect($mail->actionText)->toBe('Revisar transação');
     expect($mail->actionUrl)->toBe('https://example.com/tx/1');
 });
