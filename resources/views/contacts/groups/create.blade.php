@@ -51,7 +51,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
                 @foreach($allContacts as $contact)
-                    <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" x-show="search === '' || '{{ strtolower(addslashes($contact->name)) }}'.includes(search.toLowerCase())" />
+                    <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" x-show="search === '' || {{ Js::from(strtolower($contact->name)) }}.includes(search.toLowerCase())" />
                 @endforeach
                 
                 <div class="col-span-full p-8 text-center text-neutral-500 bg-white rounded-xl border border-dashed border-neutral-200 shadow-sm" style="display: none;" x-show="!Array.from(document.querySelectorAll('[x-show]')).some(el => el.style.display !== 'none')">

@@ -4,11 +4,13 @@ use App\Enums\SettlementType;
 use App\Models\Contact;
 use App\Models\FinancialAccount;
 use App\Models\FinancialTag;
+use App\Models\Settlement;
 use App\Models\SettlementGroup;
 use App\Models\User;
 use App\Services\SettlementGroupService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
@@ -66,7 +68,7 @@ it('creates a settlement group with a financial transaction and tags', function 
         'description' => 'Test Lunch',
         'total_amount' => 100,
         'date' => '2023-01-01',
-        'mode' => 'custom',
+        'mode' => 'exact',
         'my_amount' => 40,
         'create_transaction' => true,
         'targetType' => 'account',
@@ -114,6 +116,7 @@ it('updates a settlement group and replaces children', function () {
     ];
 
     $group = $this->service->storeGroup($initialData);
+    $oldSettlementId = $group->settlements()->value('id');
     expect($group->settlements)->toHaveCount(1);
 
     $updateData = [
@@ -134,6 +137,12 @@ it('updates a settlement group and replaces children', function () {
     expect($updatedGroup->description)->toBe('Updated')
         ->and($updatedGroup->total_amount)->toBe(150.0)
         ->and($updatedGroup->settlements)->toHaveCount(2);
+
+    expect(Activity::query()
+        ->where('subject_type', Settlement::class)
+        ->where('subject_id', $oldSettlementId)
+        ->where('event', 'forceDeleted')
+        ->exists())->toBeTrue();
 });
 
 it('destroys a settlement group and its transaction', function () {
@@ -156,10 +165,78 @@ it('destroys a settlement group and its transaction', function () {
 
     $group = $this->service->storeGroup($validated);
     $transactionId = $group->financial_transaction_id;
+    $settlementId = $group->settlements()->value('id');
 
     $this->service->destroyGroup($group);
 
     $this->assertSoftDeleted('settlement_groups', ['id' => $group->id]);
     $this->assertSoftDeleted('settlements', ['settlement_group_id' => $group->id]);
     $this->assertDatabaseMissing('financial_transactions', ['id' => $transactionId]);
+
+    expect(Activity::query()
+        ->where('subject_type', Settlement::class)
+        ->where('subject_id', $settlementId)
+        ->where('event', 'deleted')
+        ->exists())->toBeTrue();
+});
+
+it('rejects inconsistent distributions before creating records', function () {
+    $contact = Contact::factory()->create();
+
+    expect(fn () => $this->service->storeGroup([
+        'description' => 'Invalid split',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+        'my_amount' => 50,
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contact->id, 'amount' => 40],
+        ],
+    ]))->toThrow(InvalidArgumentException::class);
+
+    expect(SettlementGroup::query()->exists())->toBeFalse();
+});
+
+it('rejects duplicate contacts at the service boundary', function () {
+    $contact = Contact::factory()->create();
+
+    expect(fn () => $this->service->storeGroup([
+        'description' => 'Duplicate split',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+        'my_amount' => 20,
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contact->id, 'amount' => 40],
+            ['id' => $contact->id, 'amount' => 40],
+        ],
+    ]))->toThrow(InvalidArgumentException::class);
+});
+
+it('rejects empty and non-positive distributions at the service boundary', function () {
+    expect(fn () => $this->service->storeGroup([
+        'description' => 'Empty split',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+        'my_amount' => 100,
+        'create_transaction' => false,
+        'contacts' => [],
+    ]))->toThrow(InvalidArgumentException::class);
+
+    $contact = Contact::factory()->create();
+
+    expect(fn () => $this->service->storeGroup([
+        'description' => 'Non-positive split',
+        'total_amount' => 100,
+        'date' => '2023-01-01',
+        'mode' => 'exact',
+        'my_amount' => 100,
+        'create_transaction' => false,
+        'contacts' => [
+            ['id' => $contact->id, 'amount' => 0],
+        ],
+    ]))->toThrow(InvalidArgumentException::class);
 });

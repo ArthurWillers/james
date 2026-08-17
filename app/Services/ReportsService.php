@@ -192,9 +192,9 @@ class ReportsService
     {
         return match ($frequency) {
             'weekly' => $date->copy()->addWeek(),
-            'monthly' => $date->copy()->addMonth(),
-            'yearly' => $date->copy()->addYear(),
-            default => $date->copy()->addMonth(),
+            'monthly' => $date->copy()->addMonthNoOverflow(),
+            'yearly' => $date->copy()->addYearNoOverflow(),
+            default => $date->copy()->addMonthNoOverflow(),
         };
     }
 

@@ -9,6 +9,7 @@ use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class FinancialCreditCardController extends Controller
@@ -92,18 +93,18 @@ class FinancialCreditCardController extends Controller
         $closingDayChanged = $card->closing_day !== (int) $validated['closing_day'];
         $dueDayChanged = $card->due_day !== (int) $validated['due_day'];
 
-        if ($closingDayChanged || $dueDayChanged) {
-            $card->updateClosingSchedule((int) $validated['closing_day'], (int) $validated['due_day']);
-
-            // update remaining fields
-            $card->update([
-                'name' => $validated['name'],
-                'financial_account_id' => $validated['financial_account_id'],
-                'credit_limit' => $validated['credit_limit'],
-            ]);
-        } else {
-            $card->update($validated);
-        }
+        DB::transaction(function () use ($card, $validated, $closingDayChanged, $dueDayChanged): void {
+            if ($closingDayChanged || $dueDayChanged) {
+                $card->updateClosingSchedule((int) $validated['closing_day'], (int) $validated['due_day']);
+                $card->update([
+                    'name' => $validated['name'],
+                    'financial_account_id' => $validated['financial_account_id'],
+                    'credit_limit' => $validated['credit_limit'],
+                ]);
+            } else {
+                $card->update($validated);
+            }
+        });
 
         return redirect()
             ->route('financial.cards.show', $card)

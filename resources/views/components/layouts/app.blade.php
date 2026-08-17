@@ -7,7 +7,6 @@
 </head>
 
 <body class="min-h-screen antialiased bg-neutral-50 text-neutral-900">
-
     <x-sidebar :headerBg="$headerBg">
         <x-nav-link :href="route('dashboard')" :current="request()->routeIs('dashboard')">
             <x-heroicon-o-home class="w-4 h-4" />
@@ -32,9 +31,9 @@
         <x-nav-link :href="route('notifications.index')" :current="request()->routeIs('notifications.*')">
             <x-heroicon-o-bell class="w-4 h-4" />
             <span>Notificações</span>
-            @if(auth()->user()->unreadNotifications()->count() > 0)
-                <span class="ms-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-xxs font-bold leading-none">
-                    {{ auth()->user()->unreadNotifications()->count() > 99 ? '99+' : auth()->user()->unreadNotifications()->count() }}
+            @if($unreadNotificationCount > 0)
+                <span class="ms-auto flex min-w-5 items-center justify-center h-5 px-1.5 rounded-full bg-red-500 text-white text-xxs font-bold leading-none">
+                    {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
                 </span>
             @endif
         </x-nav-link>

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SettlementGroupController extends Controller
 {
@@ -137,7 +138,7 @@ class SettlementGroupController extends Controller
             ->with('success', 'Divisão de conta excluída com sucesso.');
     }
 
-    public function trashed()
+    public function trashed(): View
     {
         $settlementGroups = SettlementGroup::onlyTrashed()
             ->orderByDesc('deleted_at')
@@ -146,7 +147,7 @@ class SettlementGroupController extends Controller
         return view('settlements.groups.trashed', compact('settlementGroups'));
     }
 
-    public function restore(int $id)
+    public function restore(int $id): RedirectResponse
     {
         $group = SettlementGroup::onlyTrashed()->findOrFail($id);
 
@@ -163,7 +164,7 @@ class SettlementGroupController extends Controller
         return redirect()->route('settlements.groups.trashed')->with('success', 'Divisão de conta restaurada com sucesso.');
     }
 
-    public function attachment(SettlementGroup $settlementGroup, Media $media, $filename = null)
+    public function attachment(SettlementGroup $settlementGroup, Media $media, ?string $filename = null): BinaryFileResponse
     {
         abort_if($media->model_type !== SettlementGroup::class || $media->model_id !== $settlementGroup->id, 404);
 
@@ -172,7 +173,7 @@ class SettlementGroupController extends Controller
         ]);
     }
 
-    public function forceDelete(int $id)
+    public function forceDelete(int $id): RedirectResponse
     {
         $group = SettlementGroup::onlyTrashed()->findOrFail($id);
 
@@ -180,12 +181,11 @@ class SettlementGroupController extends Controller
             if ($group->financial_transaction_id) {
                 $transaction = FinancialTransaction::withTrashed()->find($group->financial_transaction_id);
                 if ($transaction) {
-                    $transaction->items()->delete();
                     $transaction->forceDelete();
                 }
             }
 
-            $group->settlements()->withTrashed()->forceDelete();
+            $group->forceDeleteSettlements();
             $group->forceDelete();
         });
 

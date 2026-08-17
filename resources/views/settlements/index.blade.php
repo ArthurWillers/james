@@ -313,16 +313,16 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-10"
-             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 sm:gap-6 px-6 py-4 bg-white rounded-2xl shadow-xl border border-neutral-200 min-w-[300px]" style="display: none;">
+             class="mt-4 flex w-full flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-6" style="display: none;">
             
-            <div class="flex items-center gap-4">
+            <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
                 <div class="text-sm font-medium text-neutral-700">
                     <span x-text="selectedIds.length"></span> selecionado(s)
                 </div>
                 
-                <div class="w-px h-6 bg-neutral-200"></div>
+                <div class="hidden h-6 w-px bg-neutral-200 sm:block"></div>
                 
-                <div class="flex items-center gap-2">
+                <div class="flex w-full items-center gap-2 sm:w-auto">
                     @if($showArchived)
                         <x-modal.trigger name="bulk-unarchive">
                             <x-button type="button" color="primary">
@@ -349,7 +349,7 @@
                 </div>
             </div>
 
-            <button type="button" class="p-2 -mr-2 rounded-xl text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors" title="Limpar seleção" @click="selectedIds = []">
+            <button type="button" class="min-h-11 min-w-11 self-end rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 sm:self-auto" title="Limpar seleção" @click="selectedIds = []">
                 <x-heroicon-o-x-mark class="size-5" />
             </button>
         </div>

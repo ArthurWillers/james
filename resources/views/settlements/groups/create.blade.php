@@ -22,12 +22,12 @@
 
     <div class="mt-6">
         <form action="{{ route('settlements.groups.store') }}" method="POST" enctype="multipart/form-data" id="split-form" x-data="{
-            mode: '{{ old('mode', 'equal') }}',
-            totalAmount: '{{ old('total_amount', '') }}',
-            myAmount: '{{ old('my_amount', '') }}',
-            createTransaction: {{ old('create_transaction', 'true') == '1' || old('create_transaction', 'true') === 'true' ? 'true' : 'false' }},
-            targetType: '{{ old('targetType', 'account') }}',
-            contacts: {{ json_encode($alpineContacts) }},
+            mode: {{ Js::from(old('mode', 'equal')) }},
+            totalAmount: {{ Js::from(old('total_amount', '')) }},
+            myAmount: {{ Js::from(old('my_amount', '')) }},
+            createTransaction: {{ Js::from(old('create_transaction', 'true') == '1' || old('create_transaction', 'true') === 'true') }},
+            targetType: {{ Js::from(old('targetType', 'account')) }},
+            contacts: {{ Js::from($alpineContacts) }},
 
             get totalPeople() {
                 return this.contacts.length + 1;

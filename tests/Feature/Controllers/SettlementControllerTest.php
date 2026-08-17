@@ -2,9 +2,11 @@
 
 use App\Enums\SettlementType;
 use App\Models\Contact;
+use App\Models\FinancialTransaction;
 use App\Models\Settlement;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 
 uses(RefreshDatabase::class);
 
@@ -107,6 +109,31 @@ it('can soft delete a settlement', function () {
         ->assertRedirect();
 
     $this->assertSoftDeleted('settlements', ['id' => $settlement->id]);
+});
+
+it('rolls back the related transaction when deleting a settlement fails', function () {
+    $contact = Contact::factory()->create();
+    $transaction = FinancialTransaction::factory()->create();
+    $settlement = Settlement::create([
+        'contact_id' => $contact->id,
+        'financial_transaction_id' => $transaction->id,
+        'type' => SettlementType::TheyOwe->value,
+        'amount' => 100,
+        'description' => 'Test',
+        'date' => '2023-01-01',
+    ]);
+
+    $eventName = 'eloquent.deleting: '.Settlement::class;
+    Event::listen($eventName, fn () => throw new RuntimeException('Simulated failure'));
+
+    try {
+        $this->delete(route('settlements.destroy', $settlement))->assertServerError();
+    } finally {
+        Event::forget($eventName);
+    }
+
+    $this->assertNotSoftDeleted($settlement);
+    $this->assertNotSoftDeleted($transaction);
 });
 
 it('calculates global totals based on net balance per contact, not gross amounts', function () {

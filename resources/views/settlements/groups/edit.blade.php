@@ -44,12 +44,12 @@
 
     <div class="mt-6">
         <form action="{{ route('settlements.groups.update', $settlementGroup) }}" method="POST" enctype="multipart/form-data" id="split-form" x-data="{
-            mode: '{{ old('mode', $settlementGroup->mode) }}',
-            totalAmount: '{{ old('total_amount', number_format($settlementGroup->total_amount, 2, '.', '')) }}',
-            myAmount: '{{ old('my_amount', number_format($existingMyAmount, 2, '.', '')) }}',
-            createTransaction: {{ old('create_transaction', $settlementGroup->financial_transaction_id ? 'true' : 'false') == '1' || old('create_transaction', $settlementGroup->financial_transaction_id ? 'true' : 'false') === 'true' ? 'true' : 'false' }},
-            targetType: '{{ old('targetType', optional($settlementGroup->financialTransaction)->invoice ? 'card' : 'account') }}',
-            contacts: {{ json_encode($alpineContacts) }},
+            mode: {{ Js::from(old('mode', $settlementGroup->mode)) }},
+            totalAmount: {{ Js::from(old('total_amount', number_format($settlementGroup->total_amount, 2, '.', ''))) }},
+            myAmount: {{ Js::from(old('my_amount', number_format($existingMyAmount, 2, '.', ''))) }},
+            createTransaction: {{ Js::from(old('create_transaction', $settlementGroup->financial_transaction_id ? 'true' : 'false') == '1' || old('create_transaction', $settlementGroup->financial_transaction_id ? 'true' : 'false') === 'true') }},
+            targetType: {{ Js::from(old('targetType', optional($settlementGroup->financialTransaction)->invoice ? 'card' : 'account')) }},
+            contacts: {{ Js::from($alpineContacts) }},
 
             get totalPeople() {
                 return this.contacts.length + 1;

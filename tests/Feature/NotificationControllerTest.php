@@ -26,6 +26,17 @@ it('can view the notifications index', function () {
         ->assertViewHas('unreadCount', 1);
 });
 
+it('displays the unread notification count in the shared navigation', function () {
+    $this->user->notify(new GeneralNotification('Título', 'Mensagem de teste'));
+
+    $this->actingAs($this->user)
+        ->get(route('dashboard'))
+        ->assertSuccessful()
+        ->assertSee('Notificações')
+        ->assertSee('min-w-5', false)
+        ->assertSee('1', false);
+});
+
 it('can filter notifications on index', function () {
     $this->user->notify(new GeneralNotification('Relatório Financeiro', 'Pronto para download'));
 

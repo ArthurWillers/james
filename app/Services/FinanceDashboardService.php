@@ -300,22 +300,37 @@ class FinanceDashboardService
             ->toArray();
     }
 
-    public function getCreditCardsWidget(Carbon $referenceDate): Collection
+    public function getCreditCardsWidget(Carbon $referenceDate, bool $includeInvestments = false): Collection
     {
-        return $this->getCreditCards()
+        $creditCards = $this->getCreditCards();
+
+        if (! $includeInvestments) {
+            $creditCards = $creditCards->filter(
+                fn ($card) => $card->financialAccount?->type !== FinancialAccountType::Investment
+            );
+        }
+
+        return $creditCards
+            ->values()
             ->each(fn ($card) => $card->setCurrentInvoice($referenceDate));
     }
 
-    public function getJamesRadar(Carbon $referenceDate): Collection
+    public function getJamesRadar(Carbon $referenceDate, bool $includeInvestments = false): Collection
     {
         $endDate = $referenceDate->copy()->addMonthNoOverflow();
 
-        $pendingTransactions = FinancialTransaction::pending()
+        $pendingTransactionsQuery = FinancialTransaction::pending()
             ->forPeriod($referenceDate, $endDate)
             ->withoutInvoice()
             ->expenses()
             ->withoutTransfers()
-            ->with(['tags', 'invoice.creditCard'])
+            ->with(['tags', 'invoice.creditCard']);
+
+        if (! $includeInvestments) {
+            $pendingTransactionsQuery->withoutInvestments();
+        }
+
+        $pendingTransactions = $pendingTransactionsQuery
             ->get()
             ->each(function ($t) {
                 if ($t->financial_account_id) {
@@ -331,6 +346,10 @@ class FinanceDashboardService
 
         $recurrences = $this->getActiveRecurrences()
             ->filter(fn ($r) => $r->next_processing_date->between($referenceDate, $endDate))
+            ->when(! $includeInvestments, fn (Collection $recurrences) => $recurrences->filter(function ($recurrence) {
+                return $recurrence->financialAccount?->type !== FinancialAccountType::Investment
+                    && $recurrence->financialCreditCard?->financialAccount?->type !== FinancialAccountType::Investment;
+            }))
             ->map(function ($r) {
                 $t = new FinancialTransaction([
                     'description' => $r->title,
@@ -356,9 +375,15 @@ class FinanceDashboardService
                 return $t;
             });
 
-        $openInvoices = FinancialCreditCardInvoice::withTotalAmount()
+        $openInvoicesQuery = FinancialCreditCardInvoice::withTotalAmount()
             ->dueBetween($referenceDate, $endDate)
-            ->unpaid()
+            ->unpaid();
+
+        if (! $includeInvestments) {
+            $openInvoicesQuery->withoutInvestments();
+        }
+
+        $openInvoices = $openInvoicesQuery
             ->get()
             ->map(function ($inv) {
                 $inv->setRelation('creditCard', $this->getCreditCards()->firstWhere('id', $inv->financial_credit_card_id));
@@ -380,12 +405,12 @@ class FinanceDashboardService
         return $pendingTransactions->concat($recurrences)->concat($openInvoices)->sortBy('date')->values();
     }
 
-    public function getTopExpenseTags(Carbon $referenceDate): array
+    public function getTopExpenseTags(Carbon $referenceDate, bool $includeInvestments = false): array
     {
         $startDate = $referenceDate->copy()->subDays(30);
         $endDate = $referenceDate->copy();
 
-        $expenses = FinancialTransaction::forPeriod($startDate, $endDate)
+        $expensesQuery = FinancialTransaction::forPeriod($startDate, $endDate)
             ->withoutDrafts()
             ->where(function ($q) {
                 $q->where('status', TransactionStatus::Posted)
@@ -396,8 +421,13 @@ class FinanceDashboardService
             ->with([
                 'tags' => fn ($q) => $q->wherePivot('is_primary', true),
                 'items.tags' => fn ($q) => $q->wherePivot('is_primary', true),
-            ])
-            ->get();
+            ]);
+
+        if (! $includeInvestments) {
+            $expensesQuery->withoutInvestments();
+        }
+
+        $expenses = $expensesQuery->get();
 
         $flattened = collect();
 
@@ -451,14 +481,19 @@ class FinanceDashboardService
         })->sortByDesc('value')->take(5)->values()->toArray();
     }
 
-    public function getRecentTransactions(): Collection
+    public function getRecentTransactions(bool $includeInvestments = false): Collection
     {
-        $transactions = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
+        $transactionsQuery = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
             ->withoutDrafts()
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        if (! $includeInvestments) {
+            $transactionsQuery->withoutInvestments();
+        }
+
+        $transactions = $transactionsQuery->get();
 
         $transactions->each(function ($t) {
             $t->setRelation('account', $t->financial_account_id ? $this->getAccounts()->firstWhere('id', $t->financial_account_id) : null);
@@ -537,20 +572,7 @@ class FinanceDashboardService
         }
 
         // Add future projections (pending, recurrences, open invoices)
-        $futureTransactions = $this->getJamesRadar($today);
-
-        if (! $includeInvestments) {
-            $futureTransactions = $futureTransactions->filter(function ($t) {
-                if ($t->account && $t->account->type === FinancialAccountType::Investment) {
-                    return false;
-                }
-                if ($t->invoice && $t->invoice->creditCard && $t->invoice->creditCard->financialAccount && $t->invoice->creditCard->financialAccount->type === FinancialAccountType::Investment) {
-                    return false;
-                }
-
-                return true;
-            });
-        }
+        $futureTransactions = $this->getJamesRadar($today, $includeInvestments);
 
         foreach ($futureTransactions as $t) {
             $transactionDate = is_string($t->date) ? Carbon::parse($t->date) : $t->date->copy();

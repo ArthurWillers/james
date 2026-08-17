@@ -17,7 +17,7 @@ class StoreSettlementRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
         if ($this->has('amount') && is_string($this->amount)) {
             $this->merge(['amount' => str_replace(',', '.', $this->amount)]);

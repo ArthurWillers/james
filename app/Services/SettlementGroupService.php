@@ -15,6 +15,7 @@ use App\Models\SettlementGroup;
 use App\Traits\HandlesAttachments;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class SettlementGroupService
 {
@@ -39,6 +40,8 @@ class SettlementGroupService
      */
     public function storeGroup(array $validated): SettlementGroup
     {
+        $this->assertValidDistribution($validated);
+
         return DB::transaction(function () use ($validated) {
             $date = Carbon::parse($validated['date']);
             $financialTransactionId = null;
@@ -84,6 +87,8 @@ class SettlementGroupService
      */
     public function updateGroup(SettlementGroup $group, array $validated): SettlementGroup
     {
+        $this->assertValidDistribution($validated);
+
         return DB::transaction(function () use ($group, $validated) {
             $date = Carbon::parse($validated['date']);
 
@@ -92,8 +97,6 @@ class SettlementGroupService
                 $existingTransaction = $group->financialTransaction;
 
                 if ($existingTransaction) {
-                    // Delete old items and recreate
-                    $existingTransaction->items()->delete();
                     $existingTransaction->forceDelete();
                 }
 
@@ -103,7 +106,6 @@ class SettlementGroupService
                 if ($group->financial_transaction_id) {
                     $existingTransaction = $group->financialTransaction;
                     if ($existingTransaction) {
-                        $existingTransaction->items()->delete();
                         $existingTransaction->forceDelete();
                     }
                     $group->financial_transaction_id = null;
@@ -118,7 +120,7 @@ class SettlementGroupService
             $group->save();
 
             // 3. Wipe old children
-            $group->settlements()->forceDelete();
+            $group->forceDeleteSettlements();
 
             // 4. Replace with new children
             foreach ($validated['contacts'] as $contactData) {
@@ -148,12 +150,11 @@ class SettlementGroupService
     {
         DB::transaction(function () use ($group) {
             if ($group->financialTransaction) {
-                $group->financialTransaction->items()->delete();
-                $group->financialTransaction()->forceDelete();
+                $group->financialTransaction->forceDelete();
             }
 
             // Soft-delete group (cascade will soft-delete children)
-            $group->settlements()->delete();
+            $group->deleteSettlements();
             $group->delete();
         });
     }
@@ -231,5 +232,62 @@ class SettlementGroupService
         $transaction->tags()->sync($transactionTags);
 
         return $transaction;
+    }
+
+    /**
+     * @param  array{
+     *     total_amount: float|int|string,
+     *     my_amount: float|int|string,
+     *     mode: string,
+     *     contacts: array<int, array{id: int, amount: float|int|string}>
+     * }  $validated
+     */
+    private function assertValidDistribution(array $validated): void
+    {
+        if ($validated['contacts'] === []) {
+            throw new InvalidArgumentException('A divisão deve possuir pelo menos um contato.');
+        }
+
+        $contactIds = array_column($validated['contacts'], 'id');
+
+        if (count($contactIds) !== count(array_unique($contactIds))) {
+            throw new InvalidArgumentException('Os contatos da divisão devem ser únicos.');
+        }
+
+        if (! in_array($validated['mode'], ['equal', 'exact'], true)) {
+            throw new InvalidArgumentException('O modo da divisão é inválido.');
+        }
+
+        $totalCents = $this->amountToCents($validated['total_amount']);
+        $myAmountCents = $this->amountToCents($validated['my_amount']);
+        $contactAmounts = array_map(
+            fn (array $contact): int => $this->amountToCents($contact['amount']),
+            $validated['contacts'],
+        );
+
+        if ($totalCents <= 0 || $myAmountCents < 0 || collect($contactAmounts)->contains(fn (int $amountCents): bool => $amountCents <= 0)) {
+            throw new InvalidArgumentException('Os valores da divisão devem ser positivos.');
+        }
+
+        if ($myAmountCents + array_sum($contactAmounts) !== $totalCents) {
+            throw new InvalidArgumentException('A soma das partes deve ser igual ao valor total.');
+        }
+
+        if ($validated['mode'] !== 'equal') {
+            return;
+        }
+
+        $contactShareCents = intdiv($totalCents, count($contactAmounts) + 1);
+        $expectedMyAmountCents = $totalCents - ($contactShareCents * count($contactAmounts));
+
+        if ($myAmountCents !== $expectedMyAmountCents
+            || collect($contactAmounts)->contains(fn (int $amountCents): bool => $amountCents !== $contactShareCents)) {
+            throw new InvalidArgumentException('Os valores não correspondem à divisão igual.');
+        }
+    }
+
+    private function amountToCents(float|int|string $amount): int
+    {
+        return (int) round((float) $amount * 100);
     }
 }

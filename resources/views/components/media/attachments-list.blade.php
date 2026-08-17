@@ -10,12 +10,15 @@
             @foreach($attachments as $media)
                 @php
                     $isImage = in_array($media->mime_type, ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
-                    $fileUrl = route('attachments.download', [$media->id, $media->file_name]);
+                    $fileUrl = Illuminate\Support\Facades\URL::signedRoute(
+                        'attachments.download',
+                        [$media->id, $media->file_name]
+                    );
                 @endphp
                 <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-lg bg-neutral-50 group transition-colors">
                     <div class="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
                         @if($isImage)
-                            <button type="button" class="flex items-center text-left gap-3 w-full cursor-pointer" @click="openLightbox('{{ $fileUrl }}', '{{ $media->file_name }}')">
+                            <button type="button" class="flex items-center text-left gap-3 w-full cursor-pointer" @click="openLightbox({{ Js::from($fileUrl) }}, {{ Js::from($media->file_name) }})">
                                 <x-avatar :image="$fileUrl" class="w-10! h-10! shrink-0" radius="md" />
                                 <div class="truncate text-sm text-neutral-700">
                                     <div class="truncate font-medium hover:text-accent transition-colors" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
@@ -38,7 +41,7 @@
                                 name="{{ $deleteInputName }}" 
                                 value="{{ $media->id }}" 
                                 label="Excluir" 
-                                class="!text-red-600 hover:!text-red-700" 
+                                class="text-red-600! hover:text-red-700!"
                             />
                         </div>
                     @endif

@@ -4,6 +4,7 @@ use App\Models\Contact;
 use App\Models\ContactGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Js;
 
 uses(RefreshDatabase::class);
 
@@ -27,6 +28,18 @@ it('can display the creation screen', function () {
         ->assertSuccessful()
         ->assertViewIs('contacts.groups.create')
         ->assertViewHas('allContacts');
+});
+
+it('renders contact names safely inside Alpine expressions', function () {
+    $contact = Contact::factory()->create([
+        'name' => "O'Reilly </script><script>alert('xss')</script>",
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('contacts.groups.create'))
+        ->assertSuccessful()
+        ->assertSee(Js::from(strtolower($contact->name))->toHtml(), false)
+        ->assertDontSee("'</script><script>alert('xss')</script>'", false);
 });
 
 it('can create a contact group with contacts', function () {

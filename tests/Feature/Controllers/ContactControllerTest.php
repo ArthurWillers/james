@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\Contact;
+use App\Models\ContactGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -27,6 +29,10 @@ it('can display the creation screen', function () {
         ->get(route('contacts.create'))
         ->assertSuccessful()
         ->assertViewIs('contacts.create');
+});
+
+it('does not register the obsolete contact categories route', function () {
+    expect(Route::has('contacts.categories'))->toBeFalse();
 });
 
 it('can create a contact', function () {
@@ -88,6 +94,39 @@ it('can update a contact', function () {
         'id' => $contact->id,
         'name' => 'New Name',
     ]);
+});
+
+it('can sync and clear contact groups', function () {
+    $contact = Contact::factory()->create();
+    $groups = ContactGroup::factory()->count(2)->create();
+
+    $this->actingAs($this->user)
+        ->post(route('contacts.groups.sync', $contact), [
+            'group_ids' => $groups->pluck('id')->all(),
+        ])
+        ->assertRedirect();
+
+    expect($contact->groups()->pluck('contact_groups.id')->all())
+        ->toEqualCanonicalizing($groups->pluck('id')->all());
+
+    $this->actingAs($this->user)
+        ->post(route('contacts.groups.sync', $contact))
+        ->assertRedirect();
+
+    expect($contact->groups()->exists())->toBeFalse();
+});
+
+it('validates contact group ids before syncing', function () {
+    $contact = Contact::factory()->create();
+    $group = ContactGroup::factory()->create();
+
+    $this->actingAs($this->user)
+        ->post(route('contacts.groups.sync', $contact), [
+            'group_ids' => [$group->id, $group->id, 999999],
+        ])
+        ->assertSessionHasErrors(['group_ids.1', 'group_ids.2']);
+
+    expect($contact->groups()->exists())->toBeFalse();
 });
 
 it('can soft delete a contact', function () {

@@ -8,6 +8,12 @@
         @endif
     </x-page-header>
 
+    <x-filter-bar
+        action="{{ route('financial.recurrences.index') }}"
+        searchPlaceholder="Buscar por título..."
+        :filters="['search']">
+    </x-filter-bar>
+
     <div x-data="{
              selectedRecurrenceId: null,
              selectedRecurrenceTitle: '',
@@ -90,7 +96,7 @@
                                     Editar
                                 </x-button>
 
-                                <x-button type="button" color="outline" size="sm" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')">
+                                <x-button type="button" color="outline" size="sm" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openDelete({{ $recurrence->id }}, {{ Js::from($recurrence->title) }})">
                                     <x-heroicon-o-trash class="size-4" />
                                     Excluir
                                 </x-button>
@@ -136,7 +142,7 @@
                                                 <span class="whitespace-nowrap">Editar</span>
                                             </a>
 
-                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openDelete({{ $recurrence->id }}, '{{ addslashes($recurrence->title) }}')">
+                                            <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openDelete({{ $recurrence->id }}, {{ Js::from($recurrence->title) }})">
                                                 <x-heroicon-o-trash class="size-5 shrink-0" />
                                                 <span class="whitespace-nowrap">Excluir</span>
                                             </button>
