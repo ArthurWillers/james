@@ -58,12 +58,12 @@
 
                     <x-table.cell align="right">
                         <div class="flex justify-end gap-2 w-full">
-                            <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $group->id }}, '{{ addslashes($group->description) }}')">
+                            <x-button type="button" color="outline" class="bg-white hover:bg-neutral-50 text-neutral-600 border-neutral-300" @click="openRestore({{ $group->id }}, {{ Js::from($group->description) }})">
                                 <x-heroicon-o-arrow-uturn-left class="size-4" />
                                 Restaurar
                             </x-button>
 
-                            <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $group->id }}, '{{ addslashes($group->description) }}')">
+                            <x-button type="button" color="outline" class="bg-white hover:bg-red-50 text-red-600 border-red-200" @click="openForceDelete({{ $group->id }}, {{ Js::from($group->description) }})">
                                 <x-heroicon-o-trash class="size-4" />
                                 Excluir
                             </x-button>
@@ -93,12 +93,12 @@
                                     </x-slot>
 
                                     <x-slot name="content">
-                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $group->id }}, '{{ addslashes($group->description) }}')">
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 cursor-pointer" @click="openRestore({{ $group->id }}, {{ Js::from($group->description) }})">
                                             <x-heroicon-o-arrow-uturn-left class="size-5 shrink-0" />
                                             <span class="whitespace-nowrap">Restaurar</span>
                                         </button>
 
-                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $group->id }}, '{{ addslashes($group->description) }}')">
+                                        <button type="button" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 cursor-pointer" @click="openForceDelete({{ $group->id }}, {{ Js::from($group->description) }})">
                                             <x-heroicon-o-trash class="size-5 shrink-0" />
                                             <span class="whitespace-nowrap">Excluir Permanentemente</span>
                                         </button>
