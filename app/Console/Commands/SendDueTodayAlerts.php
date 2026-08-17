@@ -112,7 +112,10 @@ class SendDueTodayAlerts extends Command
      */
     private function getDueInvoices(Carbon $startDate, Carbon $endDate): array
     {
-        $invoices = FinancialCreditCardInvoice::with(['creditCard', 'transactions'])
+        $invoices = FinancialCreditCardInvoice::with([
+            'creditCard',
+            'transactions' => fn ($query) => $query->withoutDrafts(),
+        ])
             ->withTotalAmount()
             ->unpaid()
             ->dueBetween($startDate, $endDate)

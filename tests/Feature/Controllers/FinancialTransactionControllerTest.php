@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\TransactionStatus;
 use App\Jobs\ScrapeNfceInvoiceJob;
 use App\Models\FinancialAccount;
+use App\Models\FinancialCreditCard;
 use App\Models\FinancialTag;
 use App\Models\FinancialTransaction;
 use App\Models\User;
@@ -86,6 +88,79 @@ it('can update transaction', function () {
         'type' => 'income',
         'amount' => 300.00,
     ]);
+});
+
+it('finalizes an imported draft as posted on an account', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create([
+        'status' => TransactionStatus::Draft,
+        'nfce_access_key' => str_repeat('1', 44),
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 125.69,
+        'description' => 'Compra importada',
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Posted->value,
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    expect($transaction->refresh())
+        ->financial_account_id->toBe($account->id)
+        ->financial_credit_card_invoice_id->toBeNull()
+        ->status->toBe(TransactionStatus::Posted);
+});
+
+it('finalizes an imported draft as pending on an account', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create([
+        'status' => TransactionStatus::Draft,
+        'nfce_access_key' => str_repeat('2', 44),
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 125.69,
+        'description' => 'Compra importada',
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Pending->value,
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    expect($transaction->refresh()->status)->toBe(TransactionStatus::Pending);
+});
+
+it('assigns an imported draft to the correct invoice as pending', function () {
+    $account = FinancialAccount::factory()->create();
+    $card = FinancialCreditCard::factory()->create([
+        'financial_account_id' => $account->id,
+        'closing_day' => 10,
+        'due_day' => 15,
+    ]);
+    $transaction = FinancialTransaction::factory()->create([
+        'status' => TransactionStatus::Draft,
+        'nfce_access_key' => str_repeat('3', 44),
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'card',
+        'financial_credit_card_id' => $card->id,
+        'type' => 'expense',
+        'amount' => 125.69,
+        'description' => 'Compra importada',
+        'date' => '2026-08-11',
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    $transaction->refresh()->load('invoice');
+
+    expect($transaction)
+        ->financial_account_id->toBeNull()
+        ->status->toBe(TransactionStatus::Pending)
+        ->and($transaction->invoice->financial_credit_card_id)->toBe($card->id)
+        ->and($transaction->invoice->reference_month->format('Y-m'))->toBe('2026-09');
 });
 
 it('can soft delete transaction', function () {

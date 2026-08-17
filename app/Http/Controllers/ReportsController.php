@@ -36,14 +36,14 @@ class ReportsController extends Controller
             $startDate = Carbon::parse($request->input('startDate'))->startOfDay();
             $endDate = Carbon::parse($request->input('endDate'))->endOfDay();
         } elseif ($period === 'all_time') {
-            $minDate = FinancialTransaction::min('date');
+            $minDate = FinancialTransaction::withoutDrafts()->min('date');
             $startDate = $minDate ? Carbon::parse($minDate)->startOfDay() : $now->copy()->subYears(5)->startOfDay();
             $maxInvoiceDate = FinancialCreditCardInvoice::max('due_date');
-            $maxTransactionDate = FinancialTransaction::max('date');
+            $maxTransactionDate = FinancialTransaction::withoutDrafts()->max('date');
             $maxDate = max($maxInvoiceDate, $maxTransactionDate, $now->format('Y-m-d'));
             $endDate = Carbon::parse($maxDate)->endOfDay();
         } elseif ($period === 'until_today') {
-            $minDate = FinancialTransaction::min('date');
+            $minDate = FinancialTransaction::withoutDrafts()->min('date');
             $startDate = $minDate ? Carbon::parse($minDate)->startOfDay() : $now->copy()->subYears(5)->startOfDay();
             $endDate = $now->copy()->endOfDay();
         } elseif ($period === 'this_month') {

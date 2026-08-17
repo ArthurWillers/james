@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
 use App\Models\FinancialTransaction;
@@ -35,6 +36,35 @@ it('calculates total invoice amount correctly', function () {
     expect($invoice->transactions)->toHaveCount(3)
         // Total should be 100.50 + 50.25 - 10.00 = 140.75
         ->and($invoice->total())->toEqual(140.75);
+});
+
+it('excludes drafts from invoice totals and the card used limit', function () {
+    $card = FinancialCreditCard::factory()->create();
+    $invoice = FinancialCreditCardInvoice::factory()->create([
+        'financial_credit_card_id' => $card->id,
+        'paid_at' => null,
+    ]);
+
+    FinancialTransaction::factory()->create([
+        'financial_credit_card_invoice_id' => $invoice->id,
+        'type' => 'expense',
+        'amount' => 75,
+        'status' => TransactionStatus::Pending,
+    ]);
+    $draft = FinancialTransaction::factory()->create([
+        'financial_credit_card_invoice_id' => $invoice->id,
+        'type' => 'expense',
+        'amount' => 900,
+        'status' => TransactionStatus::Draft,
+    ]);
+
+    expect($invoice->total())->toEqual(75.0)
+        ->and(FinancialCreditCardInvoice::withTotalAmount()->findOrFail($invoice->id)->total())->toEqual(75.0)
+        ->and(FinancialCreditCard::withUsedLimit()->findOrFail($card->id)->usedLimit())->toEqual(75.0);
+
+    $invoice->registerPayment(75, Carbon::parse('2026-08-17'));
+
+    expect($draft->refresh()->status)->toBe(TransactionStatus::Draft);
 });
 
 describe('resolveForDate', function () {

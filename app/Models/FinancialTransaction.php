@@ -191,6 +191,14 @@ class FinancialTransaction extends Model implements HasMedia
     }
 
     /**
+     * Scope a query to exclude transactions that are still under review.
+     */
+    public function scopeWithoutDrafts(Builder $query): Builder
+    {
+        return $query->where('status', '!=', TransactionStatus::Draft);
+    }
+
+    /**
      * Scope a query to only include expenses.
      */
     public function scopeExpenses(Builder $query): Builder

@@ -44,6 +44,7 @@ class ReportsService
     {
         // 1. Real Transactions (includes future credit card installments since they are materialized)
         $query = FinancialTransaction::with(['tags', 'items.tags', 'invoice.creditCard', 'account'])
+            ->withoutDrafts()
             ->whereBetween('date', [$startDate, $endDate])
             ->forAccounts($accountIds);
 
@@ -295,6 +296,7 @@ class ReportsService
 
         // Cash-basis: exclude CC invoice transactions (their cash impact is via the payment transaction)
         $query = FinancialTransaction::forAccounts($accountIds)
+            ->withoutDrafts()
             ->whereNull('financial_credit_card_invoice_id')
             ->whereBetween('date', [$startDate, $endDate]);
 
@@ -546,6 +548,7 @@ class ReportsService
     private function getInitialBalance(Carbon $startDate, ?array $accountIds = null): float
     {
         $query = FinancialTransaction::forAccounts($accountIds)
+            ->withoutDrafts()
             ->whereNull('financial_credit_card_invoice_id')
             ->where('financial_transactions.date', '<', $startDate);
 
@@ -587,6 +590,7 @@ class ReportsService
     private function getInitialNetWorth(Carbon $startDate, ?array $accountIds = null): float
     {
         $query = FinancialTransaction::withoutPartialPayments()
+            ->withoutDrafts()
             ->forAccounts($accountIds)
             ->where('financial_transactions.date', '<', $startDate);
 

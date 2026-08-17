@@ -332,6 +332,7 @@ class FinancialTransactionController extends Controller
                 'amount' => $validated['amount'],
                 'description' => $validated['description'],
                 'date' => $date,
+                'status' => TransactionStatus::Pending,
             ]);
         } else {
             $date = Carbon::parse($validated['date']);

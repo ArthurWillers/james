@@ -52,6 +52,22 @@ it('sends a monthly digest with income, expense and net result', function () {
     });
 });
 
+it('ignores drafts in the monthly digest', function () {
+    FinancialTransaction::factory()->create([
+        'type' => 'expense',
+        'amount' => 9000,
+        'date' => '2026-07-20',
+        'status' => TransactionStatus::Draft,
+    ]);
+
+    $this->artisan('finance:monthly-digest')->assertSuccessful();
+
+    Notification::assertSentTo($this->user, GeneralNotification::class, function ($notification) {
+        return $notification->details['Despesas'] === formatCurrency(0)
+            && $notification->details['Resultado Líquido'] === formatCurrency(0);
+    });
+});
+
 it('uses Success level when net result is positive', function () {
     $account = FinancialAccount::factory()->create();
 

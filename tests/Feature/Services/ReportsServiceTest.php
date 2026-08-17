@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -49,4 +50,30 @@ it('calculates net worth evolution correctly based on accrual accounting (compet
 
     $lastPoint = end($data);
     expect($lastPoint['value'])->toEqual(700);
+});
+
+it('excludes drafts from reports', function () {
+    $account = FinancialAccount::factory()->create();
+    $posted = FinancialTransaction::factory()->create([
+        'financial_account_id' => $account->id,
+        'type' => 'income',
+        'amount' => 100,
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Posted,
+    ]);
+    FinancialTransaction::factory()->create([
+        'type' => 'expense',
+        'amount' => 900,
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Draft,
+    ]);
+
+    $data = (new ReportsService)->getAll(
+        Carbon::parse('2026-08-01'),
+        Carbon::parse('2026-08-31'),
+    );
+
+    expect($data['transactions']->modelKeys())->toBe([$posted->id])
+        ->and($data['tableTransactions'])->toHaveCount(1)
+        ->and(last($data['netWorthEvolution'])['value'])->toEqual(100.0);
 });

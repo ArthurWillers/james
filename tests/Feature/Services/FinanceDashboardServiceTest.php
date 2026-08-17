@@ -2,6 +2,7 @@
 
 use App\Enums\FinancialAccountType;
 use App\Enums\InvoiceStatus;
+use App\Enums\TransactionStatus;
 use App\Models\FinancialAccount;
 use App\Models\FinancialCreditCard;
 use App\Models\FinancialCreditCardInvoice;
@@ -35,6 +36,30 @@ it('calculates KPIs correctly', function () {
         ->and($kpis['expense'])->toEqual(200)
         ->and($kpis['currentBalance'])->toEqual(300)
         ->and($kpis['netBalance'])->toEqual(300); // Because account balance is also 300
+});
+
+it('does not expose drafts in dashboard totals or recent transactions', function () {
+    $account = FinancialAccount::factory()->create(['type' => FinancialAccountType::Checking]);
+    $posted = FinancialTransaction::factory()->create([
+        'financial_account_id' => $account->id,
+        'type' => 'income',
+        'amount' => 100,
+        'date' => Carbon::today(),
+        'status' => TransactionStatus::Posted,
+    ]);
+    FinancialTransaction::factory()->create([
+        'type' => 'expense',
+        'amount' => 900,
+        'date' => Carbon::today()->addDay(),
+        'status' => TransactionStatus::Draft,
+    ]);
+
+    $service = new FinanceDashboardService;
+
+    expect($service->getKpiNumbers(false))
+        ->income->toEqual(100.0)
+        ->expense->toEqual(0.0)
+        ->and($service->getRecentTransactions()->modelKeys())->toBe([$posted->id]);
 });
 
 it('calculates cash flow projections', function () {
