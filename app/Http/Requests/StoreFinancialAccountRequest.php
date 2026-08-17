@@ -17,7 +17,7 @@ class StoreFinancialAccountRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
         if ($this->has('initial_balance') && is_string($this->initial_balance)) {
             $this->merge(['initial_balance' => str_replace(',', '.', $this->initial_balance)]);
