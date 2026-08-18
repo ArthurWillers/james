@@ -203,16 +203,15 @@
             <h3 class="text-lg font-bold text-neutral-900">Itens da Transação</h3>
         </div>
 
-        <x-card class="overflow-hidden mb-6">
-            <x-table>
-                <x-table.header class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
-                    <x-table.column>Descrição</x-table.column>
-                    <x-table.column>Tags</x-table.column>
-                    <x-table.column align="right">Qtd</x-table.column>
-                    <x-table.column align="right">Unitário</x-table.column>
-                    <x-table.column align="right">Total</x-table.column>
-                </x-table.header>
-                <x-table.body>
+        <x-table class="overflow-hidden mb-6">
+            <x-table.header class="hidden sm:grid sm:grid-cols-[2fr_1.5fr_1fr_1fr_1fr]">
+                <x-table.column>Descrição</x-table.column>
+                <x-table.column>Tags</x-table.column>
+                <x-table.column align="right">Qtd</x-table.column>
+                <x-table.column align="right">Unitário</x-table.column>
+                <x-table.column align="right">Total</x-table.column>
+            </x-table.header>
+            <x-table.body>
                     @foreach($transaction->items as $item)
                         <!-- Mobile View -->
                         <div class="sm:hidden p-4 border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors flex flex-col gap-3">
@@ -300,9 +299,8 @@
                             </x-table.cell>
                         </x-table.row>
                     @endforeach
-                </x-table.body>
-            </x-table>
-        </x-card>
+            </x-table.body>
+        </x-table>
     @endif
     
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
