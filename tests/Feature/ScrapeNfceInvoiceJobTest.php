@@ -133,7 +133,7 @@ test('it leaves the database unchanged when invoice parsing fails', function () 
 
     expect(FinancialTransaction::query()->exists())->toBeFalse();
     Notification::assertSentTo($requester, GeneralNotification::class, function (GeneralNotification $notification): bool {
-        return $notification->message === 'Não foi possível interpretar os dados retornados pelo portal da NFC-e.';
+        return $notification->message === 'Não foi possível interpretar os dados retornados pelo portal da NFC-e. O portal pode estar fora do padrão esperado ou ainda não ter suporte.';
     });
 });
 

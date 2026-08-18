@@ -23,6 +23,31 @@ it('resolves and normalizes a valid SVRS NFC-e URL', function () {
         ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43260702247794000207650100003711221171005935%7C3%7C1');
 });
 
+it('preserves the signed QR Code version two parameters', function () {
+    $source = nfceSourceResolver()->resolve(
+        'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43260752782074000120650000000397401178423333%7C2%7C1%7C1%7C62154FB2F517DAF1E2950CA25FCAED575E7AA980'
+    );
+
+    expect($source->accessKey)->toBe('43260752782074000120650000000397401178423333')
+        ->and($source->requestParameterSuffix)->toBe('|2|1|1|62154FB2F517DAF1E2950CA25FCAED575E7AA980')
+        ->and($source->requestUrl)
+        ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43260752782074000120650000000397401178423333%7C2%7C1%7C1%7C62154FB2F517DAF1E2950CA25FCAED575E7AA980');
+});
+
+it('normalizes the official SEFAZ RS redirect URL to the SVRS endpoint', function () {
+    $source = nfceSourceResolver()->resolve(
+        'https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx?p=43260723448964002570650000005356111784874897%7C3%7C1'
+    );
+
+    expect($source->provider)->toBe('svrs')
+        ->and($source->accessKey)->toBe('43260723448964002570650000005356111784874897')
+        ->and($source->uf)->toBe('RS')
+        ->and($source->sourceEndpoint)->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce')
+        ->and($source->requestParameterSuffix)->toBe('|3|1')
+        ->and($source->requestUrl)
+        ->toBe('https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43260723448964002570650000005356111784874897%7C3%7C1');
+});
+
 it('supports other UFs and URL path casing served by SVRS', function () {
     $source = nfceSourceResolver()->resolve(
         'https://dfe-portal.svrs.rs.gov.br/dfe/qrcodenfce?p=42260702247794000207650100003711221171005935%7C3%7C1'

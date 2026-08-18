@@ -12,7 +12,7 @@ use League\Uri\Contracts\UriException;
 final class NfceSourceResolver
 {
     /**
-     * @param  list<array{provider: string, hosts: list<string>, paths: list<string>}>  $sources
+     * @param  list<array{provider: string, hosts: list<string>, paths: list<string>, source_endpoint: string}>  $sources
      * @param  array<string, string>  $ufCodes
      */
     public function __construct(
@@ -38,7 +38,7 @@ final class NfceSourceResolver
             throw new InvalidNfceUrlException('A chave de acesso da NFC-e deve conter 44 dígitos.');
         }
 
-        $sourceEndpoint = 'https://'.$configuredSource['host'].'/'.$configuredSource['path'];
+        $sourceEndpoint = $configuredSource['source_endpoint'];
         $requestUrl = (string) Uri::of($sourceEndpoint)
             ->withQuery(['p' => $queryParameter], merge: false);
 
@@ -73,7 +73,7 @@ final class NfceSourceResolver
     }
 
     /**
-     * @return array{provider: string, host: string, path: string}
+     * @return array{provider: string, source_endpoint: string}
      */
     private function findConfiguredSource(Uri $uri): array
     {
@@ -89,8 +89,7 @@ final class NfceSourceResolver
             if (in_array($host, $hosts, true) && is_string($matchedPath)) {
                 return [
                     'provider' => $source['provider'],
-                    'host' => $host,
-                    'path' => trim($matchedPath, '/'),
+                    'source_endpoint' => $source['source_endpoint'],
                 ];
             }
         }
