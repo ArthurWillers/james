@@ -15,7 +15,7 @@
                     <option value="">Todas as ações</option>
                     @foreach($actions as $action)
                         <option value="{{ $action }}" @selected(request('action') == $action)>
-                            {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'][$action] ?? ucfirst($action) }}
+                            {{ ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'item_deleted' => 'Item excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'][$action] ?? ucfirst($action) }}
                         </option>
                     @endforeach
                 </x-filter-bar.select>
@@ -64,9 +64,9 @@
                         <x-table.cell class="font-medium text-neutral-700">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</x-table.cell>
                         <x-table.cell>
                             @php
-                                $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
+                                $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'item_deleted' => 'Item excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
                                 $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
-                                $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
+                                $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'item_deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
                                 $color = $actionColors[$activity->description] ?? 'neutral';
                             @endphp
                             <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>
@@ -77,9 +77,9 @@
                                 <div class="flex flex-col gap-2">
                                     <div class="flex items-center gap-2">
                                         @php
-                                            $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
+                                            $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'item_deleted' => 'Item excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
                                             $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
-                                            $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
+                                            $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'item_deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
                                             $color = $actionColors[$activity->description] ?? 'neutral';
                                         @endphp
                                         <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>

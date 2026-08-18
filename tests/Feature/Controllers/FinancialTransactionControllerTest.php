@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AuditAction;
 use App\Enums\TransactionStatus;
 use App\Jobs\ScrapeNfceInvoiceJob;
 use App\Models\FinancialAccount;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Js;
+use Spatie\Activitylog\Enums\ActivityEvent;
+use Spatie\Activitylog\Models\Activity;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -90,7 +93,11 @@ it('renders transaction items safely inside Alpine data', function () {
 
     $this->get(route('financial.transactions.edit', $transaction))
         ->assertSuccessful()
-        ->assertSee(Js::from($expectedItems)->toHtml(), false);
+        ->assertSee(Js::from($expectedItems)->toHtml(), false)
+        ->assertSee(':key="item._key"', false)
+        ->assertSee('x-if="item.id"', false)
+        ->assertSee('x-bind:name="\'items[\'+index+\'][id]\'"', false)
+        ->assertSee('x-bind:value="item.id"', false);
 });
 
 it('shows the imported nfce portal and formatted issuer document', function () {
@@ -176,17 +183,27 @@ it('preserves transaction items when items are omitted from an update', function
     $this->assertModelExists($item);
 });
 
-it('clears transaction items when an empty items array is explicitly submitted', function () {
+it('logs only the removed item and the transaction update when one item is removed', function () {
     $account = FinancialAccount::factory()->create();
     $tag = FinancialTag::factory()->create();
-    $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
-    $item = $transaction->items()->create([
+    $transaction = FinancialTransaction::factory()->create([
+        'financial_account_id' => $account->id,
+        'amount' => 60,
+    ]);
+    $removedItem = $transaction->items()->create([
         'description' => 'Item removido',
         'quantity' => 1,
         'unit_price' => 30,
         'total' => 30,
     ]);
-    $item->tags()->attach($tag, ['is_primary' => true]);
+    $removedItem->tags()->attach($tag, ['is_primary' => true]);
+    $keptItem = $transaction->items()->create([
+        'description' => 'Item mantido',
+        'quantity' => 1,
+        'unit_price' => 30,
+        'total' => 30,
+    ]);
+    $activityCountBeforeUpdate = Activity::query()->count();
 
     $this->put(route('financial.transactions.update', $transaction), [
         'targetType' => 'account',
@@ -196,14 +213,51 @@ it('clears transaction items when an empty items array is explicitly submitted',
         'description' => 'Sem itemização',
         'date' => '2026-08-17',
         'status' => TransactionStatus::Posted->value,
-        'items' => [],
+        'items' => [[
+            'id' => $keptItem->id,
+            'description' => $keptItem->description,
+            'quantity' => $keptItem->quantity,
+            'unit_price' => $keptItem->unit_price,
+            'tags' => [],
+        ]],
     ])->assertRedirect(route('financial.transactions.show', $transaction));
 
-    expect($transaction->items()->count())->toBe(0);
+    expect($transaction->items()->count())->toBe(1)
+        ->and($transaction->items()->sole()->id)->toBe($keptItem->id)
+        ->and(Activity::query()->count())->toBe($activityCountBeforeUpdate + 2);
+
     $this->assertDatabaseMissing('financial_taggables', [
         'financial_taggable_type' => FinancialTransactionItem::class,
-        'financial_taggable_id' => $item->id,
+        'financial_taggable_id' => $removedItem->id,
     ]);
+
+    $itemActivity = Activity::query()
+        ->where('subject_type', FinancialTransactionItem::class)
+        ->where('subject_id', $removedItem->id)
+        ->where('description', AuditAction::ForceDeleted->value)
+        ->where('event', AuditAction::ForceDeleted->value)
+        ->sole();
+
+    expect($itemActivity->causer_id)->toBe($this->user->id)
+        ->and($itemActivity->created_at)->not->toBeNull()
+        ->and(data_get($itemActivity->attribute_changes, 'old.description'))->toBe('Item removido')
+        ->and((float) data_get($itemActivity->attribute_changes, 'old.quantity'))->toBe(1.0)
+        ->and((float) data_get($itemActivity->attribute_changes, 'old.unit_price'))->toBe(30.0)
+        ->and((float) data_get($itemActivity->attribute_changes, 'old.total'))->toBe(30.0);
+
+    $transactionUpdateActivity = Activity::query()
+        ->where('subject_type', FinancialTransaction::class)
+        ->where('subject_id', $transaction->id)
+        ->where('event', ActivityEvent::Updated->value)
+        ->sole();
+
+    expect((float) data_get($transactionUpdateActivity->attribute_changes, 'old.amount'))->toBe(60.0)
+        ->and((float) data_get($transactionUpdateActivity->attribute_changes, 'attributes.amount'))->toBe(30.0);
+    expect(Activity::query()
+        ->where('subject_type', FinancialTransactionItem::class)
+        ->where('subject_id', $keptItem->id)
+        ->where('description', AuditAction::ForceDeleted->value)
+        ->doesntExist())->toBeTrue();
 });
 
 it('rejects non-positive item values', function (string $field, int $value) {

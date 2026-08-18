@@ -17,8 +17,11 @@
             <div class="w-8"></div>
         </div>
         
-        <template x-for="(item, index) in items" :key="index">
+        <template x-for="(item, index) in items" :key="item._key">
             <div class="flex flex-col sm:flex-row gap-2 sm:items-start py-2 sm:py-1 border-b border-neutral-100 sm:border-0 pb-3 sm:pb-1 mb-1 sm:mb-0 last:border-0">
+                <template x-if="item.id">
+                    <input type="hidden" x-bind:name="'items['+index+'][id]'" x-bind:value="item.id" />
+                </template>
                 <div class="w-full sm:flex-1">
                     <x-form-input x-model="item.description" ::name="'items['+index+'][description]'" placeholder="Descrição do item" />
                 </div>

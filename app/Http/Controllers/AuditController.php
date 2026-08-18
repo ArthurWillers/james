@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -72,7 +73,11 @@ class AuditController extends Controller
         $old = is_object($old) ? (array) $old : $old;
         $attributes = is_object($attributes) ? (array) $attributes : $attributes;
 
-        $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
+        $isDeleted = in_array($activity->description, [
+            AuditAction::Deleted->value,
+            AuditAction::ItemDeleted->value,
+            AuditAction::ForceDeleted->value,
+        ]);
 
         // Spatie activitylog stores deleted data in 'old' for 'deleted' events,
         // but in 'attributes' for 'forceDeleted' events. Normalize this.
@@ -151,7 +156,11 @@ class AuditController extends Controller
             }
         }
 
-        $isDeleted = in_array($activity->description, ['deleted', 'forceDeleted']);
+        $isDeleted = in_array($activity->description, [
+            AuditAction::Deleted->value,
+            AuditAction::ItemDeleted->value,
+            AuditAction::ForceDeleted->value,
+        ]);
 
         if ($isDeleted) {
             $gridClass = 'grid-cols-[1fr_2fr]';
