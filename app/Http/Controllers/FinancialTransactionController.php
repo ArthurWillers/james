@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuditAction;
 use App\Enums\TransactionStatus;
 use App\Http\Requests\StoreFinancialTransactionRequest;
 use App\Http\Requests\StoreFinancialTransferRequest;
@@ -393,16 +394,7 @@ class FinancialTransactionController extends Controller
             $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
             if ($request->exists('items')) {
-                $this->deleteItemsWithTags($transaction);
-                foreach ($validated['items'] ?? [] as $itemData) {
-                    $item = $transaction->items()->create([
-                        'description' => $itemData['description'],
-                        'quantity' => $itemData['quantity'],
-                        'unit_price' => $itemData['unit_price'],
-                        'total' => $itemData['quantity'] * $itemData['unit_price'],
-                    ]);
-                    $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
-                }
+                $this->syncTransactionItems($transaction, $validated['items'] ?? []);
             }
 
             $this->syncAttachments($transaction, $validated);
@@ -492,10 +484,63 @@ class FinancialTransactionController extends Controller
         $model->tags()->sync($syncData);
     }
 
-    private function deleteItemsWithTags(FinancialTransaction $transaction): void
+    /**
+     * @param  array<int, array<string, mixed>>  $items
+     */
+    private function syncTransactionItems(FinancialTransaction $transaction, array $items): void
     {
-        $transaction->items()->each(fn ($item) => $item->tags()->detach());
-        $transaction->items()->delete();
+        $existingItems = $transaction->items()->get()->keyBy('id');
+        $submittedItemIds = collect($items)
+            ->pluck('id')
+            ->filter()
+            ->map(static fn (mixed $id): int => (int) $id);
+
+        $existingItems
+            ->reject(fn (FinancialTransactionItem $item): bool => $submittedItemIds->contains($item->id))
+            ->each(function (FinancialTransactionItem $item): void {
+                $item->tags()->detach();
+                $this->forceDeleteTransactionItem($item);
+            });
+
+        foreach ($items as $itemData) {
+            $item = isset($itemData['id'])
+                ? $existingItems->get((int) $itemData['id'])
+                : null;
+
+            if ($item) {
+                $item->update([
+                    'description' => $itemData['description'],
+                    'quantity' => $itemData['quantity'],
+                    'unit_price' => $itemData['unit_price'],
+                    'total' => $itemData['quantity'] * $itemData['unit_price'],
+                ]);
+            } else {
+                $item = $transaction->items()->create([
+                    'description' => $itemData['description'],
+                    'quantity' => $itemData['quantity'],
+                    'unit_price' => $itemData['unit_price'],
+                    'total' => $itemData['quantity'] * $itemData['unit_price'],
+                ]);
+            }
+
+            $item->tags()->detach();
+            $this->syncTagsWithPrimary($item, $itemData['tags'] ?? [], $itemData['primary_tag_id'] ?? null);
+        }
+    }
+
+    private function forceDeleteTransactionItem(FinancialTransactionItem $item): void
+    {
+        $oldAttributes = collect($item->getFillable())
+            ->mapWithKeys(fn (string $attribute): array => [$attribute => $item->getAttribute($attribute)])
+            ->all();
+
+        activity('financial_transaction_item')
+            ->event(AuditAction::ForceDeleted->value)
+            ->performedOn($item)
+            ->withChanges(['old' => $oldAttributes])
+            ->log(AuditAction::ForceDeleted->value);
+
+        $item->disableLogging()->delete();
     }
 
     public function attachment(FinancialTransaction $transaction, int $mediaId): BinaryFileResponse

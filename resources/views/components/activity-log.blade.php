@@ -32,9 +32,9 @@
                         </x-table.cell>
                         <x-table.cell>
                             @php
-                                $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
+                                $actionTranslations = ['created' => 'Criado', 'updated' => 'Atualizado', 'deleted' => 'Excluído', 'item_deleted' => 'Item excluído', 'restored' => 'Restaurado', 'forceDeleted' => 'Excluído Permanentemente'];
                                 $actionName = $actionTranslations[$activity->description] ?? ucfirst($activity->description);
-                                $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
+                                $actionColors = ['created' => 'green', 'updated' => 'blue', 'deleted' => 'red', 'item_deleted' => 'red', 'restored' => 'yellow', 'forceDeleted' => 'rose'];
                                 $color = $actionColors[$activity->description] ?? 'neutral';
                             @endphp
                             <x-badge :color="$color" size="sm">{{ $actionName }}</x-badge>

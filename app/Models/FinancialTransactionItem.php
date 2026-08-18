@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\AuditAction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Spatie\Activitylog\Enums\ActivityEvent;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -63,7 +65,11 @@ class FinancialTransactionItem extends Model
         )->withPivot('is_primary');
     }
 
-    protected static array $recordEvents = ['created', 'updated', 'deleted'];
+    protected static array $recordEvents = [
+        AuditAction::Created->value,
+        AuditAction::Updated->value,
+        AuditAction::Deleted->value,
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -71,6 +77,11 @@ class FinancialTransactionItem extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontLogEmptyChanges()
+            ->setDescriptionForEvent(
+                fn (string $eventName): string => $eventName === ActivityEvent::Deleted->value
+                    ? AuditAction::ForceDeleted->value
+                    : $eventName
+            )
             ->useLogName('financial_transaction_item');
     }
 }

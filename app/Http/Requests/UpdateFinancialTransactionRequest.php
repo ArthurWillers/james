@@ -51,6 +51,12 @@ class UpdateFinancialTransactionRequest extends FormRequest
                 TransactionStatus::Posted->value,
             ])],
             'items' => ['nullable', 'array'],
+            'items.*.id' => [
+                'nullable',
+                'integer',
+                Rule::exists('financial_transaction_items', 'id')
+                    ->where('financial_transaction_id', $this->route('transaction')->id),
+            ],
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.unit_price' => ['required', 'numeric', 'gt:0'],

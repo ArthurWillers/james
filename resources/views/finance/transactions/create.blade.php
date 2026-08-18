@@ -6,8 +6,15 @@
         amount: {{ Js::from(old('amount')) }},
         date: {{ Js::from(old('date', \Carbon\Carbon::today()->format('Y-m-d'))) }},
         items: {{ Js::from(array_values(old('items', []))) }},
+        itemKey: 0,
+        init() {
+            this.items = this.items.map((item) => this.withItemKey(item));
+        },
+        withItemKey(item) {
+            return { ...item, _key: item._key ?? `item-${++this.itemKey}` };
+        },
         addItem() {
-            this.items.push({ description: '', quantity: 1, unit_price: '' });
+            this.items.push(this.withItemKey({ description: '', quantity: 1, unit_price: '', tags: [] }));
         },
         removeItem(index) {
             this.items.splice(index, 1);
