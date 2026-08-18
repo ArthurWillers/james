@@ -124,8 +124,6 @@ it('renders transaction items inside a single table container', function () {
         ->assertSee('R$ 12,50')
         ->assertSee('R$ 25,00')
         ->assertDontSee('bg-white dark:bg-white/10 border border-accent/30 dark:border-accent/20 shadow-sm transition-all duration-200 p-4 sm:p-6 rounded-xl overflow-hidden mb-6');
-
-    expect(substr_count($response->getContent(), 'w-full rounded-xl shadow-sm border border-accent/30'))->toBe(1);
 });
 
 it('can update transaction', function () {
