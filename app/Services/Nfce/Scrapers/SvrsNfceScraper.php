@@ -78,12 +78,18 @@ class SvrsNfceScraper implements NfceScraperInterface
     private function parse(string $html, NfceSource $source): NfceInvoiceData
     {
         $crawler = new Crawler($html);
-        $issuer = $this->requiredText($crawler, '//*[@id="u20"]', 'emitente');
+        $issuer = $this->requiredTextFromXpaths($crawler, [
+            '//*[@id="u20"]',
+            '//*[@id="conteudo"]//*[contains(concat(" ", normalize-space(@class), " "), " txtTopo ")][1]',
+        ], 'emitente');
         $issuerDocument = $this->parseIssuerDocument($crawler);
         $accessKey = preg_replace(
             '/\D/',
             '',
-            $this->requiredText($crawler, '//*[@id="infos"]//span[contains(@class, "chave")]', 'chave de acesso'),
+            $this->requiredTextFromXpaths($crawler, [
+                '//*[@id="infos"]//span[contains(@class, "chave")]',
+                '//span[contains(concat(" ", normalize-space(@class), " "), " chave ")][1]',
+            ], 'chave de acesso'),
         );
 
         if ($accessKey !== $source->accessKey) {
@@ -91,30 +97,27 @@ class SvrsNfceScraper implements NfceScraperInterface
         }
 
         $issuedAt = $this->parseIssuedAt(
-            $this->requiredText(
+            $this->requiredTextFromXpaths(
                 $crawler,
-                '//*[@id="infos"]//li[contains(normalize-space(.), "Emissão:")][1]',
+                [
+                    '//*[@id="infos"]//li[contains(normalize-space(.), "Emissão:")][1]',
+                    '//li[contains(normalize-space(.), "Emissão:")][1]',
+                ],
                 'data de emissão',
             ),
         );
         [$items, $itemsTotalInCents] = $this->parseItems($crawler);
-        $grossTotal = $this->parseCurrencyInCents($this->requiredText(
-            $crawler,
-            '//*[@id="totalNota"]/*[@id="linhaTotal"][label[contains(normalize-space(.), "Valor total R$")]]/span',
-            'valor total',
-        ));
-        $discountText = $this->optionalText(
-            $crawler,
-            '//*[@id="totalNota"]/*[@id="linhaTotal"][label[contains(normalize-space(.), "Descontos R$")]]/span',
-        );
+        $grossTotalText = $this->optionalTotalText($crawler, 'Valor total R$');
+        $grossTotal = $grossTotalText === null
+            ? $itemsTotalInCents
+            : $this->parseCurrencyInCents($grossTotalText);
+        $discountText = $this->optionalTotalText($crawler, 'Descontos R$');
         $discount = $discountText === null ? 0 : $this->parseCurrencyInCents($discountText);
-        $netTotal = $this->parseCurrencyInCents($this->requiredText(
-            $crawler,
-            '//*[@id="totalNota"]/*[@id="linhaTotal"][label[contains(normalize-space(.), "Valor a pagar R$")]]/span',
-            'valor a pagar',
-        ));
+        $freightText = $this->optionalTotalText($crawler, 'Frete R$');
+        $freight = $freightText === null ? 0 : $this->parseCurrencyInCents($freightText);
+        $netTotal = $this->parseCurrencyInCents($this->totalText($crawler, 'Valor a pagar R$', 'valor a pagar'));
 
-        if ($itemsTotalInCents !== $grossTotal || $grossTotal - $discount !== $netTotal) {
+        if ($itemsTotalInCents !== $grossTotal || $grossTotal - $discount + $freight !== $netTotal) {
             throw new NfceInvoiceParsingException('Os totais retornados pelo portal da NFC-e são inconsistentes.');
         }
 
@@ -123,6 +126,14 @@ class SvrsNfceScraper implements NfceScraperInterface
                 description: 'Desconto da NFC-e',
                 quantity: '1',
                 unitPrice: '-'.$this->formatCents($discount),
+            );
+        }
+
+        if ($freight > 0) {
+            $items[] = new NfceInvoiceItemData(
+                description: 'Frete da NFC-e',
+                quantity: '1',
+                unitPrice: $this->formatCents($freight),
             );
         }
 
@@ -152,10 +163,10 @@ class SvrsNfceScraper implements NfceScraperInterface
 
     private function parseIssuerDocument(Crawler $crawler): ?string
     {
-        $document = $this->optionalText(
-            $crawler,
+        $document = $this->optionalTextFromXpaths($crawler, [
             '//*[@id="u20"]/following-sibling::*[contains(@class, "text")][contains(normalize-space(.), "CNPJ:") or contains(normalize-space(.), "CPF:")][1]',
-        );
+            '//*[contains(concat(" ", normalize-space(@class), " "), " text ")][contains(normalize-space(.), "CNPJ:") or contains(normalize-space(.), "CPF:")][1]',
+        ]);
 
         if ($document === null) {
             return null;
@@ -176,6 +187,10 @@ class SvrsNfceScraper implements NfceScraperInterface
     private function parseItems(Crawler $crawler): array
     {
         $rows = $crawler->filterXPath('//*[@id="tabResult"]//tr');
+
+        if ($rows->count() === 0) {
+            $rows = $crawler->filterXPath('//table[.//span[contains(@class, "Rqtd")] and .//span[contains(@class, "RvlUnit")]]//tr');
+        }
 
         if ($rows->count() === 0) {
             throw new NfceInvoiceParsingException('Nenhum item foi encontrado na NFC-e.');
@@ -215,6 +230,35 @@ class SvrsNfceScraper implements NfceScraperInterface
         return $value;
     }
 
+    /**
+     * @param  list<string>  $xpaths
+     */
+    private function requiredTextFromXpaths(Crawler $crawler, array $xpaths, string $field): string
+    {
+        $foundNodes = false;
+
+        foreach ($xpaths as $xpath) {
+            $nodes = $crawler->filterXPath($xpath);
+
+            if ($nodes->count() === 0) {
+                continue;
+            }
+
+            $foundNodes = true;
+            $value = trim((string) preg_replace('/\s+/u', ' ', $nodes->first()->text('')));
+
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        if ($foundNodes) {
+            throw new NfceInvoiceParsingException("O portal da NFC-e retornou {$field} vazio.");
+        }
+
+        throw new NfceInvoiceParsingException("O portal da NFC-e não retornou {$field}.");
+    }
+
     private function optionalText(Crawler $crawler, string $xpath): ?string
     {
         $nodes = $crawler->filterXPath($xpath);
@@ -226,6 +270,43 @@ class SvrsNfceScraper implements NfceScraperInterface
         $value = trim((string) preg_replace('/\s+/u', ' ', $nodes->first()->text('')));
 
         return $value;
+    }
+
+    /**
+     * @param  list<string>  $xpaths
+     */
+    private function optionalTextFromXpaths(Crawler $crawler, array $xpaths): ?string
+    {
+        foreach ($xpaths as $xpath) {
+            $value = $this->optionalText($crawler, $xpath);
+
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function totalText(Crawler $crawler, string $label, string $field): string
+    {
+        return $this->requiredTextFromXpaths($crawler, $this->totalXpaths($label), $field);
+    }
+
+    private function optionalTotalText(Crawler $crawler, string $label): ?string
+    {
+        return $this->optionalTextFromXpaths($crawler, $this->totalXpaths($label));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function totalXpaths(string $label): array
+    {
+        return [
+            '//*[@id="totalNota"]/*[@id="linhaTotal"][label[contains(normalize-space(.), "'.$label.'")]]/span',
+            '//*[self::div or self::li][label[contains(normalize-space(.), "'.$label.'")]]/span[last()]',
+        ];
     }
 
     private function parseCurrencyInCents(string $value): int

@@ -48,6 +48,13 @@ return [
                 'provider' => 'svrs',
                 'hosts' => ['dfe-portal.svrs.rs.gov.br'],
                 'paths' => ['/Dfe/QrCodeNFce'],
+                'source_endpoint' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
+            ],
+            [
+                'provider' => 'svrs',
+                'hosts' => ['www.sefaz.rs.gov.br'],
+                'paths' => ['/NFCE/NFCE-COM.aspx'],
+                'source_endpoint' => 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
             ],
         ],
         'uf_codes' => [

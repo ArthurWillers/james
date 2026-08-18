@@ -192,7 +192,7 @@ class ScrapeNfceInvoiceJob implements ShouldBeUnique, ShouldQueue
     {
         return match (true) {
             $exception instanceof NfcePortalUnavailableException => 'Não foi possível consultar o portal da NFC-e. Tente novamente mais tarde.',
-            $exception instanceof NfceInvoiceParsingException => 'Não foi possível interpretar os dados retornados pelo portal da NFC-e.',
+            $exception instanceof NfceInvoiceParsingException => 'Não foi possível interpretar os dados retornados pelo portal da NFC-e. O portal pode estar fora do padrão esperado ou ainda não ter suporte.',
             default => 'A importação da NFC-e não pôde ser concluída.',
         };
     }

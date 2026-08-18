@@ -130,6 +130,98 @@ test('it accepts an invoice without discounts', function () {
         ->and($invoice->items)->toHaveCount(6);
 });
 
+test('it derives the gross total from items when the portal omits it', function () {
+    $html = str_replace(
+        '        <div id="linhaTotal"><label>Valor total R$:</label><span class="totalNumb">141,98</span></div>'.PHP_EOL,
+        '',
+        svrsFixture(),
+    );
+
+    Http::fake([
+        'dfe-portal.svrs.rs.gov.br/*' => Http::response($html),
+    ]);
+
+    $invoice = app(SvrsNfceScraper::class)->scrape(svrsNfceSource());
+
+    expect($invoice->totalAmount)->toBe('125.69')
+        ->and($invoice->items)->toHaveCount(7);
+});
+
+test('it includes freight in the invoice totals and items', function () {
+    $html = str_replace(
+        [
+            '        <div id="linhaTotal"><label>Descontos R$:</label><span class="totalNumb">16,29</span></div>'.PHP_EOL,
+            '        <div id="linhaTotal" class="linhaShade"><label>Valor a pagar R$:</label><span class="totalNumb txtMax">125,69</span></div>',
+        ],
+        [
+            '        <div id="linhaTotal"><label>Descontos R$:</label><span class="totalNumb">16,29</span></div>'.PHP_EOL.
+                '        <div id="linhaTotal"><label>Frete R$:</label><span class="totalNumb">8,00</span></div>'.PHP_EOL,
+            '        <div id="linhaTotal" class="linhaShade"><label>Valor a pagar R$:</label><span class="totalNumb txtMax">133,69</span></div>',
+        ],
+        svrsFixture(),
+    );
+
+    Http::fake([
+        'dfe-portal.svrs.rs.gov.br/*' => Http::response($html),
+    ]);
+
+    $invoice = app(SvrsNfceScraper::class)->scrape(svrsNfceSource());
+
+    expect($invoice->totalAmount)->toBe('133.69')
+        ->and($invoice->items)->toHaveCount(8)
+        ->and($invoice->items[6]->description)->toBe('Desconto da NFC-e')
+        ->and($invoice->items[7]->description)->toBe('Frete da NFC-e')
+        ->and($invoice->items[7]->unitPrice)->toBe('8.00');
+});
+
+test('it parses freight from a signed version two QR Code request', function () {
+    $html = str_replace(
+        [
+            '        <div id="linhaTotal"><label>Descontos R$:</label><span class="totalNumb">16,29</span></div>'.PHP_EOL,
+            '        <div id="linhaTotal" class="linhaShade"><label>Valor a pagar R$:</label><span class="totalNumb txtMax">125,69</span></div>',
+        ],
+        [
+            '        <div id="linhaTotal"><label>Descontos R$:</label><span class="totalNumb">16,29</span></div>'.PHP_EOL.
+                '        <div id="linhaTotal"><label>Frete R$:</label><span class="totalNumb">8,00</span></div>'.PHP_EOL,
+            '        <div id="linhaTotal" class="linhaShade"><label>Valor a pagar R$:</label><span class="totalNumb txtMax">133,69</span></div>',
+        ],
+        svrsFixture(),
+    );
+    $source = svrsNfceSource('|2|1|1|62154FB2F517DAF1E2950CA25FCAED575E7AA980');
+
+    Http::fake([
+        'dfe-portal.svrs.rs.gov.br/*' => Http::response($html),
+    ]);
+
+    $invoice = app(SvrsNfceScraper::class)->scrape($source);
+
+    expect($invoice->totalAmount)->toBe('133.69')
+        ->and($invoice->items)->toHaveCount(8)
+        ->and($invoice->items[7]->description)->toBe('Frete da NFC-e');
+
+    Http::assertSent(fn (Request $request): bool => $request->url() === $source->requestUrl);
+});
+
+test('it parses the SVRS data when optional structural ids are absent', function () {
+    $html = str_replace(
+        ['id="u20"', 'id="tabResult"', 'id="totalNota"', 'id="infos"'],
+        '',
+        svrsFixture(),
+    );
+
+    Http::fake([
+        'dfe-portal.svrs.rs.gov.br/*' => Http::response($html),
+    ]);
+
+    $invoice = app(SvrsNfceScraper::class)->scrape(svrsNfceSource());
+
+    expect($invoice->issuer)->toBe('EMPRESA FICTICIA DE TESTE LTDA')
+        ->and($invoice->issuerDocument)->toBe('12345678000195')
+        ->and($invoice->issuedAt->format('Y-m-d H:i:s'))->toBe('2026-07-14 15:25:55')
+        ->and($invoice->totalAmount)->toBe('125.69')
+        ->and($invoice->items)->toHaveCount(7);
+});
+
 test('it rejects inconsistent invoice totals', function () {
     $html = str_replace(
         '<label>Valor a pagar R$:</label><span class="totalNumb txtMax">125,69</span>',
@@ -156,15 +248,15 @@ test('it rejects a response for a different access key', function () {
         ->toThrow(NfceInvoiceParsingException::class);
 });
 
-function svrsNfceSource(): NfceSource
+function svrsNfceSource(string $requestParameterSuffix = '|3|1'): NfceSource
 {
     return new NfceSource(
-        requestUrl: 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111%7C3%7C1',
+        requestUrl: 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce?p=43111111111111111111111111111111111111111111'.rawurlencode($requestParameterSuffix),
         provider: 'svrs',
         accessKey: '43111111111111111111111111111111111111111111',
         uf: 'RS',
         sourceEndpoint: 'https://dfe-portal.svrs.rs.gov.br/Dfe/QrCodeNFce',
-        requestParameterSuffix: '|3|1',
+        requestParameterSuffix: $requestParameterSuffix,
     );
 }
 
