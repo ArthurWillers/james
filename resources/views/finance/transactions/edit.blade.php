@@ -49,6 +49,7 @@
         @csrf
         @method('PUT')
         <input type="hidden" name="targetType" x-model="targetType">
+        <input type="hidden" name="items_present" value="1">
 
         <div class="flex justify-between items-center mb-6">
             <x-breadcrumbs>

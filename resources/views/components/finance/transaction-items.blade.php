@@ -30,7 +30,7 @@
                         <x-form-input x-data @input="$event.target.value = $event.target.value.replace(/[^0-9.,]/g, '')" inputmode="decimal" x-model="item.quantity" ::name="'items['+index+'][quantity]'" placeholder="Qtd" />
                     </div>
                     <div class="flex-1 sm:w-28 shrink-0">
-                        <x-form-input :currency="true" x-model="item.unit_price" ::name="'items['+index+'][unit_price]'" placeholder="R$ 0,00" />
+                        <x-form-input :currency="true" :allow-negative="true" x-model="item.unit_price" ::name="'items['+index+'][unit_price]'" placeholder="R$ 0,00" />
                     </div>
                     <div class="flex items-center gap-1 shrink-0 px-1">
                     <x-tags-selector 

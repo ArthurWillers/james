@@ -393,7 +393,7 @@ class FinancialTransactionController extends Controller
             $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
             $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
-            if ($request->exists('items')) {
+            if ($request->boolean('items_present') || $request->exists('items')) {
                 $this->syncTransactionItems($transaction, $validated['items'] ?? []);
             }
 

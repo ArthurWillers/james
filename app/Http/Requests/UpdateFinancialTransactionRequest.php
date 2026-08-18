@@ -50,6 +50,7 @@ class UpdateFinancialTransactionRequest extends FormRequest
                 TransactionStatus::Pending->value,
                 TransactionStatus::Posted->value,
             ])],
+            'items_present' => ['nullable', 'boolean'],
             'items' => ['nullable', 'array'],
             'items.*.id' => [
                 'nullable',
@@ -59,7 +60,7 @@ class UpdateFinancialTransactionRequest extends FormRequest
             ],
             'items.*.description' => ['required', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'numeric', 'gt:0'],
-            'items.*.unit_price' => ['required', 'numeric', 'gt:0'],
+            'items.*.unit_price' => ['required', 'numeric', 'not_regex:/^-?0+(?:\.0+)?$/'],
             'items.*.tags' => ['nullable', 'array'],
             'items.*.tags.*' => ['exists:financial_tags,id'],
             'items.*.primary_tag_id' => ['nullable', 'exists:financial_tags,id'],
@@ -82,7 +83,7 @@ class UpdateFinancialTransactionRequest extends FormRequest
             'items.*.quantity.required' => 'A quantidade é obrigatória nos itens.',
             'items.*.quantity.gt' => 'A quantidade do item deve ser maior que zero.',
             'items.*.unit_price.required' => 'O valor é obrigatório nos itens.',
-            'items.*.unit_price.gt' => 'O valor do item deve ser maior que zero.',
+            'items.*.unit_price.not_regex' => 'O valor do item não pode ser zero.',
         ];
     }
 }

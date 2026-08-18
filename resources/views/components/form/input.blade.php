@@ -6,6 +6,7 @@
     'viewable' => false,
     'numeric' => false,
     'currency' => false,
+    'allowNegative' => false,
     'bag' => 'default',
     'hasError' => false, // Override para forçar estado de erro
 ])
@@ -23,37 +24,43 @@
     @if ($viewable) x-data="{ show: false }" @endif
     @if ($currency) x-data="{
         rawValue: '{{ $value }}',
+        allowNegative: {{ $allowNegative ? 'true' : 'false' }},
         formatCurrency(val) {
-            let str = String(val || '').replace(/\D/g, '');
-            if (str === '') str = '0';
-            let num = parseInt(str, 10);
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num / 100);
+            let num = Number(String(val ?? '').replace(',', '.'));
+            if (!Number.isFinite(num)) num = 0;
+            if (!this.allowNegative) num = Math.abs(num);
+
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+        },
+        normalizeValue(val) {
+            let input = String(val ?? '').trim();
+            let digits = input.replace(/\D/g, '');
+            if (digits === '') digits = '0';
+
+            let cents = parseInt(digits, 10);
+            let sign = this.allowNegative && input.includes('-') ? -1 : 1;
+
+            return ((sign * cents) / 100).toFixed(2);
         },
         updateValue(e) {
-            let val = e.target.value;
-            let str = String(val).replace(/\D/g, '');
-            if (str === '') str = '0';
-            let num = parseInt(str, 10);
-            let floatVal = (num / 100).toFixed(2);
+            let floatVal = this.normalizeValue(e.target.value);
             if (this.rawValue !== floatVal) {
                 this.rawValue = floatVal;
             }
-            e.target.value = this.formatCurrency(str);
+            e.target.value = this.formatCurrency(floatVal);
         },
         init() {
             this.$watch('rawValue', (val) => {
-                let parsed = parseFloat(val || 0);
-                if (isNaN(parsed)) parsed = 0;
-                let str = parsed.toFixed(2).replace(/\D/g, '');
-                this.$refs.display.value = this.formatCurrency(str);
+                this.$refs.display.value = this.formatCurrency(val);
             });
-            
-            let parsed = parseFloat(this.rawValue || 0);
-            if (isNaN(parsed)) parsed = 0;
-            let str = parsed.toFixed(2).replace(/\D/g, ''); 
-            this.$refs.display.value = this.formatCurrency(str);
-            
+
+            let parsed = Number(String(this.rawValue || 0).replace(',', '.'));
+            if (!Number.isFinite(parsed)) parsed = 0;
+            if (!this.allowNegative) parsed = Math.abs(parsed);
+
             let floatVal = parsed.toFixed(2);
+            this.$refs.display.value = this.formatCurrency(floatVal);
+
             if (this.rawValue !== floatVal) {
                 this.rawValue = floatVal;
             }

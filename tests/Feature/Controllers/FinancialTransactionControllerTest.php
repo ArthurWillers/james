@@ -94,6 +94,7 @@ it('renders transaction items safely inside Alpine data', function () {
     $this->get(route('financial.transactions.edit', $transaction))
         ->assertSuccessful()
         ->assertSee(Js::from($expectedItems)->toHtml(), false)
+        ->assertSee('name="items_present"', false)
         ->assertSee(':key="item._key"', false)
         ->assertSee('x-if="item.id"', false)
         ->assertSee('x-bind:name="\'items[\'+index+\'][id]\'"', false)
@@ -183,6 +184,35 @@ it('preserves transaction items when items are omitted from an update', function
     $this->assertModelExists($item);
 });
 
+it('removes all items when the edit form submits an empty item state', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create([
+        'financial_account_id' => $account->id,
+        'status' => TransactionStatus::Draft,
+        'nfce_access_key' => str_repeat('4', 44),
+    ]);
+    $item = $transaction->items()->create([
+        'description' => 'Desconto da NFC-e',
+        'quantity' => 1,
+        'unit_price' => -10,
+        'total' => -10,
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 10,
+        'description' => 'Compra importada',
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Posted->value,
+        'items_present' => 1,
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    expect($transaction->items()->count())->toBe(0);
+    expect($item->fresh())->toBeNull();
+});
+
 it('logs only the removed item and the transaction update when one item is removed', function () {
     $account = FinancialAccount::factory()->create();
     $tag = FinancialTag::factory()->create();
@@ -260,7 +290,7 @@ it('logs only the removed item and the transaction update when one item is remov
         ->doesntExist())->toBeTrue();
 });
 
-it('rejects non-positive item values', function (string $field, int $value) {
+it('rejects invalid item values', function (string $field, int|string $value) {
     $account = FinancialAccount::factory()->create();
 
     $item = [
@@ -283,9 +313,73 @@ it('rejects non-positive item values', function (string $field, int $value) {
 })->with([
     'negative quantity' => ['quantity', -1],
     'zero quantity' => ['quantity', 0],
-    'negative unit price' => ['unit_price', -10],
     'zero unit price' => ['unit_price', 0],
+    'formatted zero unit price' => ['unit_price', '0.00'],
 ]);
+
+it('persists negative item prices and renders the negative currency input', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create([
+        'financial_account_id' => $account->id,
+        'amount' => 10,
+    ]);
+    $item = $transaction->items()->create([
+        'description' => 'Desconto',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'total' => 10,
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 10,
+        'description' => 'Compra com desconto',
+        'date' => '2026-08-17',
+        'status' => TransactionStatus::Posted->value,
+        'items_present' => 1,
+        'items' => [[
+            'id' => $item->id,
+            'description' => 'Desconto',
+            'quantity' => 1,
+            'unit_price' => '-10.00',
+            'tags' => [],
+        ]],
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    expect($item->refresh()->unit_price)->toBe('-10.00')
+        ->and($item->total)->toBe('-10.00');
+
+    $this->get(route('financial.transactions.edit', $transaction))
+        ->assertSuccessful()
+        ->assertSee('-10.00', false)
+        ->assertSee('allowNegative: true', false)
+        ->assertSee('unit_price', false);
+});
+
+it('accepts negative item prices when creating a transaction', function () {
+    $account = FinancialAccount::factory()->create();
+
+    $this->post(route('financial.transactions.store'), [
+        'mode' => 'single',
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 20,
+        'description' => 'Compra com desconto',
+        'date' => '2026-08-17',
+        'items' => [[
+            'description' => 'Desconto',
+            'quantity' => 1,
+            'unit_price' => '-10.00',
+        ]],
+    ])->assertRedirect(route('financial.transactions.index'));
+
+    $transaction = FinancialTransaction::query()->latest('id')->firstOrFail();
+
+    expect($transaction->items()->sole()->unit_price)->toBe('-10.00');
+});
 
 it('finalizes an imported draft as posted on an account', function () {
     $account = FinancialAccount::factory()->create();
