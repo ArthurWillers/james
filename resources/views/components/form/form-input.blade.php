@@ -8,6 +8,7 @@
     'labelClass' => '',
     'numeric' => false,
     'currency' => false,
+    'allowNegative' => false,
     'bag' => 'default',
 ])
 
@@ -26,6 +27,7 @@
         :viewable="$viewable"
         :numeric="$numeric"
         :currency="$currency"
+        :allow-negative="$allowNegative"
         :bag="$bag"
         {{ $attributes }}
     />
