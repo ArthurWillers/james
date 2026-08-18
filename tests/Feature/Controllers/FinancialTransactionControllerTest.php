@@ -107,6 +107,25 @@ it('shows the imported nfce portal and formatted issuer document', function () {
         ->assertSee('12.345.678/0001-95');
 });
 
+it('renders transaction items inside a single table container', function () {
+    $transaction = FinancialTransaction::factory()->create();
+    $transaction->items()->create([
+        'description' => 'Café especial',
+        'quantity' => 2,
+        'unit_price' => 12.50,
+        'total' => 25,
+    ]);
+
+    $response = $this->get(route('financial.transactions.show', $transaction));
+
+    $response->assertSuccessful()
+        ->assertSee('Itens da Transação')
+        ->assertSee('Café especial')
+        ->assertSee('R$ 12,50')
+        ->assertSee('R$ 25,00')
+        ->assertDontSee('bg-white dark:bg-white/10 border border-accent/30 dark:border-accent/20 shadow-sm transition-all duration-200 p-4 sm:p-6 rounded-xl overflow-hidden mb-6');
+});
+
 it('can update transaction', function () {
     $account = FinancialAccount::factory()->create();
     $transaction = FinancialTransaction::factory()->create([
