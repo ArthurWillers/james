@@ -68,6 +68,11 @@
             async pasteUrl() {
                 this.pasteError = '';
 
+                if (! window.isSecureContext) {
+                    this.pasteError = 'A colagem automática exige HTTPS. Abra a aplicação pelo endereço seguro ou cole a URL manualmente.';
+                    return;
+                }
+
                 if (! navigator.clipboard?.readText) {
                     this.pasteError = 'Seu navegador não permite ler a área de transferência automaticamente.';
                     return;
@@ -76,7 +81,9 @@
                 try {
                     this.url = (await navigator.clipboard.readText()).trim();
                 } catch (error) {
-                    this.pasteError = 'Não foi possível acessar a área de transferência. Cole a URL manualmente.';
+                    this.pasteError = error?.name === 'NotAllowedError'
+                        ? 'O navegador bloqueou o acesso à área de transferência. Permita o acesso para este site ou cole a URL manualmente.'
+                        : 'Não foi possível acessar a área de transferência. Cole a URL manualmente.';
                 }
             }
         }" @submit="if (loading) { $event.preventDefault(); return; } loading = true">
