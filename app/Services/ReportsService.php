@@ -164,7 +164,6 @@ class ReportsService
                     $itemsSum += $itemAmount;
 
                     $entry = clone $t;
-                    $entry->id = $t->id.'_item_'.$item->id;
                     $entry->amount = $itemAmount;
                     $entry->description = $t->description.' - '.$item->description;
                     $entry->setRelation('tags', $item->tags);
@@ -175,7 +174,6 @@ class ReportsService
                 $remainingAmount = $t->amount - $itemsSum;
                 if ($remainingAmount > 0.01) {
                     $entry = clone $t;
-                    $entry->id = $t->id.'_rem';
                     $entry->amount = $remainingAmount;
                     $entry->description = $t->description.' (Restante)';
                     $flattened->push($entry);

@@ -143,9 +143,10 @@
             <div class="flex items-center justify-between mb-4 px-1">
                 <h3 class="text-lg font-bold text-neutral-900">Transações do Período</h3>
                 
-                <button x-cloak x-show="selectedTagId !== null" 
-                        @click="selectedTagId = null" 
-                        class="cursor-pointer text-xs font-bold text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                <button class="cursor-pointer text-xs font-bold text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                        x-cloak
+                        x-show="selectedTagId !== null"
+                        @click="clearTagFilter()">
                     <x-heroicon-s-x-mark class="size-3.5" />
                     Limpar Filtro
                 </button>
@@ -163,14 +164,24 @@
         Alpine.data('reportsPage', () => ({
             period: @json($period),
             showFilters: false,
-            selectedTagId: null,
+            selectedTagId: @js($selectedTagId),
 
             filterByTag(tagId) {
-                this.selectedTagId = tagId;
-                const table = document.getElementById('transactions-table');
-                if (table) {
-                    table.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                const url = new URL(window.location.href);
+                url.searchParams.set('tag_id', tagId);
+                url.searchParams.delete('page');
+                url.searchParams.delete('virtual_page');
+                url.hash = 'transactions-table';
+                window.location.assign(url);
+            },
+
+            clearTagFilter() {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('tag_id');
+                url.searchParams.delete('page');
+                url.searchParams.delete('virtual_page');
+                url.hash = 'transactions-table';
+                window.location.assign(url);
             },
 
             submitIfNotCustom() {

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\FinancialTag;
+use App\Models\FinancialTransaction;
 use App\Models\User;
 
 beforeEach(function () {
@@ -23,4 +25,52 @@ it('respects the period query parameter', function () {
     $this->get(route('financial.reports', ['period' => 'this_month']))
         ->assertSuccessful()
         ->assertViewHas('period', 'this_month');
+});
+
+it('filters report rows by transaction and item tags before paginating', function () {
+    $tag = FinancialTag::factory()->create();
+    $startDate = '2026-08-18';
+    $endDate = '2026-08-19';
+
+    FinancialTransaction::factory()->posted()->count(50)->create([
+        'date' => $startDate,
+    ])->each(function (FinancialTransaction $transaction) use ($tag): void {
+        $transaction->tags()->attach($tag, ['is_primary' => true]);
+    });
+
+    $itemTaggedTransaction = FinancialTransaction::factory()->posted()->create([
+        'amount' => 10,
+        'date' => $endDate,
+    ]);
+    $item = $itemTaggedTransaction->items()->create([
+        'description' => 'Item com tag',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'total' => 10,
+    ]);
+    $item->tags()->attach($tag, ['is_primary' => true]);
+
+    $response = $this->get(route('financial.reports', [
+        'period' => 'custom',
+        'startDate' => $startDate,
+        'endDate' => $endDate,
+        'tag_id' => $tag->id,
+        'page' => 2,
+    ]));
+
+    $response->assertSuccessful()
+        ->assertViewHas('selectedTagId', $tag->id);
+
+    $transactions = $response->viewData('transactions');
+
+    expect($transactions->total())->toBe(51)
+        ->and($transactions->count())->toBe(1)
+        ->and($transactions->currentPage())->toBe(2)
+        ->and($transactions->lastPage())->toBe(2)
+        ->and($transactions->previousPageUrl())->toContain('tag_id='.$tag->id)
+        ->and($transactions->previousPageUrl())->toEndWith('#transactions-table')
+        ->and($transactions->first()->id)->toBe($itemTaggedTransaction->id)
+        ->and($transactions->first()->description)->toBe($itemTaggedTransaction->description.' - '.$item->description)
+        ->and((float) $transactions->first()->amount)->toBe(10.0)
+        ->and($transactions->first()->tags->modelKeys())->toBe([$tag->id]);
 });
