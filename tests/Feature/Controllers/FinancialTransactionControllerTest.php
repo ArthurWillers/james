@@ -31,6 +31,32 @@ it('can list transactions', function () {
         ->assertViewIs('finance.transactions.index');
 });
 
+it('filters transactions by tags attached directly or to an item', function () {
+    $tag = FinancialTag::factory()->create();
+    $directlyTaggedTransaction = FinancialTransaction::factory()->create();
+    $directlyTaggedTransaction->tags()->attach($tag, ['is_primary' => true]);
+
+    $itemTaggedTransaction = FinancialTransaction::factory()->create();
+    $item = $itemTaggedTransaction->items()->create([
+        'description' => 'Item com tag',
+        'quantity' => 1,
+        'unit_price' => 20,
+        'total' => 20,
+    ]);
+    $item->tags()->attach($tag, ['is_primary' => true]);
+
+    FinancialTransaction::factory()->create();
+
+    $this->get(route('financial.transactions.index', ['tag_id' => $tag->id]))
+        ->assertSuccessful()
+        ->assertViewHas('transactions', function ($transactions) use ($directlyTaggedTransaction, $itemTaggedTransaction): bool {
+            return $transactions->pluck('id')->sort()->values()->all() === [
+                $directlyTaggedTransaction->id,
+                $itemTaggedTransaction->id,
+            ];
+        });
+});
+
 it('can view create transaction page', function () {
     $this->get(route('financial.transactions.create'))
         ->assertSuccessful()
