@@ -81,6 +81,17 @@ class ReportsController extends Controller
         $accounts = FinancialAccount::orderBy('name')->get();
 
         $allTransactions = $reportData['tableTransactions'];
+        $selectedTagId = $request->filled('tag_id') ? $request->integer('tag_id') : null;
+
+        if ($selectedTagId !== null) {
+            $allTransactions = $allTransactions->filter(function (FinancialTransaction $transaction) use ($selectedTagId): bool {
+                if ($selectedTagId === 0) {
+                    return $transaction->tags->isEmpty();
+                }
+
+                return $transaction->tags->contains('id', $selectedTagId);
+            });
+        }
 
         $realTransactions = $allTransactions->reject(fn ($t) => isset($t->is_virtual) && $t->is_virtual);
         $virtualTransactions = $allTransactions->filter(fn ($t) => isset($t->is_virtual) && $t->is_virtual);
@@ -127,6 +138,7 @@ class ReportsController extends Controller
             'endDate' => $endDate->format('Y-m-d'),
             'accountId' => $accountId,
             'accountBalancesChart' => $accountBalancesChart,
+            'selectedTagId' => $selectedTagId,
         ]);
     }
 }
