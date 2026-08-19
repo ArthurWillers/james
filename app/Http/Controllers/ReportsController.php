@@ -107,6 +107,7 @@ class ReportsController extends Controller
             $page,
             ['path' => request()->url(), 'query' => request()->query(), 'pageName' => 'page']
         );
+        $paginatedTransactions->fragment('transactions-table');
 
         $paginatedVirtual = new LengthAwarePaginator(
             $virtualTransactions->forPage($virtualPage, $perPage),
@@ -115,6 +116,7 @@ class ReportsController extends Controller
             $virtualPage,
             ['path' => request()->url(), 'query' => request()->query(), 'pageName' => 'virtual_page']
         );
+        $paginatedVirtual->fragment('transactions-table');
 
         $accountBalancesChart = [];
         if (empty($accountId) || str_starts_with($accountId, 'type:')) {

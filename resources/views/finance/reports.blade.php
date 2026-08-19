@@ -171,6 +171,7 @@
                 url.searchParams.set('tag_id', tagId);
                 url.searchParams.delete('page');
                 url.searchParams.delete('virtual_page');
+                url.hash = 'transactions-table';
                 window.location.assign(url);
             },
 
@@ -179,6 +180,7 @@
                 url.searchParams.delete('tag_id');
                 url.searchParams.delete('page');
                 url.searchParams.delete('virtual_page');
+                url.hash = 'transactions-table';
                 window.location.assign(url);
             },
 

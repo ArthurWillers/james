@@ -29,17 +29,18 @@ it('respects the period query parameter', function () {
 
 it('filters report rows by transaction and item tags before paginating', function () {
     $tag = FinancialTag::factory()->create();
-    $date = '2026-08-19';
+    $startDate = '2026-08-18';
+    $endDate = '2026-08-19';
 
-    FinancialTransaction::factory()->count(50)->create([
-        'date' => $date,
+    FinancialTransaction::factory()->posted()->count(50)->create([
+        'date' => $startDate,
     ])->each(function (FinancialTransaction $transaction) use ($tag): void {
         $transaction->tags()->attach($tag, ['is_primary' => true]);
     });
 
-    $itemTaggedTransaction = FinancialTransaction::factory()->create([
+    $itemTaggedTransaction = FinancialTransaction::factory()->posted()->create([
         'amount' => 10,
-        'date' => $date,
+        'date' => $endDate,
     ]);
     $item = $itemTaggedTransaction->items()->create([
         'description' => 'Item com tag',
@@ -51,8 +52,8 @@ it('filters report rows by transaction and item tags before paginating', functio
 
     $this->get(route('financial.reports', [
         'period' => 'custom',
-        'startDate' => $date,
-        'endDate' => $date,
+        'startDate' => $startDate,
+        'endDate' => $endDate,
         'tag_id' => $tag->id,
         'page' => 2,
     ]))
@@ -61,6 +62,10 @@ it('filters report rows by transaction and item tags before paginating', functio
         ->assertViewHas('transactions', function ($transactions) use ($item, $itemTaggedTransaction): bool {
             return $transactions->total() === 51
                 && $transactions->count() === 1
+                && $transactions->currentPage() === 2
+                && $transactions->lastPage() === 2
+                && str_contains($transactions->previousPageUrl(), 'tag_id=')
+                && str_ends_with($transactions->previousPageUrl(), '#transactions-table')
                 && $transactions->first()->id === $itemTaggedTransaction->id.'_item_'.$item->id;
         });
 });
