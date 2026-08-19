@@ -39,6 +39,8 @@ it('can view create transaction page', function () {
         ->assertSee('Colar URL')
         ->assertSee(route('financial.transactions.nfce.import'), false)
         ->assertSee('name="url"', false)
+        ->assertSee("new CustomEvent('modal-closed'", false)
+        ->assertSee('@modal-close.window="if ($event.detail ===', false)
         ->assertSee('h-11', false);
 });
 

@@ -18,43 +18,53 @@
     $hasIcon = in_array($confirmVariant, ['danger', 'info', 'success', 'warning']);
 @endphp
 
-<div x-data="{ open: false }" 
+<div class="contents"
+     x-data="{
+         open: false,
+         closeModal() {
+             if (! this.open) {
+                 return;
+             }
+
+             this.open = false;
+             window.dispatchEvent(new CustomEvent('modal-closed', { detail: @js($name) }));
+         }
+     }"
      @modal-open.window="if ($event.detail === '{{ $name }}') open = true"
-     @modal-close.window="if ($event.detail === '{{ $name }}') open = false"
-     @keydown.escape.window="open = false"
-     class="contents"
+     @modal-close.window="if ($event.detail === '{{ $name }}') closeModal()"
+     @keydown.escape.window="closeModal()"
 >
 
     <template x-teleport="body">
-        <div x-show="open" 
-             style="display: none;" 
-             class="fixed inset-0 z-50 overflow-y-auto" 
+        <div class="fixed inset-0 z-50 overflow-y-auto"
+             style="display: none;"
              aria-labelledby="modal-title" 
              role="dialog" 
-             aria-modal="true">
+             aria-modal="true"
+             x-show="open">
             
 
-            <div x-show="open" 
+            <div class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity"
+                 aria-hidden="true"
+                 x-show="open"
                  x-transition:enter="ease-out duration-300"
                  x-transition:enter-start="opacity-0"
                  x-transition:enter-end="opacity-100"
                  x-transition:leave="ease-in duration-200"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity" 
-                 @click="open = false"
-                 aria-hidden="true"></div>
+                 @click="closeModal()"></div>
 
 
             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div x-show="open" 
+                <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full {{ $maxWidth }}"
+                     x-show="open"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
                      x-transition:leave="ease-in duration-200"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full {{ $maxWidth }}">
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                     
                     <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div class="{{ $hasIcon ? 'sm:flex sm:items-start' : '' }}">
@@ -99,13 +109,13 @@
                     
                     @if(!$hideFooter && $hasIcon)
                         <div class="bg-neutral-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                            <div class="sm:ml-3 sm:w-auto" @click="open = false; $dispatch('modal-confirm')">
+                            <div class="sm:ml-3 sm:w-auto" @click="closeModal(); $dispatch('modal-confirm')">
                                 {{ $slot }}
                             </div>
                             <x-button type="button" 
                                       color="outline"
-                                      @click="open = false; $dispatch('modal-cancel')" 
-                                      class="mt-3 w-full sm:mt-0 sm:w-auto">
+                                      class="mt-3 w-full sm:mt-0 sm:w-auto"
+                                      @click="closeModal(); $dispatch('modal-cancel')">
                                 Cancelar
                             </x-button>
                         </div>
