@@ -50,22 +50,27 @@ it('filters report rows by transaction and item tags before paginating', functio
     ]);
     $item->tags()->attach($tag, ['is_primary' => true]);
 
-    $this->get(route('financial.reports', [
+    $response = $this->get(route('financial.reports', [
         'period' => 'custom',
         'startDate' => $startDate,
         'endDate' => $endDate,
         'tag_id' => $tag->id,
         'page' => 2,
-    ]))
-        ->assertSuccessful()
-        ->assertViewHas('selectedTagId', $tag->id)
-        ->assertViewHas('transactions', function ($transactions) use ($item, $itemTaggedTransaction): bool {
-            return $transactions->total() === 51
-                && $transactions->count() === 1
-                && $transactions->currentPage() === 2
-                && $transactions->lastPage() === 2
-                && str_contains($transactions->previousPageUrl(), 'tag_id=')
-                && str_ends_with($transactions->previousPageUrl(), '#transactions-table')
-                && $transactions->first()->id === $itemTaggedTransaction->id.'_item_'.$item->id;
-        });
+    ]));
+
+    $response->assertSuccessful()
+        ->assertViewHas('selectedTagId', $tag->id);
+
+    $transactions = $response->viewData('transactions');
+
+    expect($transactions->total())->toBe(51)
+        ->and($transactions->count())->toBe(1)
+        ->and($transactions->currentPage())->toBe(2)
+        ->and($transactions->lastPage())->toBe(2)
+        ->and($transactions->previousPageUrl())->toContain('tag_id='.$tag->id)
+        ->and($transactions->previousPageUrl())->toEndWith('#transactions-table')
+        ->and($transactions->first()->id)->toBe($itemTaggedTransaction->id)
+        ->and($transactions->first()->description)->toBe($itemTaggedTransaction->description.' - '.$item->description)
+        ->and((float) $transactions->first()->amount)->toBe(10.0)
+        ->and($transactions->first()->tags->modelKeys())->toBe([$tag->id]);
 });
