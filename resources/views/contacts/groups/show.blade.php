@@ -37,7 +37,7 @@
                     <h3 class="text-lg font-semibold text-neutral-900">Notas</h3>
                 </div>
                 <div class="p-6 prose prose-neutral max-w-none prose-sm">
-                    {!! str($group->notes)->markdown() !!}
+                    <x-markdown :content="$group->notes" />
                 </div>
             </x-card>
         @endif

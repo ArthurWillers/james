@@ -149,7 +149,7 @@
         <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">Notas</h3>
         @if($contact->notes)
             <div class="markdown-content text-[15px] text-neutral-700">
-                {!! Str::of((string) $contact->notes)->markdown() !!}
+                <x-markdown :content="$contact->notes" />
             </div>
         @else
             <p class="text-sm text-neutral-400 italic">Nenhuma anotação.</p>
