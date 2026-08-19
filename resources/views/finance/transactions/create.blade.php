@@ -67,55 +67,65 @@
         <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" mobile />
     </form>
 
-    <x-modal name="nfce-import-modal" title="Importar NFC-e" confirmVariant="none">
-        <form action="{{ route('financial.transactions.nfce.import') }}" method="POST" class="mt-4 space-y-4" x-data="{
-            loading: false,
-            url: @js(old('url', '')),
-            pasteError: '',
-            async pasteUrl() {
-                this.pasteError = '';
-
-                if (! window.isSecureContext) {
-                    this.pasteError = 'A colagem automática exige HTTPS. Abra a aplicação pelo endereço seguro ou cole a URL manualmente.';
-                    return;
-                }
-
-                if (! navigator.clipboard?.readText) {
-                    this.pasteError = 'Seu navegador não permite ler a área de transferência automaticamente.';
-                    return;
-                }
-
-                try {
-                    this.url = (await navigator.clipboard.readText()).trim();
-                } catch (error) {
-                    this.pasteError = error?.name === 'NotAllowedError'
-                        ? 'O navegador bloqueou o acesso à área de transferência. Permita o acesso para este site ou cole a URL manualmente.'
-                        : 'Não foi possível acessar a área de transferência. Cole a URL manualmente.';
-                }
-            }
-        }" @submit="if (loading) { $event.preventDefault(); return; } loading = true">
+    <x-modal name="nfce-import-modal" title="Importar NFC-e" confirmVariant="none" size="lg">
+        <form action="{{ route('financial.transactions.nfce.import') }}" method="POST" class="mt-4 space-y-4"
+            x-data="nfceImport(@js(old('url', '')))"
+            @modal-closed.window="if ($event.detail === 'nfce-import-modal') stopScanner()"
+            @submit="if (loading) { $event.preventDefault(); return; } loading = true">
             @csrf
 
-            <x-form-input
-                label="URL pública da NFC-e"
-                name="url"
-                type="url"
-                x-model="url"
-                placeholder="https://..."
-                autocomplete="url"
-            />
+            <div class="space-y-4" x-show="!scanMode">
+                <x-form-input
+                    label="URL pública da NFC-e"
+                    name="url"
+                    type="url"
+                    placeholder="https://..."
+                    autocomplete="url"
+                    x-model="url"
+                />
 
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <x-button type="button" color="outline" class="w-full" @click="pasteUrl()">
-                    <x-heroicon-o-clipboard-document class="size-4" />
-                    Colar URL
-                </x-button>
-                <p class="text-xs text-red-600" x-show="pasteError" x-text="pasteError"></p>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <x-button type="button" color="outline" class="w-full" @click="pasteUrl()">
+                        <x-heroicon-o-clipboard-document class="size-4" />
+                        Colar URL
+                    </x-button>
+
+                    <fieldset :disabled="scanStarting">
+                        <x-button type="button" color="outline" class="w-full" @click="startScanner()">
+                            <x-heroicon-o-camera class="size-4" x-show="!scanStarting" />
+                            <x-heroicon-o-arrow-path class="size-4 animate-spin" style="display: none;" x-show="scanStarting" />
+                            <span x-text="scanStarting ? 'Abrindo câmera...' : 'Ler QR Code'"></span>
+                        </x-button>
+                    </fieldset>
+                </div>
+
+                <p class="text-xs text-red-600" role="alert" x-show="pasteError" x-text="pasteError"></p>
+
+                <p class="text-sm text-neutral-500">Cole a URL exibida no portal da nota fiscal ou leia o QR Code pela câmera.</p>
             </div>
 
-            <p class="text-sm text-neutral-500">Cole a URL exibida no portal da nota fiscal.</p>
+            <div class="space-y-4" style="display: none;" x-show="scanMode">
+                <p class="text-sm text-neutral-600">Aponte a câmera para o QR Code impresso na nota fiscal.</p>
 
-            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
+                <div class="relative min-h-64 overflow-hidden rounded-xl bg-neutral-950">
+                    <div id="nfce-qr-reader" class="min-h-64"></div>
+
+                    <div class="absolute inset-0 flex items-center justify-center gap-2 bg-neutral-950 text-sm text-white"
+                        x-show="scanStarting">
+                        <x-heroicon-o-arrow-path class="size-5 animate-spin" />
+                        Preparando a câmera...
+                    </div>
+                </div>
+
+                <x-button type="button" color="outline" class="w-full" @click="stopScanner()">
+                    <x-heroicon-o-x-mark class="size-4" />
+                    Cancelar leitura
+                </x-button>
+            </div>
+
+            <p class="text-sm text-red-600" role="alert" aria-live="assertive" x-show="scanError" x-text="scanError"></p>
+
+            <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end" x-show="!scanMode">
                 <x-button type="button" color="outline" @click="$dispatch('modal-close', 'nfce-import-modal')">
                     Cancelar
                 </x-button>

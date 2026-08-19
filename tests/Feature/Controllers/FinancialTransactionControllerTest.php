@@ -37,8 +37,15 @@ it('can view create transaction page', function () {
         ->assertViewIs('finance.transactions.create')
         ->assertSee('Importar NFC-e')
         ->assertSee('Colar URL')
+        ->assertSee('Ler QR Code')
+        ->assertSee('Cancelar leitura')
         ->assertSee(route('financial.transactions.nfce.import'), false)
         ->assertSee('name="url"', false)
+        ->assertSee('x-data="nfceImport(', false)
+        ->assertSee('id="nfce-qr-reader"', false)
+        ->assertSee('@modal-closed.window=', false)
+        ->assertSee("new CustomEvent('modal-closed'", false)
+        ->assertSee('@modal-close.window="if ($event.detail ===', false)
         ->assertSee('h-11', false);
 });
 
