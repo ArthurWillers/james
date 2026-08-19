@@ -95,3 +95,7 @@ class ExemploModel extends Model
 1. **Apenas `$fillable`:** Utilize `logFillable()` para auditar estritamente os campos seguros, evitando logar tokens ou campos internos efêmeros.
 2. **`logOnlyDirty()` e `dontLogEmptyChanges()`:** Evita poluir o banco de logs quando um `save()` é chamado sem alterações reais nos dados.
 3. **Escopo de Negócio:** Auditoria destina-se a mutações de dados de negócio. Não utilize activity log para monitorar execuções técnicas puras de jobs ou requisições HTTP sem mutação.
+
+### Exclusão de itens de transação
+
+Itens removidos durante a edição de uma transação financeira são excluídos definitivamente para que não continuem compondo os valores e relatórios. Antes disso, o sistema registra uma atividade `forceDeleted` com os dados anteriores do item. Assim, o painel de auditoria mantém a rastreabilidade da descrição, quantidade, preço unitário, total e vínculo com a transação mesmo após a remoção.

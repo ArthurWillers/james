@@ -37,6 +37,7 @@ Permite a divisão de uma única transação em múltiplos itens para categoriza
 | `description` | string | Descrição do item específico. |
 | `quantity` | decimal | Quantidade. |
 | `unit_price` | decimal | Preço unitário. |
+| `total` | decimal | Total calculado a partir da quantidade e do preço unitário. |
 
 ## Diagrama Relacional (ER)
 
@@ -91,6 +92,12 @@ O status da transação é gerenciado pelo Enum `App\Enums\TransactionStatus`:
 
 O modelo `FinancialTransaction` implementa a interface `HasMedia` com a coleção privada `attachments`. É possível anexar comprovantes de pagamento, recibos fiscais em PDF ou imagens diretamente na tela de criação/edição. Os arquivos são armazenados no disco privado (`attachments`), garantindo privacidade total.
 
+### Itens da Transação
+
+Os itens são opcionais e detalham a transação para permitir classificação por tags e relatórios mais precisos. A quantidade deve ser maior que zero; o preço unitário não pode ser zero e pode ser negativo, por exemplo para registrar um desconto, estorno ou ajuste dentro da composição da transação. O total da transação é recalculado a partir dos itens enquanto eles estão sendo editados.
+
+Ao salvar uma edição, os itens existentes são atualizados preservando sua identidade e seu histórico. Um item removido do formulário é excluído definitivamente junto com os seus vínculos de tags, e a auditoria mantém o registro dos dados que foram removidos.
+
 ### Parcelamentos
 
 A criação de compras parceladas (via método `createInstallmentsOnAccount`) gera automaticamente as `N` transações futuras no banco de dados. 
@@ -108,4 +115,3 @@ As transferências não possuem uma entidade própria; elas são representadas p
 ### Soft Deletes e Proteção em Cascata
 
 Se uma das pernas de uma transferência for excluída, o sistema intercepta o evento de *deleting* e apaga automaticamente a transação correspondente (par) para manter a coerência financeira. Deleções definitivas (`forceDelete`) também forçam a purga da contraparte.
-

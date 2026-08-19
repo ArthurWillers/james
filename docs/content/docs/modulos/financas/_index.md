@@ -46,7 +46,7 @@ na transação pai quanto em itens filhos específicos.
 Visualizações analíticas em Regime de Caixa (Evolução de Saldo, Diagrama de Sankey do fluxo de dinheiro, drill-down dinâmico por tags e isolamento de investimentos).
 
 ### Importação de NFC-e
-Importação assíncrona de notas fiscais de consumidor a partir de URLs públicas, inicialmente pelo portal SVRS. A nota é criada como rascunho, com emitente, documento, itens, descontos e metadados fiscais, sem afetar os cálculos financeiros até a revisão.
+Importação assíncrona de notas fiscais de consumidor a partir de URLs públicas ou da leitura do QR Code pela câmera, inicialmente pelo portal SVRS. A nota é criada como rascunho, com emitente, documento, itens, descontos e metadados fiscais, sem afetar os cálculos financeiros até a revisão. Falhas podem ser reenviadas pela notificação recebida pelo usuário.
 
 Consulte a [documentação da Importação de NFC-e](./nfce/).
 

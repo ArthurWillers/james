@@ -53,3 +53,17 @@ Centraliza a formatação monetária utilizando a classe `Number::currency()` na
 
 * `formatCurrency($value, $currency = '', $locale = null)` / `CurrencyHelper::format($value, ...)`: Converte valores numéricos em strings formatadas no padrão da moeda local (Ex: `formatCurrency(1250.50)` $\rightarrow$ `R$ 1.250,50`).
 
+---
+
+## Componente de Markdown Seguro
+
+### `<x-markdown>`
+**Local:** `resources/views/components/markdown.blade.php`
+
+Renderiza conteúdo em Markdown informado por usuários, como as notas de contatos e grupos, usando a configuração segura do CommonMark. Links inseguros não são permitidos e links para domínios externos são abertos em uma nova janela. Links do próprio domínio configurado para a aplicação continuam no mesmo contexto.
+
+Use o componente em vez de renderizar `markdown()` diretamente em uma view:
+
+```blade
+<x-markdown :content="$contact->notes" />
+```
