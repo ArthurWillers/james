@@ -13,13 +13,18 @@ Atualmente o provedor suportado é o **SVRS** (Sefaz Virtual do Rio Grande do Su
 
 1. Abra `Finanças > Transações > Nova Transação`.
 2. Clique em **Importar NFC-e**.
-3. Cole a URL pública do QR Code da nota ou use **Colar URL**.
+3. Escolha uma das formas de informar a nota:
+   - cole ou digite a URL pública do QR Code;
+   - use **Colar URL** para ler a área de transferência; ou
+   - clique em **Ler QR Code** para usar a câmera do dispositivo.
 4. Envie a solicitação.
 5. O sistema redireciona imediatamente para a listagem e coloca a consulta na fila.
 6. Após o processamento, uma notificação abre a edição do rascunho.
 7. Revise os dados, escolha uma conta ou cartão e salve a transação.
 
-O botão de importação bloqueia envios duplicados enquanto a solicitação atual está sendo enviada.
+O botão de importação bloqueia envios duplicados enquanto a solicitação atual está sendo enviada. Após uma leitura válida pela câmera, a URL é preenchida no formulário para conferência antes do envio.
+
+Quando o processamento falha, a notificação exibida na central e nos canais configurados traz a ação **Tentar novamente**. Esse reenvio é protegido, pertence somente ao usuário que iniciou a importação e não cria outra transação caso a NFC-e já tenha sido importada.
 
 ## Dados importados
 
@@ -55,7 +60,7 @@ O endpoint autenticado apenas valida a URL, verifica duplicidade pela chave de a
 
 - é único por chave fiscal;
 - possui três tentativas e backoff de `5`, `15` e `30` segundos;
-- usa timeout de 60 segundos;
+- usa timeout de 90 segundos;
 - grava a transação e seus itens em uma única transação de banco;
 - envia notificações pelos canais Database e Telegram.
 
@@ -63,4 +68,8 @@ Em produção, o worker da fila precisa estar ativo no Supervisor. Consulte o [G
 
 ## Segurança e limitações
 
-O resolvedor aceita somente provedores configurados e hosts HTTPS autorizados, rejeitando formatos incompatíveis e destinos não permitidos. A implementação atual não inclui leitura por câmera, OCR, navegador automatizado ou histórico de tentativas.
+O resolvedor aceita somente provedores configurados e hosts HTTPS autorizados, rejeitando formatos incompatíveis e destinos não permitidos. Para o SVRS, são aceitas as URLs públicas atuais do portal DFe e as URLs legadas do portal da Sefaz-RS; ambas são consultadas no endpoint compatível do SVRS. O leitor também reconhece variações de layout do portal, incluindo notas com frete destacado.
+
+As ações **Colar URL** e **Ler QR Code** exigem uma conexão HTTPS e as permissões correspondentes do navegador. Se a área de transferência ou a câmera não estiverem disponíveis, negadas ou em uso por outro aplicativo, informe a URL manualmente. O QR Code só preenche o campo quando contém uma URL HTTPS válida de NFC-e com chave de acesso de 44 dígitos.
+
+A implementação não inclui OCR, navegador automatizado ou histórico de tentativas.
