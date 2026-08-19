@@ -68,8 +68,12 @@ class FinancialTransactionController extends Controller
         }
 
         if ($request->filled('tag_id')) {
-            $query->whereHas('tags', function ($q) use ($request) {
-                $q->where('financial_tags.id', $request->tag_id);
+            $query->where(function ($query) use ($request) {
+                $query->whereHas('tags', function ($tagQuery) use ($request) {
+                    $tagQuery->whereKey($request->tag_id);
+                })->orWhereHas('items.tags', function ($tagQuery) use ($request) {
+                    $tagQuery->whereKey($request->tag_id);
+                });
             });
         }
 
