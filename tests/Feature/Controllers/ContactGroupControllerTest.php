@@ -82,6 +82,20 @@ it('can display the edit screen', function () {
         ->assertViewHas('allContacts');
 });
 
+it('renders markdown links in contact group notes as secure external links', function () {
+    $group = ContactGroup::factory()->create([
+        'notes' => '[Texto do link](https://exemplo.com)',
+    ]);
+
+    $this->actingAs($this->user)
+        ->get(route('contacts.groups.show', $group))
+        ->assertSuccessful()
+        ->assertSee('Texto do link')
+        ->assertSee('href="https://exemplo.com"', false)
+        ->assertSee('target="_blank"', false)
+        ->assertSee('rel="noopener noreferrer"', false);
+});
+
 it('can update a contact group and sync contacts', function () {
     $group = ContactGroup::factory()->create(['name' => 'Old Name']);
 
