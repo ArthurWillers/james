@@ -105,7 +105,9 @@ class FinancialTransactionController extends Controller
     public function store(StoreFinancialTransactionRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        DB::transaction(function () use ($validated): void {
+        $hasItems = ! empty($validated['items']);
+
+        DB::transaction(function () use ($validated, $hasItems): void {
             $mode = $validated['mode'];
 
             if ($mode === 'single') {
@@ -132,18 +134,8 @@ class FinancialTransactionController extends Controller
                     ]);
                 }
 
-                $hasItemTags = false;
-                if (! empty($validated['items'])) {
-                    foreach ($validated['items'] as $itemData) {
-                        if (! empty($itemData['tags'])) {
-                            $hasItemTags = true;
-                            break;
-                        }
-                    }
-                }
-
                 $globalTags = $validated['tags'] ?? [];
-                $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
+                $globalPrimaryId = $hasItems ? null : ($validated['primary_tag_id'] ?? null);
                 $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
                 if (! empty($validated['items'])) {
@@ -178,18 +170,8 @@ class FinancialTransactionController extends Controller
                     );
                 }
 
-                $hasItemTags = false;
-                if (! empty($validated['items'])) {
-                    foreach ($validated['items'] as $itemData) {
-                        if (! empty($itemData['tags'])) {
-                            $hasItemTags = true;
-                            break;
-                        }
-                    }
-                }
-
                 $globalTags = $validated['tags'] ?? [];
-                $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
+                $globalPrimaryId = $hasItems ? null : ($validated['primary_tag_id'] ?? null);
 
                 if (! empty($validated['tags']) || ! empty($validated['items'])) {
                     foreach ($transactions as $t) {
@@ -383,21 +365,16 @@ class FinancialTransactionController extends Controller
                 ]);
             }
 
-            $hasItemTags = false;
-            if (! empty($validated['items'])) {
-                foreach ($validated['items'] as $itemData) {
-                    if (! empty($itemData['tags'])) {
-                        $hasItemTags = true;
-                        break;
-                    }
-                }
-            }
+            $syncsItems = $request->boolean('items_present') || $request->exists('items');
+            $hasItems = $syncsItems
+                ? ! empty($validated['items'])
+                : $transaction->items()->exists();
 
             $globalTags = $validated['tags'] ?? [];
-            $globalPrimaryId = $hasItemTags ? null : ($validated['primary_tag_id'] ?? null);
+            $globalPrimaryId = $hasItems ? null : ($validated['primary_tag_id'] ?? null);
             $this->syncTagsWithPrimary($transaction, $globalTags, $globalPrimaryId);
 
-            if ($request->boolean('items_present') || $request->exists('items')) {
+            if ($syncsItems) {
                 $this->syncTransactionItems($transaction, $validated['items'] ?? []);
             }
 

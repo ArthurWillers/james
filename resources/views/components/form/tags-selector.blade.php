@@ -72,11 +72,11 @@
     },
     
     setPrimary(id) {
-        if (this.selectedIds.includes(id)) {
+        if (this.selectedIds.includes(id) && !({{ $xDisablePrimary === 'false' ? 'false' : $xDisablePrimary }})) {
             this.primaryId = id;
         }
     }
-}" class="w-full relative">
+}" class="w-full relative" x-effect="if ({{ $xDisablePrimary === 'false' ? 'false' : $xDisablePrimary }}) { primaryId = null; }">
     
     <!-- Trigger Button & Label -->
     <div class="grid w-full gap-1.5">
@@ -119,7 +119,7 @@
         <template x-for="id in selectedIds" :key="id">
             <input type="hidden" :name="{{ $xName ? $xName : '`' . $name . (str_ends_with($name, '[]') ? '' : '[]') . '`' }}" :value="id">
         </template>
-        <template x-if="primaryId">
+        <template x-if="primaryId && !({{ $xDisablePrimary === 'false' ? 'false' : $xDisablePrimary }})">
             <input type="hidden" :name="{{ $xName ? $xName . '.replace(\'[tags][]\', \'[primary_tag_id]\').replace(\'tags[]\', \'primary_tag_id\')' : '`' . $primaryName . '`' }}" :value="primaryId">
         </template>
         <x-form-error name="{{ $baseName }}" />
