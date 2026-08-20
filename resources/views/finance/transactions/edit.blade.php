@@ -11,7 +11,9 @@
             ];
         })->toArray();
         $defaultTags = $transaction->tags->pluck('id')->toArray();
-        $defaultPrimaryTag = $transaction->tags->firstWhere('pivot.is_primary', true)?->id;
+        $defaultPrimaryTag = $transaction->items->isEmpty()
+            ? $transaction->tags->firstWhere('pivot.is_primary', true)?->id
+            : null;
     @endphp
     <form action="{{ route('financial.transactions.update', $transaction->id) }}" method="POST" id="transaction-form" enctype="multipart/form-data" x-data="{
         type: {{ Js::from(old('type', $transaction->type)) }},

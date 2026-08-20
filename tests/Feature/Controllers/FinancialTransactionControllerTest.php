@@ -98,12 +98,62 @@ it('can store transaction', function () {
     ]);
 });
 
+it('does not assign a primary tag to a transaction created with items', function () {
+    $account = FinancialAccount::factory()->create();
+    $transactionTag = FinancialTag::factory()->create();
+    $itemTag = FinancialTag::factory()->create();
+
+    $this->post(route('financial.transactions.store'), [
+        'mode' => 'single',
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 30,
+        'description' => 'Compra itemizada',
+        'date' => '2026-08-20',
+        'status' => TransactionStatus::Posted->value,
+        'tags' => [$transactionTag->id],
+        'primary_tag_id' => $transactionTag->id,
+        'items' => [[
+            'description' => 'Item principal',
+            'quantity' => 1,
+            'unit_price' => 30,
+            'tags' => [$itemTag->id],
+            'primary_tag_id' => $itemTag->id,
+        ]],
+    ])->assertRedirect(route('financial.transactions.index'));
+
+    $transaction = FinancialTransaction::query()->latest('id')->firstOrFail();
+    $storedTransactionTag = $transaction->tags()->whereKey($transactionTag)->firstOrFail();
+    $storedItemTag = $transaction->items()->sole()->tags()->whereKey($itemTag)->firstOrFail();
+
+    expect((bool) $storedTransactionTag->pivot->is_primary)->toBeFalse()
+        ->and((bool) $storedItemTag->pivot->is_primary)->toBeTrue();
+});
+
 it('can view edit transaction page', function () {
     $transaction = FinancialTransaction::factory()->create();
 
     $this->get(route('financial.transactions.edit', $transaction))
         ->assertSuccessful()
         ->assertViewIs('finance.transactions.edit');
+});
+
+it('renders the transaction primary tag selector as disabled when items exist', function () {
+    $transaction = FinancialTransaction::factory()->create();
+    $tag = FinancialTag::factory()->create();
+    $transaction->tags()->attach($tag, ['is_primary' => true]);
+    $transaction->items()->create([
+        'description' => 'Item existente',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'total' => 10,
+    ]);
+
+    $this->get(route('financial.transactions.edit', $transaction))
+        ->assertSuccessful()
+        ->assertSee('x-effect="if (items.length &gt; 0) { primaryId = null; }"', false)
+        ->assertSee('x-if="primaryId && !(items.length &gt; 0)"', false);
 });
 
 it('renders transaction items safely inside Alpine data', function () {
@@ -194,6 +244,76 @@ it('can update transaction', function () {
     ]);
 });
 
+it('removes the transaction primary tag when updating a transaction with items', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
+    $transactionTag = FinancialTag::factory()->create();
+    $itemTag = FinancialTag::factory()->create();
+    $transaction->tags()->attach($transactionTag, ['is_primary' => true]);
+    $item = $transaction->items()->create([
+        'description' => 'Item existente',
+        'quantity' => 1,
+        'unit_price' => 20,
+        'total' => 20,
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 20,
+        'description' => 'Compra atualizada',
+        'date' => '2026-08-20',
+        'status' => TransactionStatus::Posted->value,
+        'tags' => [$transactionTag->id],
+        'primary_tag_id' => $transactionTag->id,
+        'items_present' => 1,
+        'items' => [[
+            'id' => $item->id,
+            'description' => $item->description,
+            'quantity' => $item->quantity,
+            'unit_price' => $item->unit_price,
+            'tags' => [$itemTag->id],
+            'primary_tag_id' => $itemTag->id,
+        ]],
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    $storedTransactionTag = $transaction->refresh()->tags()->whereKey($transactionTag)->firstOrFail();
+    $storedItemTag = $item->refresh()->tags()->whereKey($itemTag)->firstOrFail();
+
+    expect((bool) $storedTransactionTag->pivot->is_primary)->toBeFalse()
+        ->and((bool) $storedItemTag->pivot->is_primary)->toBeTrue();
+});
+
+it('removes the transaction primary tag when an update preserves omitted items', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
+    $tag = FinancialTag::factory()->create();
+    $transaction->tags()->attach($tag, ['is_primary' => true]);
+    $transaction->items()->create([
+        'description' => 'Item preservado',
+        'quantity' => 1,
+        'unit_price' => 20,
+        'total' => 20,
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 20,
+        'description' => 'Compra atualizada',
+        'date' => '2026-08-20',
+        'status' => TransactionStatus::Posted->value,
+        'tags' => [$tag->id],
+        'primary_tag_id' => $tag->id,
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    $storedTag = $transaction->refresh()->tags()->whereKey($tag)->firstOrFail();
+
+    expect((bool) $storedTag->pivot->is_primary)->toBeFalse();
+});
+
 it('preserves transaction items when items are omitted from an update', function () {
     $account = FinancialAccount::factory()->create();
     $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
@@ -244,6 +364,37 @@ it('removes all items when the edit form submits an empty item state', function 
 
     expect($transaction->items()->count())->toBe(0);
     expect($item->fresh())->toBeNull();
+});
+
+it('allows a transaction primary tag after all items are removed', function () {
+    $account = FinancialAccount::factory()->create();
+    $transaction = FinancialTransaction::factory()->create(['financial_account_id' => $account->id]);
+    $tag = FinancialTag::factory()->create();
+    $transaction->tags()->attach($tag, ['is_primary' => false]);
+    $transaction->items()->create([
+        'description' => 'Item removido',
+        'quantity' => 1,
+        'unit_price' => 20,
+        'total' => 20,
+    ]);
+
+    $this->put(route('financial.transactions.update', $transaction), [
+        'targetType' => 'account',
+        'financial_account_id' => $account->id,
+        'type' => 'expense',
+        'amount' => 20,
+        'description' => 'Compra sem itens',
+        'date' => '2026-08-20',
+        'status' => TransactionStatus::Posted->value,
+        'tags' => [$tag->id],
+        'primary_tag_id' => $tag->id,
+        'items_present' => 1,
+    ])->assertRedirect(route('financial.transactions.show', $transaction));
+
+    $storedTag = $transaction->refresh()->tags()->whereKey($tag)->firstOrFail();
+
+    expect($transaction->items()->count())->toBe(0)
+        ->and((bool) $storedTag->pivot->is_primary)->toBeTrue();
 });
 
 it('logs only the removed item and the transaction update when one item is removed', function () {
