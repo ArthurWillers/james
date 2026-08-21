@@ -26,6 +26,8 @@ it('resolves the reorganized anonymous blade components', function () {
 
         <x-modal.delete action="/delete" item-name="o registro" />
         <x-modal.restore action="/restore" item-name="o registro" />
+
+        <x-switch name="sample-switch" :checked="true" label="Ativo" />
     BLADE
     );
 
@@ -35,5 +37,10 @@ it('resolves the reorganized anonymous blade components', function () {
         ->toContain('name="status"')
         ->toContain('Modal de teste')
         ->toContain('action="/delete"')
-        ->toContain('action="/restore"');
+        ->toContain('action="/restore"')
+        ->toContain('t-toggle')
+        ->toContain('t-toggle-thumb')
+        ->toContain('data-on="true"')
+        ->toContain('data-color="neutral"')
+        ->toContain('focus:ring-neutral-900');
 });

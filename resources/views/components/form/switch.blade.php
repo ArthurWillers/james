@@ -3,33 +3,43 @@
     'checked' => false,
     'value' => '1',
     'label' => '',
+    'color' => 'neutral',
 ])
 
-<div x-data="{ 
+@php
+    $switchColor = $color === 'accent' ? 'accent' : 'neutral';
+    $focusRingClass = $switchColor === 'accent' ? 'focus:ring-accent' : 'focus:ring-neutral-900';
+    $buttonClass = trim("t-toggle shrink-0 focus:outline-none focus:ring-2 {$focusRingClass} focus:ring-offset-2 ".($attributes->get('class') ?? ''));
+    $buttonAttributes = $attributes->except(['x-model', 'class']);
+@endphp
+
+<div class="flex items-center gap-3" x-data="{
     checked: {{ $attributes->has('x-model') ? $attributes->get('x-model') : ($checked ? 'true' : 'false') }},
+    toggle() {
+        this.$refs.switch.classList.add('is-init');
+        this.checked = !this.checked;
+    },
     init() {
         if (this.$el.hasAttribute('x-model')) {
             this.$watch('checked', value => this.$dispatch('input', value));
         }
     }
-}" class="flex items-center gap-3" {{ $attributes->whereStartsWith('x-model') }}>
+}" {{ $attributes->whereStartsWith('x-model') }}>
     <button
         type="button"
         role="switch"
-        :aria-checked="checked"
-        @click="checked = !checked"
-        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
-        :class="{ 'bg-accent': checked, 'bg-neutral-200': !checked }"
-        {{ $attributes }}
+        class="{{ $buttonClass }}"
+        x-ref="switch"
+        :aria-checked="checked ? 'true' : 'false'"
+        :data-on="checked ? 'true' : 'false'"
+        data-color="{{ $switchColor }}"
+        @click="toggle()"
+        {{ $buttonAttributes }}
     >
-        <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $checked ? 'translate-x-5' : 'translate-x-0' }}"
-            :class="{ 'translate-x-5': checked, 'translate-x-0': !checked }"
-        ></span>
+        <span aria-hidden="true" class="t-toggle-thumb pointer-events-none"></span>
     </button>
     <input type="hidden" name="{{ $name }}" :value="checked ? '{{ $value }}' : '0'">
     @if($label)
-        <span class="text-sm font-medium text-neutral-700 cursor-pointer" @click="checked = !checked">{{ $label }}</span>
+        <span class="cursor-pointer text-sm font-medium text-neutral-700" @click="toggle()">{{ $label }}</span>
     @endif
 </div>
