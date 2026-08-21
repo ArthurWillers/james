@@ -270,7 +270,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-all duration-300" :class="{ 'pb-28': selectedIds.length > 0 }">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-all duration-300">
             @foreach($contacts as $contact)
                 <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
                     <div class="shrink-0 pl-4 border-l border-neutral-100">
@@ -306,53 +306,59 @@
         </div>
 
         <!-- Active Bar -->
-        <div x-show="selectedIds.length > 0" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 translate-y-10"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 translate-y-10"
-             class="mt-4 flex w-full flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:gap-6" style="display: none;">
-            
-            <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
-                <div class="text-sm font-medium text-neutral-700">
-                    <span x-text="selectedIds.length"></span> selecionado(s)
-                </div>
-                
-                <div class="hidden h-6 w-px bg-neutral-200 sm:block"></div>
-                
-                <div class="flex w-full items-center gap-2 sm:w-auto">
-                    @if($showArchived)
-                        <x-modal.trigger name="bulk-unarchive">
-                            <x-button type="button" color="primary">
-                                <x-heroicon-o-arrow-path class="size-4" />
-                                <span class="hidden sm:inline">Desarquivar</span>
-                            </x-button>
-                        </x-modal.trigger>
-                    @else
-                        <x-button type="button" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white transition-all" @click="openShareModal()">
-                            <x-heroicon-o-share class="size-4" /> 
-                            <span class="hidden sm:inline">Compartilhar</span>
-                        </x-button>
-                        <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
-                            <x-heroicon-o-chart-pie class="size-4" />
-                            <span class="hidden sm:inline">Dividir Conta</span>
-                        </x-button>
-                        <x-modal.trigger name="bulk-archive">
-                            <x-button type="button" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
-                                <x-heroicon-o-archive-box class="size-4" />
-                                <span class="hidden sm:inline">Arquivar</span>
-                            </x-button>
-                        </x-modal.trigger>
-                    @endif
-                </div>
+        <template x-teleport="body">
+            <div
+                class="fixed inset-x-3 z-20 mx-auto grid max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg sm:grid-cols-[1fr_auto_1fr] sm:inset-x-6 sm:gap-6 lg:left-72 lg:right-8"
+                style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem); display: none;"
+                data-selection-action-bar
+                role="toolbar"
+                aria-label="Ações da seleção"
+                x-show="selectedIds.length > 0"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-10"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-10">
+
+            <div class="min-w-0 justify-self-start text-sm font-medium text-neutral-700">
+                <span x-text="selectedIds.length"></span>
+                <span>
+                    selecionado<span x-show="selectedIds.length !== 1">s</span>
+                </span>
             </div>
 
-            <button type="button" class="min-h-11 min-w-11 self-end rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 sm:self-auto" title="Limpar seleção" @click="selectedIds = []">
+            <div class="flex flex-wrap items-center justify-end gap-2 justify-self-end sm:justify-self-center">
+                @if($showArchived)
+                    <x-modal.trigger name="bulk-unarchive">
+                        <x-button type="button" color="primary">
+                            <x-heroicon-o-arrow-path class="size-4" />
+                            <span class="hidden sm:inline">Desarquivar</span>
+                        </x-button>
+                    </x-modal.trigger>
+                @else
+                    <x-button type="button" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white transition-all" @click="openShareModal()">
+                        <x-heroicon-o-share class="size-4" />
+                        <span class="hidden sm:inline">Compartilhar</span>
+                    </x-button>
+                    <x-button type="button" @click="window.location = '{{ route('settlements.groups.create') }}?contacts=' + selectedIds.join(',')" color="primary">
+                        <x-heroicon-o-chart-pie class="size-4" />
+                        <span class="hidden sm:inline">Dividir Conta</span>
+                    </x-button>
+                    <x-modal.trigger name="bulk-archive">
+                        <x-button type="button" color="primary" class="bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
+                            <x-heroicon-o-archive-box class="size-4" />
+                            <span class="hidden sm:inline">Arquivar</span>
+                        </x-button>
+                    </x-modal.trigger>
+                @endif
+            </div>
+
+            <button type="button" class="min-h-11 min-w-11 shrink-0 cursor-pointer justify-self-end rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900" title="Limpar seleção" aria-label="Limpar seleção" @click="selectedIds = []">
                 <x-heroicon-o-x-mark class="size-5" />
             </button>
-        </div>
+            </div>
+        </template>
 
         <x-modal 
             name="bulk-archive"
