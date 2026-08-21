@@ -51,10 +51,10 @@
     <!-- Collapsible Area (Mobile) / Inline Area (Desktop) -->
     <div class="w-full sm:w-auto flex-col sm:flex-row items-stretch {{ $alignClass }} mt-2 sm:mt-0 pt-2 sm:pt-0 border-t border-neutral-100 sm:border-0 sm:!flex" 
          x-show="expanded"
-         x-transition:enter="transition ease-out duration-200 origin-top"
+         x-transition:enter="transition motion-ease-smooth-out motion-duration-fast origin-top"
          x-transition:enter-start="opacity-0 -translate-y-2 scale-y-95"
          x-transition:enter-end="opacity-100 translate-y-0 scale-y-100"
-         x-transition:leave="transition ease-in duration-150 origin-top"
+         x-transition:leave="transition motion-ease-smooth-out motion-duration-fast origin-top"
          x-transition:leave-start="opacity-100 translate-y-0 scale-y-100"
          x-transition:leave-end="opacity-0 -translate-y-2 scale-y-95"
          style="display: none;">

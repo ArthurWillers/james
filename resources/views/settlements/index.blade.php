@@ -308,27 +308,27 @@
         <!-- Active Bar -->
         <template x-teleport="body">
             <div
-                class="fixed inset-x-3 z-20 mx-auto grid max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg sm:grid-cols-[1fr_auto_1fr] sm:inset-x-6 sm:gap-6 lg:left-72 lg:right-8"
+                class="fixed inset-x-3 z-20 mx-auto grid max-w-2xl grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg sm:inset-x-6 sm:gap-6 lg:left-72 lg:right-8"
                 style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem); display: none;"
                 data-selection-action-bar
                 role="toolbar"
                 aria-label="Ações da seleção"
                 x-show="selectedIds.length > 0"
-                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter="transition motion-ease-smooth-out motion-duration-slow"
                 x-transition:enter-start="opacity-0 translate-y-10"
                 x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave="transition motion-ease-smooth-out motion-duration-medium"
                 x-transition:leave-start="opacity-100 translate-y-0"
                 x-transition:leave-end="opacity-0 translate-y-10">
 
-            <div class="min-w-0 justify-self-start text-sm font-medium text-neutral-700">
+            <div class="flex items-center gap-1 whitespace-nowrap justify-self-start text-sm font-medium text-neutral-700">
                 <span x-text="selectedIds.length"></span>
                 <span>
                     selecionado<span x-show="selectedIds.length !== 1">s</span>
                 </span>
             </div>
 
-            <div class="flex flex-wrap items-center justify-end gap-2 justify-self-end sm:justify-self-center">
+            <div class="flex flex-wrap items-center justify-end gap-2 justify-self-end">
                 @if($showArchived)
                     <x-modal.trigger name="bulk-unarchive">
                         <x-button type="button" color="primary">

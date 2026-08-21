@@ -20,7 +20,7 @@
                 </div>
 
                 @if(!isset($transaction))
-                <div x-show="mode === 'installment'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" style="display: none;">
+                <div x-show="mode === 'installment'" x-transition:enter="transition motion-ease-smooth-out motion-duration-slow" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition motion-ease-smooth-out motion-duration-medium" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" style="display: none;">
                     <x-form-input label="Número de Parcelas" name="installments" type="number" min="2" value="{{ old('installments', 2) }}" />
                 </div>
                 @endif

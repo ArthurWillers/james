@@ -132,12 +132,12 @@
             
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
                 <div x-show="open" 
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter="motion-ease-smooth-out motion-duration-fast"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:motion-scale-large"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave="motion-ease-smooth-out motion-duration-quick"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:motion-scale-large"
                      class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-3xl flex flex-col max-h-[85vh]">
                     
                     <!-- Header -->
