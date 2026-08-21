@@ -10,7 +10,7 @@
         <x-back-button fallback="{{ route('financial.transactions.index') }}" />
 
         @if(!$isSettlementTransaction)
-            <x-delete-modal 
+            <x-modal.delete
                 action="{{ route('financial.transactions.destroy', $transaction->id) }}"
                 item-name="a transação"
                 item-desc="{{ $transaction->description }}"

@@ -3,7 +3,7 @@
         <div class="flex items-center gap-2">
             <x-back-button fallback="{{ route('notifications.index') }}" />
 
-            <x-delete-modal
+            <x-modal.delete
                 action="{{ route('notifications.destroy', $notification) }}"
                 item-name="esta notificação"
                 title="Excluir Notificação"

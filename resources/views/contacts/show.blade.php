@@ -14,7 +14,7 @@
             Editar
         </x-button>
 
-        <x-delete-modal 
+        <x-modal.delete
             action="{{ route('contacts.destroy', $contact) }}"
             item-name="o contato"
             item-desc="{{ $contact->name }}"
@@ -158,6 +158,6 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
         <x-activity-log :model="$contact" class="!mt-0" />
-        <x-ui.metadata-card :model="$contact" class="w-full mb-0" />
+        <x-metadata-card :model="$contact" class="w-full mb-0" />
     </div>
 </x-layouts.app>

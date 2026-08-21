@@ -15,7 +15,7 @@
             Editar
         </x-button>
 
-        <x-delete-modal 
+        <x-modal.delete
             action="{{ route('financial.cards.destroy', $card) }}"
             item-name="o cartão"
             item-desc="{{ $card->name }}"
@@ -155,6 +155,6 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
         <x-activity-log :model="$card" class="!mt-0" />
-        <x-ui.metadata-card :model="$card" class="w-full mb-0" />
+        <x-metadata-card :model="$card" class="w-full mb-0" />
     </div>
 </x-layouts.financial>

@@ -169,14 +169,14 @@
             </x-card>
         @endif
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-recurrence"
             item-name="a recorrência"
             dynamic-item-name="selectedRecurrenceTitle"
             alpine-action="'{{ route('financial.recurrences.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedRecurrenceId)"
         />
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-recurrence"
             item-name="a recorrência"
             dynamic-item-name="selectedRecurrenceTitle"
