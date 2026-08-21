@@ -17,7 +17,7 @@
         </button>
     </div>
     
-    <div class="grid transition-all duration-300 ease-in-out" :class="showRules ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0'">
+    <div class="grid transition-all motion-duration-fast motion-ease-smooth-out" :class="showRules ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0'">
         <div class="overflow-hidden">
             <ul class="list-disc list-inside text-sm">
                 <li>Mínimo de 8 caracteres e máximo de 64 caracteres</li>

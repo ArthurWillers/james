@@ -5,6 +5,35 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* transitions-polish — shared motion-token scale. */
+:root {
+    --duration-stagger: 40ms;
+    --duration-micro: 80ms;
+    --duration-quick: 150ms;
+    --duration-fast: 250ms;
+    --duration-medium: 350ms;
+    --duration-slow: 400ms;
+    --duration-very-slow: 500ms;
+    --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: ease-in-out;
+    --ease-out: ease-out;
+    --ease-linear: linear;
+    --ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+    --ease-bounce-strong: cubic-bezier(0.34, 3.85, 0.64, 1);
+    --distance-micro: 4px;
+    --distance-small: 6px;
+    --distance-base: 8px;
+    --distance-medium: 12px;
+    --distance-large: 30px;
+    --scale-large: 0.96;
+    --scale-medium: 0.97;
+    --scale-small: 0.98;
+    --scale-tiny: 0.99;
+    --blur-small: 2px;
+    --blur-medium: 3px;
+    --blur-large: 8px;
+}
+
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
@@ -38,6 +67,30 @@
             transform: translateX(5px);
         }
     }
+}
+
+@utility motion-duration-quick {
+    transition-duration: var(--duration-quick);
+}
+
+@utility motion-duration-fast {
+    transition-duration: var(--duration-fast);
+}
+
+@utility motion-duration-medium {
+    transition-duration: var(--duration-medium);
+}
+
+@utility motion-duration-slow {
+    transition-duration: var(--duration-slow);
+}
+
+@utility motion-ease-smooth-out {
+    transition-timing-function: var(--ease-smooth-out);
+}
+
+@utility motion-scale-large {
+    scale: var(--scale-large);
 }
 
 [x-cloak] {

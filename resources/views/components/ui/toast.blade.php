@@ -29,9 +29,9 @@
                 }
             }, 50);
         });"x-show="show" x-cloak
-            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter="transition motion-ease-smooth-out duration-300 transform"
             x-transition:enter-start="translate-x-full opacity-0" x-transition:enter-end="translate-x-0 opacity-100"
-            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave="transition motion-ease-smooth-out motion-duration-medium transform"
             x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="translate-x-full opacity-0"
             class="w-full max-w-sm rounded-lg shadow-lg border border-neutral-300 bg-white overflow-hidden pointer-events-auto">
             <div class="flex items-center gap-4 p-4">
