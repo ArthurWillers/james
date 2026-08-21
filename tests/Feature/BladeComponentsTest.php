@@ -29,6 +29,10 @@ it('resolves the reorganized anonymous blade components', function () {
 
         <x-switch name="sample-switch" :checked="true" label="Ativo" />
         <x-form-checkbox name="sample-checkbox" label="Selecionado" />
+
+        <x-tooltip text="Informação extra" id="sample-tooltip">
+            <button type="button" aria-describedby="sample-tooltip">Ajuda</button>
+        </x-tooltip>
     BLADE
     );
 
@@ -45,5 +49,9 @@ it('resolves the reorganized anonymous blade components', function () {
         ->toContain('data-color="neutral"')
         ->toContain('focus:ring-neutral-900')
         ->toContain('t-check')
-        ->toContain('aria-hidden="true"');
+        ->toContain('aria-hidden="true"')
+        ->toContain('t-tt-wrap')
+        ->toContain('id="sample-tooltip"')
+        ->toContain('role="tooltip"')
+        ->toContain('aria-describedby="sample-tooltip"');
 });
