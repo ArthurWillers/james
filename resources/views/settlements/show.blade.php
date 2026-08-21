@@ -11,7 +11,7 @@
             <x-back-button fallback="{{ route('settlements.history') }}" />
             @if(!$settlement->trashed())
                 @if(!$settlement->settlement_group_id)
-                    <x-delete-modal
+                    <x-modal.delete
                         item-name="este acerto"
                         description="Caso tenha sido gerada uma transação financeira atrelada, ela também será movida para a lixeira."
                         action="{{ route('settlements.destroy', $settlement) }}"

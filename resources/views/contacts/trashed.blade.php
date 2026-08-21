@@ -141,14 +141,14 @@
             @endforelse
         </x-table.body>
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-contact"
             item-name="o contato"
             dynamic-item-name="selectedContactName"
             alpine-action="'{{ route('contacts.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedContactId)"
         />
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-contact"
             item-name="o contato"
             dynamic-item-name="selectedContactName"

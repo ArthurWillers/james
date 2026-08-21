@@ -131,7 +131,7 @@
             @endforelse
         </x-table.body>
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-card"
             item-name="o cartão"
             dynamic-item-name="selectedCardName"
@@ -140,9 +140,9 @@
             <x-slot:content>
                 Tem certeza que deseja restaurar o cartão "<span class="font-medium text-neutral-900" x-text="selectedCardName"></span>"? Ele voltará a aparecer nos seus saldos e faturamentos.
             </x-slot:content>
-        </x-restore-modal>
+        </x-modal.restore>
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-card"
             item-name="o cartão"
             dynamic-item-name="selectedCardName"
@@ -165,7 +165,7 @@
                     </div>
                 </div>
             </x-slot:content>
-        </x-delete-modal>
+        </x-modal.delete>
     </x-table>
 
     @if($cards->hasPages())

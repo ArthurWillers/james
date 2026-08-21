@@ -5,7 +5,7 @@
 ])
 
 @if($attachments && $attachments->isNotEmpty())
-    <x-ui.lightbox class="mt-4">
+    <x-lightbox class="mt-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             @foreach($attachments as $media)
                 @php
@@ -48,5 +48,5 @@
                 </div>
             @endforeach
         </div>
-    </x-ui.lightbox>
+    </x-lightbox>
 @endif

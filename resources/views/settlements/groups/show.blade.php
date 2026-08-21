@@ -11,7 +11,7 @@
             <x-back-button fallback="{{ route('settlements.groups.index') }}" />
 
             @if(!$settlementGroup->trashed())
-                <x-delete-modal 
+                <x-modal.delete
                     action="{{ route('settlements.groups.destroy', $settlementGroup) }}"
                     item-name="a divisão de conta"
                     item-desc="{{ $settlementGroup->description }}"

@@ -10,7 +10,7 @@
         <x-back-button fallback="{{ route('financial.tags.index') }}" />
 
         @if(!$financialTag->is_protected)
-            <x-delete-modal 
+            <x-modal.delete
                 action="{{ route('financial.tags.destroy', $financialTag) }}"
                 item-name="a tag"
                 item-desc="{{ $financialTag->name }}"
@@ -52,6 +52,6 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start mt-8">
         <x-activity-log :model="$financialTag" class="!mt-0" />
-        <x-ui.metadata-card :model="$financialTag" class="w-full mb-0" />
+        <x-metadata-card :model="$financialTag" class="w-full mb-0" />
     </div>
 </x-layouts.financial>

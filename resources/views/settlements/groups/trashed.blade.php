@@ -117,7 +117,7 @@
             @endforelse
         </x-table.body>
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-group"
             item-name="a divisão"
             dynamic-item-name="selectedGroupDesc"
@@ -125,7 +125,7 @@
             alpine-action="'{{ route('settlements.groups.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedGroupId)"
         />
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-group"
             item-name="a divisão de conta"
             dynamic-item-name="selectedGroupDesc"

@@ -131,7 +131,7 @@
             @endforelse
         </x-table.body>
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-account"
             item-name="a conta"
             dynamic-item-name="selectedAccountName"
@@ -140,9 +140,9 @@
             <x-slot:content>
                 Tem certeza que deseja restaurar a conta "<span class="font-medium text-neutral-900" x-text="selectedAccountName"></span>"? Ela voltará a aparecer nos seus saldos e faturamentos.
             </x-slot:content>
-        </x-restore-modal>
+        </x-modal.restore>
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-account"
             item-name="a conta"
             dynamic-item-name="selectedAccountName"
@@ -165,7 +165,7 @@
                     </div>
                 </div>
             </x-slot:content>
-        </x-delete-modal>
+        </x-modal.delete>
     </x-table>
 
     @if($accounts->hasPages())

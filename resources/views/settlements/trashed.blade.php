@@ -154,7 +154,7 @@
             @endforelse
         </x-table.body>
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-settlement"
             item-name="o acerto"
             dynamic-item-name="selectedSettlementDesc"
@@ -162,7 +162,7 @@
             alpine-action="'{{ route('settlements.restore', 'REPLACE_ID') }}'.replace('REPLACE_ID', selectedSettlementId)"
         />
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-settlement"
             item-name="o acerto"
             dynamic-item-name="selectedSettlementDesc"

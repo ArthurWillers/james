@@ -178,7 +178,7 @@
             @endforelse
         </x-table.body>
 
-        <x-restore-modal
+        <x-modal.restore
             modal-name="restore-transaction"
             item-name="a transação"
             dynamic-item-name="selectedTransactionName"
@@ -187,9 +187,9 @@
             <x-slot:content>
                 Tem certeza que deseja restaurar a transação "<span class="font-medium text-neutral-900" x-text="selectedTransactionName"></span>"? Ela voltará a impactar os saldos da sua conta ou fatura.
             </x-slot:content>
-        </x-restore-modal>
+        </x-modal.restore>
 
-        <x-delete-modal 
+        <x-modal.delete
             modal-name="force-delete-transaction"
             item-name="a transação"
             dynamic-item-name="selectedTransactionName"
@@ -212,7 +212,7 @@
                     </div>
                 </div>
             </x-slot:content>
-        </x-delete-modal>
+        </x-modal.delete>
     </x-table>
 
     @if($transactions->hasPages())

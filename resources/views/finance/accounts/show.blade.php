@@ -44,7 +44,7 @@
             </form>
         </x-modal>
 
-        <x-delete-modal 
+        <x-modal.delete
             action="{{ route('financial.accounts.destroy', $account) }}"
             item-name="a conta"
             item-desc="{{ $account->name }}"
