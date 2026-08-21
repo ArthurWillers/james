@@ -28,6 +28,7 @@ it('resolves the reorganized anonymous blade components', function () {
         <x-modal.restore action="/restore" item-name="o registro" />
 
         <x-switch name="sample-switch" :checked="true" label="Ativo" />
+        <x-form-checkbox name="sample-checkbox" label="Selecionado" />
     BLADE
     );
 
@@ -42,5 +43,7 @@ it('resolves the reorganized anonymous blade components', function () {
         ->toContain('t-toggle-thumb')
         ->toContain('data-on="true"')
         ->toContain('data-color="neutral"')
-        ->toContain('focus:ring-neutral-900');
+        ->toContain('focus:ring-neutral-900')
+        ->toContain('t-check')
+        ->toContain('aria-hidden="true"');
 });
