@@ -21,13 +21,17 @@
             <!-- Top Bar / Actions -->
             <div class="flex justify-end gap-3 mb-4 shrink-0 z-50">
                 <!-- Download Button -->
-                <a :href="imageUrl" :download="fileName" style="background-color: rgba(0,0,0,0.5); color: white;" class="p-2.5 hover:bg-black transition-colors rounded-full flex items-center justify-center cursor-pointer" title="Baixar Original">
-                    <x-heroicon-o-arrow-down-tray class="size-6" />
-                </a>
+                <x-tooltip text="Baixar original" id="lightbox-download-tooltip" class="inline-flex">
+                    <a :href="imageUrl" :download="fileName" style="background-color: rgba(0,0,0,0.5); color: white;" class="p-2.5 hover:bg-black transition-colors rounded-full flex items-center justify-center cursor-pointer" aria-label="Baixar original" aria-describedby="lightbox-download-tooltip">
+                        <x-heroicon-o-arrow-down-tray class="size-6" />
+                    </a>
+                </x-tooltip>
                 <!-- Close button -->
-                <button @click="closeLightbox" style="background-color: rgba(0,0,0,0.5); color: white;" class="p-2.5 hover:bg-black transition-colors rounded-full cursor-pointer">
-                    <x-heroicon-o-x-mark class="size-6" />
-                </button>
+                <x-tooltip text="Fechar" id="lightbox-close-tooltip" class="inline-flex">
+                    <button type="button" @click="closeLightbox" style="background-color: rgba(0,0,0,0.5); color: white;" class="p-2.5 hover:bg-black transition-colors rounded-full cursor-pointer" aria-label="Fechar" aria-describedby="lightbox-close-tooltip">
+                        <x-heroicon-o-x-mark class="size-6" />
+                    </button>
+                </x-tooltip>
             </div>
 
             <!-- Image Container -->

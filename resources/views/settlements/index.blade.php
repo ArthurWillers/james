@@ -274,9 +274,11 @@
             @foreach($contacts as $contact)
                 <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
                     <div class="shrink-0 pl-4 border-l border-neutral-100">
-                        <a href="{{ route('settlements.contact.show', $contact) }}" class="flex items-center justify-center w-10 h-10 rounded-full bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 transition-colors" title="Ver Detalhes">
-                            <x-heroicon-o-chevron-right class="size-5" />
-                        </a>
+                        <x-tooltip text="Ver detalhes" id="settlement-contact-details-tooltip-{{ $contact->id }}">
+                            <a href="{{ route('settlements.contact.show', $contact) }}" class="flex items-center justify-center w-10 h-10 rounded-full bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 transition-colors" aria-label="Ver detalhes" aria-describedby="settlement-contact-details-tooltip-{{ $contact->id }}">
+                                <x-heroicon-o-chevron-right class="size-5" />
+                            </a>
+                        </x-tooltip>
                     </div>
                 </x-contacts.selectable-card>
             @endforeach
@@ -354,9 +356,11 @@
                 @endif
             </div>
 
-            <button type="button" class="min-h-11 min-w-11 shrink-0 cursor-pointer justify-self-end rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900" title="Limpar seleção" aria-label="Limpar seleção" @click="selectedIds = []">
-                <x-heroicon-o-x-mark class="size-5" />
-            </button>
+            <x-tooltip text="Limpar seleção" id="clear-selection-tooltip" class="justify-self-end">
+                <button type="button" class="min-h-11 min-w-11 shrink-0 cursor-pointer rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900" aria-label="Limpar seleção" aria-describedby="clear-selection-tooltip" @click="selectedIds = []">
+                    <x-heroicon-o-x-mark class="size-5" />
+                </button>
+            </x-tooltip>
             </div>
         </template>
 
