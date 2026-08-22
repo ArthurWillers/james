@@ -17,9 +17,14 @@
     --tt-fg: var(--color-neutral-800);
 }
 
+.t-tt-wrap:hover,
+.t-tt-wrap:focus-within {
+    z-index: 10;
+}
+
 .t-tt {
     position: absolute;
-    z-index: 50;
+    z-index: 1000;
     bottom: calc(100% + 8px);
     left: 50%;
     width: max-content;

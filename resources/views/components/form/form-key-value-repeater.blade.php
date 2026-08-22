@@ -23,7 +23,7 @@
         </x-button>
     </div>
     
-    <div class="overflow-y-auto max-h-[400px] pr-3 -mr-3 p-1 -m-1">
+    <div>
         <div class="flex flex-col gap-4">
             <template x-for="(item, index) in items" :key="index">
                 <div class="flex gap-2 items-start">
@@ -45,9 +45,11 @@
                             </div>
                         </template>
                     </div>
-                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-1.5! shrink-0 mt-[7px]" aria-label="Remover">
-                        <x-heroicon-o-trash class="size-4" />
-                    </x-button>
+                    <x-tooltip text="Remover item" class="shrink-0">
+                        <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="size-11! shrink-0 p-0!" aria-label="Remover item">
+                            <x-heroicon-o-trash class="size-4" />
+                        </x-button>
+                    </x-tooltip>
                 </div>
             </template>
             <p class="text-sm text-neutral-400 italic" x-show="items.length === 0">{{ $emptyMessage }}</p>

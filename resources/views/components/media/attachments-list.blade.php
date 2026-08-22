@@ -21,7 +21,9 @@
                             <button type="button" class="flex items-center text-left gap-3 w-full cursor-pointer" @click="openLightbox({{ Js::from($fileUrl) }}, {{ Js::from($media->file_name) }})">
                                 <x-avatar :image="$fileUrl" class="w-10! h-10! shrink-0" radius="md" />
                                 <div class="truncate text-sm text-neutral-700">
-                                    <div class="truncate font-medium hover:text-accent transition-colors" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
+                                    <x-tooltip :text="$media->file_name" class="block! max-w-full">
+                                        <div class="truncate font-medium hover:text-accent transition-colors">{{ $media->file_name }}</div>
+                                    </x-tooltip>
                                     <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
                                 </div>
                             </button>
@@ -29,7 +31,9 @@
                             <a href="{{ $fileUrl }}" target="_blank" class="flex items-center gap-3 w-full">
                                 <x-avatar icon="heroicon-o-document" class="w-10! h-10! shrink-0 group-hover:text-neutral-700 transition-colors" radius="md" variant="white" />
                                 <div class="truncate text-sm text-neutral-700">
-                                    <div class="truncate font-medium hover:text-accent transition-colors" title="{{ $media->file_name }}">{{ $media->file_name }}</div>
+                                    <x-tooltip :text="$media->file_name" class="block! max-w-full">
+                                        <div class="truncate font-medium hover:text-accent transition-colors">{{ $media->file_name }}</div>
+                                    </x-tooltip>
                                     <div class="text-xs text-neutral-500">{{ $media->human_readable_size }}</div>
                                 </div>
                             </a>

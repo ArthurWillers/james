@@ -21,7 +21,7 @@ class FinancialCreditCardInvoiceController extends Controller
         abort_unless($invoice->financial_credit_card_id === $card->id, 404);
 
         $transactions = $invoice->transactions()
-            ->with(['invoice.creditCard', 'account', 'tags'])
+            ->with(['account', 'invoice.creditCard', 'media', 'tags'])
             ->latest('date')
             ->latest('updated_at')
             ->paginate(100)

@@ -198,10 +198,12 @@
                                     }
                                 @endphp
                                 @if($mediaCount > 0)
-                                    <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0" title="{{ $mediaCount }} anexos">
-                                        <x-heroicon-o-paper-clip class="size-3" />
-                                        <span>{{ $mediaCount }}</span>
-                                    </div>
+                                    <x-tooltip text="{{ $mediaCount }} anexos" class="shrink-0">
+                                        <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
+                                            <x-heroicon-o-paper-clip class="size-3" />
+                                            <span>{{ $mediaCount }}</span>
+                                        </div>
+                                    </x-tooltip>
                                 @endif
                             </div>
                         </x-table.cell>

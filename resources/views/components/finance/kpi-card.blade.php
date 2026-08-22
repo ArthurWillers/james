@@ -50,9 +50,9 @@
     <div class="flex items-center justify-between gap-2">
         <div class="flex-1 min-w-0">
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-1 sm:mb-2">
-                <p class="text-xs sm:text-sm font-medium text-neutral-500 leading-tight break-words {{ $href ? 'group-hover:text-brand-600 transition-colors' : '' }}" title="{{ $title }}">{{ $title }}</p>
+                <p class="text-xs sm:text-sm font-medium text-neutral-500 leading-tight break-words {{ $href ? 'group-hover:text-brand-600 transition-colors' : '' }}">{{ $title }}</p>
             </div>
-            <p class="text-lg sm:text-2xl font-bold tracking-tight leading-tight break-words {{ $theme['text'] }} {{ $href ? $theme['hoverText'] . ' transition-colors' : '' }}" title="{{ $value }}">
+            <p class="text-lg sm:text-2xl font-bold tracking-tight leading-tight break-words {{ $theme['text'] }} {{ $href ? $theme['hoverText'] . ' transition-colors' : '' }}">
                 {{ $value }}
             </p>
             @if($slot->isNotEmpty())

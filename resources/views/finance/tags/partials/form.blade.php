@@ -113,14 +113,15 @@
                 <label class="block text-sm font-medium text-neutral-700 mb-2">Selecione um Ícone</label>
                 <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                     @foreach($suggestedIcons as $icon)
-                        <button type="button" 
-                            @click="selectedIcon = '{{ $icon }}'"
-                            class="cursor-pointer p-2 rounded-xl flex flex-col items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-accent/10 hover:text-accent hover:ring-2 hover:ring-accent/50 hover:scale-105 hover:shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105 z-0 hover:z-10 relative gap-1.5"
-                            :class="selectedIcon === '{{ $icon }}' ? 'bg-accent/10! text-accent! ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'"
-                            title="{{ $icon }}">
-                            <x-dynamic-component :component="$icon" class="size-6 shrink-0" />
-                            <span class="text-[9px] font-mono text-center leading-tight truncate w-full opacity-60">{{ str_replace(['heroicon-o-', 'phosphor-'], '', $icon) }}</span>
-                        </button>
+                        <x-tooltip text="{{ $icon }}" class="min-w-0">
+                            <button type="button"
+                                @click="selectedIcon = '{{ $icon }}'"
+                                class="cursor-pointer p-2 rounded-xl flex flex-col items-center justify-center text-neutral-600 bg-neutral-50 hover:bg-accent/10 hover:text-accent hover:ring-2 hover:ring-accent/50 hover:scale-105 hover:shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:scale-105 z-0 hover:z-10 relative gap-1.5"
+                                :class="selectedIcon === '{{ $icon }}' ? 'bg-accent/10! text-accent! ring-2 ring-accent shadow-sm' : 'ring-1 ring-neutral-200'">
+                                <x-dynamic-component :component="$icon" class="size-6 shrink-0" />
+                                <span class="text-[9px] font-mono text-center leading-tight truncate w-full opacity-60">{{ str_replace(['heroicon-o-', 'phosphor-'], '', $icon) }}</span>
+                            </button>
+                        </x-tooltip>
                     @endforeach
                 </div>
             </div>

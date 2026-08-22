@@ -27,7 +27,9 @@
                             <div class="flex items-center gap-2 overflow-hidden">
                                 <div class="font-semibold text-neutral-900 truncate">{{ $tag->name }}</div>
                                 @if($tag->is_protected)
-                                    <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20" title="Tag protegida pelo sistema">Protegida</span>
+                                <x-tooltip text="Tag protegida pelo sistema">
+                                    <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Protegida</span>
+                                </x-tooltip>
                                 @endif
                             </div>
                         </div>

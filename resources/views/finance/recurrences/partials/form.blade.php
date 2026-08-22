@@ -96,7 +96,7 @@
                 </div>
                 
                 <div class="pt-4 border-t border-neutral-100">
-                    <x-switch name="is_active" :checked="old('is_active', isset($recurrence) ? $recurrence->is_active : true)" label="Recorrência Ativa" />
+                    <x-switch name="is_active" :checked="old('is_active', isset($recurrence) ? $recurrence->is_active : true)" label="Recorrência Ativa" color="accent" />
                     <p class="text-xs text-neutral-500 mt-1 ml-14">Se desmarcado, novas transações não serão geradas.</p>
                 </div>
             </div>

@@ -117,7 +117,7 @@
             {{-- Transação Financeira --}}
             <div class="space-y-4 pt-4 border-t border-neutral-100">
                 <input type="hidden" name="create_transaction" value="0">
-                <x-switch name="create_transaction" x-model="createTransaction" label="Criar Transação?" value="1" />
+                <x-switch name="create_transaction" x-model="createTransaction" label="Criar Transação?" value="1" color="accent" />
 
                 <div class="space-y-4 pt-2" x-show="createTransaction" x-transition>
                     <x-radio-block-group legend="Onde">

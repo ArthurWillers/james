@@ -25,6 +25,9 @@
             @endphp
             @php
                 $tagsIds = $transaction->relationLoaded('tags') ? $transaction->tags->pluck('id')->toJson() : '[]';
+                $hasAttachments = $transaction->relationLoaded('media')
+                    ? $transaction->media->where('collection_name', 'attachments')->isNotEmpty()
+                    : $transaction->hasMedia('attachments');
             @endphp
             <div style="display: contents"
                  x-data="{ tags: {{ $tagsIds }} }"
@@ -34,7 +37,7 @@
                         <span class="font-medium text-neutral-900">{{ formatShort($transaction->date) }}</span>
                     </x-table.cell>
 
-                <x-table.cell>
+                <x-table.cell class="overflow-visible!">
                     <div class="flex items-center gap-2">
                         <span class="font-semibold text-neutral-900 truncate">
                             {{ $transaction->description }}
@@ -42,6 +45,13 @@
                                 <span class="text-neutral-500 font-normal ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                             @endif
                         </span>
+                        @if($hasAttachments)
+                            <x-tooltip text="Possui anexos" class="shrink-0">
+                                <span class="inline-flex shrink-0 text-neutral-400" aria-label="Possui anexos">
+                                    <x-heroicon-o-paper-clip class="size-4" />
+                                </span>
+                            </x-tooltip>
+                        @endif
                         @if($transaction->status !== \App\Enums\TransactionStatus::Posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                             @if($transaction->status === \App\Enums\TransactionStatus::Draft)
                                 <span class="text-xxs uppercase font-bold text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded ring-1 ring-inset ring-neutral-300 shrink-0">Rascunho</span>
@@ -74,7 +84,7 @@
                     @endif
                 </x-table.cell>
 
-                <x-table.cell>
+                <x-table.cell class="overflow-visible!">
                     @php
                         $tags = $transaction->tags;
                         $primary = $tags->firstWhere('pivot.is_primary', true);
@@ -86,24 +96,26 @@
                     
                     <div class="flex items-center gap-1.5">
                         @foreach($visibleTags as $tag)
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xxs font-semibold border"
-                                  style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;"
-                                  title="{{ $tag->name }}">
-                                @if(isset($primary) && $tag->id === $primary->id)
-                                    <span class="text-yellow-500 shrink-0 relative -ml-0.5">
-                                        <x-heroicon-s-star class="size-2.5" />
-                                    </span>
-                                @endif
-                                <x-dynamic-component :component="$tag->icon" class="size-3" />
-                                <span class="truncate max-w-[80px]">{{ $tag->name }}</span>
-                            </span>
+                            <x-tooltip :text="$tag->name" id="transaction-tag-tooltip-{{ $transaction->id }}-{{ $tag->id }}">
+                                <span class="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xxs font-semibold"
+                                      style="background-color: {{ $tag->color_hex }}15; color: {{ $tag->color_hex }}; border-color: {{ $tag->color_hex }}40;">
+                                    @if(isset($primary) && $tag->id === $primary->id)
+                                        <span class="relative -ml-0.5 shrink-0 text-yellow-500">
+                                            <x-heroicon-s-star class="size-2.5" />
+                                        </span>
+                                    @endif
+                                    <x-dynamic-component :component="$tag->icon" class="size-3" />
+                                    <span class="max-w-[80px] truncate">{{ $tag->name }}</span>
+                                </span>
+                            </x-tooltip>
                         @endforeach
 
                         @if($remainingCount > 0)
-                            <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xxs font-bold bg-neutral-100 text-neutral-500 ring-1 ring-inset ring-neutral-200 cursor-help"
-                                  title="{{ $others->skip($visibleTags->count() - ($primary ? 1 : 0))->pluck('name')->join(', ') }}">
-                                +{{ $remainingCount }}
-                            </span>
+                            <x-tooltip :text="$others->skip($visibleTags->count() - ($primary ? 1 : 0))->pluck('name')->join(', ')" id="transaction-tags-more-tooltip-{{ $transaction->id }}">
+                                <span class="inline-flex cursor-help items-center justify-center rounded-full bg-neutral-100 px-1.5 py-0.5 text-xxs font-bold text-neutral-500 ring-1 ring-inset ring-neutral-200">
+                                    +{{ $remainingCount }}
+                                </span>
+                            </x-tooltip>
                         @endif
                     </div>
                 </x-table.cell>
@@ -126,6 +138,13 @@
                                         <span class="text-neutral-500 font-normal text-sm ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                                     @endif
                                 </span>
+                                @if($hasAttachments)
+                                    <x-tooltip text="Possui anexos" class="shrink-0">
+                                        <span class="inline-flex text-neutral-400" aria-label="Possui anexos">
+                                            <x-heroicon-o-paper-clip class="size-4" />
+                                        </span>
+                                    </x-tooltip>
+                                @endif
                                 @if($transaction->status !== \App\Enums\TransactionStatus::Posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                                     @if($transaction->status === \App\Enums\TransactionStatus::Draft)
                                         <span class="text-xxs uppercase font-bold text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded ring-1 ring-inset ring-neutral-300 shrink-0">Rascunho</span>

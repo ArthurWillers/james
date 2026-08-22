@@ -2,7 +2,7 @@
     <x-page-header title="Dashboard Financeiro" :action="route('financial.transactions.create')" actionText="Nova Transação" icon="heroicon-o-plus">
         <form method="GET" action="{{ route('financial.dashboard') }}" class="flex items-center bg-white border border-neutral-200 px-3 min-h-11 rounded-lg shadow-sm" x-data x-ref="filterForm">
             <div @click="setTimeout(() => $refs.filterForm.submit(), 150)">
-                <x-switch name="include_investments" :checked="$includeInvestments" label="Investimentos" />
+                <x-switch name="include_investments" :checked="$includeInvestments" label="Investimentos" color="accent" />
             </div>
         </form>
     </x-page-header>

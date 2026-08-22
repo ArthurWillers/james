@@ -34,11 +34,11 @@
                     <x-heroicon-o-credit-card class="size-4" />
                 </div>
                 <div class="min-w-0">
-                    <h3 class="font-bold text-sm text-neutral-900 truncate" title="{{ $card->name }}">{{ $card->name }}</h3>
+                    <h3 class="font-bold text-sm text-neutral-900 truncate">{{ $card->name }}</h3>
                     <p class="text-[10px] text-neutral-500 truncate">Vence dia {{ $card->due_day }} • Fecha dia {{ $card->closing_day }}</p>
                 </div>
             </div>
-            <div class="p-1 -mr-1 -mt-1 text-neutral-400 group-hover:text-brand-600 transition-colors" title="Ver Cartão">
+            <div class="p-1 -mr-1 -mt-1 text-neutral-400 group-hover:text-brand-600 transition-colors">
                 <x-heroicon-o-arrow-top-right-on-square class="size-4" />
             </div>
         </div>
