@@ -21,7 +21,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($groups as $group)
-            <x-card href="{{ route('contacts.groups.show', $group) }}" size="sm" class="flex items-center gap-4 relative group">
+            <x-card href="{{ route('contacts.groups.show', $group) }}" size="sm" class="t-learn flex items-center gap-4 relative group">
                 <div class="shrink-0 flex items-center justify-center border rounded-md font-medium bg-neutral-200 border-neutral-300 text-neutral-700 w-12 h-12 text-lg">
                     <x-heroicon-o-tag class="w-[65%] h-[65%] text-neutral-400" />
                 </div>
@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="text-neutral-400 group-hover:text-accent transition-colors">
-                    <x-heroicon-o-chevron-right class="size-5" />
+                    <x-heroicon-o-chevron-right class="t-learn-chevron size-5" />
                 </div>
             </x-card>
         @empty

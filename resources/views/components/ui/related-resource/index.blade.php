@@ -18,9 +18,9 @@
             </div>
         </div>
         @if($url)
-            <x-button href="{{ $url }}" class="shrink-0">
+            <x-button href="{{ $url }}" class="t-learn shrink-0">
                 {{ $buttonText }}
-                <x-heroicon-m-arrow-right class="size-4 ml-1.5" />
+                <x-heroicon-m-arrow-right class="t-learn-chevron size-4 ml-1.5" />
             </x-button>
         @endif
     </div>

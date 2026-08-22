@@ -38,7 +38,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($contacts as $contact)
-            <x-card href="{{ route('contacts.show', $contact) }}" size="sm" class="flex items-center gap-4 relative group/card">
+            <x-card href="{{ route('contacts.show', $contact) }}" size="sm" class="t-learn flex items-center gap-4 relative group/card">
                 <x-avatar :model="$contact" size="lg" />
                 
                 <div class="overflow-hidden flex-1">
@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="text-neutral-400 group-hover/card:text-accent transition-colors">
-                    <x-heroicon-o-chevron-right class="size-5" />
+                    <x-heroicon-o-chevron-right class="t-learn-chevron size-5" />
                 </div>
             </x-card>
         @empty

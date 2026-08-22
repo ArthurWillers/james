@@ -16,7 +16,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         @forelse($accounts as $account)
-            <x-card href="{{ route('financial.accounts.show', $account) }}" size="sm" class="flex items-center gap-4 group">
+            <x-card href="{{ route('financial.accounts.show', $account) }}" size="sm" class="t-learn flex items-center gap-4 group">
                 <x-avatar :icon="$account->type->icon()" size="lg" />
                 
                 <div class="overflow-hidden flex-1 flex flex-col justify-center">
@@ -39,7 +39,7 @@
                             </span>
                         </div>
                         <div class="text-neutral-300 group-hover:text-primary-600 transition-colors">
-                            <x-heroicon-o-chevron-right class="size-5" />
+                            <x-heroicon-o-chevron-right class="t-learn-chevron size-5" />
                         </div>
                     </div>
                 </div>

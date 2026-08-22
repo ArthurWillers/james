@@ -268,11 +268,11 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-all duration-300">
             @foreach($contacts as $contact)
-                <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" x-show="visibleMap[{{ $contact->id }}]">
-                    <div class="shrink-0 pl-4 border-l border-neutral-100">
-                        <x-tooltip text="Ver detalhes" id="settlement-contact-details-tooltip-{{ $contact->id }}">
-                            <a href="{{ route('settlements.contact.show', $contact) }}" class="flex items-center justify-center w-10 h-10 rounded-full bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 transition-colors" aria-label="Ver detalhes" aria-describedby="settlement-contact-details-tooltip-{{ $contact->id }}">
-                                <x-heroicon-o-chevron-right class="size-5" />
+                <x-contacts.selectable-card :contact="$contact" selected-model="selectedIds" :show-balance="true" class="items-stretch" x-show="visibleMap[{{ $contact->id }}]">
+                    <div class="self-stretch shrink-0 border-l border-neutral-100 pl-3 sm:pl-4">
+                        <x-tooltip text="Ver detalhes" id="settlement-contact-details-tooltip-{{ $contact->id }}" class="h-full">
+                            <a href="{{ route('settlements.contact.show', $contact) }}" class="t-learn flex h-full min-h-11 w-14 items-center justify-center rounded-lg bg-neutral-50 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900" aria-label="Ver detalhes" aria-describedby="settlement-contact-details-tooltip-{{ $contact->id }}">
+                                <x-heroicon-o-chevron-right class="t-learn-chevron size-5" />
                             </a>
                         </x-tooltip>
                     </div>
