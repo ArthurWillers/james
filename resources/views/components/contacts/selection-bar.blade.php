@@ -7,7 +7,7 @@
 ])
 
 <div class="flex flex-col sm:flex-row sm:items-start gap-2 w-full sm:w-auto">
-    <x-button type="button" color="outline" title="Selecionar Todos" class="h-11 sm:h-[42px] px-4 bg-white shrink-0 w-full sm:w-auto justify-center" @click="{{ $toggleAction }}">
+    <x-button type="button" color="outline" class="h-11 sm:h-[42px] px-4 bg-white shrink-0 w-full sm:w-auto justify-center" @click="{{ $toggleAction }}">
         <x-heroicon-o-check-circle class="size-5 mr-2" />
         <span class="font-medium">Selecionar Todos</span>
     </x-button>

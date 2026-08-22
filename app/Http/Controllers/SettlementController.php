@@ -118,7 +118,7 @@ class SettlementController extends Controller
      */
     public function history(Request $request): View
     {
-        $query = Settlement::with(['contact', 'contact.media']);
+        $query = Settlement::with(['contact', 'contact.media', 'media', 'group.media']);
 
         $settlements = $query->orderByDesc('date')
             ->orderByDesc('id')

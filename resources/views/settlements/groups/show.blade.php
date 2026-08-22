@@ -54,7 +54,7 @@
 
                     <!-- Contatos -->
                     @foreach($settlementGroup->settlements as $settlement)
-                        <x-card size="sm" href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="flex items-center justify-between group border-neutral-100">
+                        <x-card size="sm" href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="t-learn flex items-center justify-between group border-neutral-100">
                             <div class="flex items-center gap-4 min-w-0">
                                 <x-avatar :model="$settlement->contact" size="lg" />
                                 <div class="min-w-0">
@@ -64,7 +64,7 @@
                             </div>
                             <div class="text-right shrink-0 ml-4 flex items-center gap-2">
                                 <span class="font-bold text-green-600 whitespace-nowrap tabular-nums">+ {{ formatCurrency($settlement->amount) }}</span>
-                                <x-heroicon-m-chevron-right class="size-4 text-neutral-400 group-hover:text-brand-600 transition-colors" />
+                                <x-heroicon-m-chevron-right class="t-learn-chevron size-4 text-neutral-400 group-hover:text-brand-600 transition-colors" />
                             </div>
                         </x-card>
                     @endforeach

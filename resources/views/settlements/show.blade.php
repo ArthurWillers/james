@@ -33,8 +33,8 @@
                         <x-avatar :model="$settlement->contact" size="lg" />
                         <div>
                             <h2 class="text-lg font-bold text-neutral-900">{{ $settlement->contact->name }}</h2>
-                            <a href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="text-sm font-medium text-accent hover:text-accent-dark transition-colors inline-flex items-center gap-1 mt-0.5">
-                                Ver Extrato <x-heroicon-m-arrow-right class="size-3" />
+                            <a href="{{ route('settlements.contact.show', $settlement->contact_id) }}" class="t-learn text-sm font-medium text-accent hover:text-accent-dark transition-colors inline-flex items-center gap-1 mt-0.5">
+                                Ver Extrato <x-heroicon-m-arrow-right class="t-learn-chevron size-3" />
                             </a>
                         </div>
                     </div>

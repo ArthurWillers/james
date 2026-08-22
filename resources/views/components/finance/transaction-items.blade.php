@@ -41,16 +41,20 @@
                         @tags-changed="item.tags = $event.detail.ids; item.primary_tag_id = $event.detail.primaryId; items = [...items]"
                     >
                         <x-slot:trigger>
-                            <button type="button" class="cursor-pointer flex items-center justify-center size-11 text-neutral-400 hover:text-accent hover:bg-neutral-100 rounded-xl transition-colors relative" title="Gerenciar Tags">
-                                <x-heroicon-o-tag class="size-5" />
-                                <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm ring-2 ring-white" x-text="selectedIds.length" x-show="selectedIds.length > 0"></span>
-                            </button>
+                            <x-tooltip text="Gerenciar tags">
+                                <button type="button" class="relative flex size-11 cursor-pointer items-center justify-center rounded-xl text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-accent" aria-label="Gerenciar tags">
+                                    <x-heroicon-o-tag class="size-5" />
+                                    <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-white shadow-sm ring-2 ring-white" x-text="selectedIds.length" x-show="selectedIds.length > 0"></span>
+                                </button>
+                            </x-tooltip>
                         </x-slot:trigger>
                     </x-tags-selector>
 
-                    <x-button type="button" @click="removeItem(index)" color="danger-ghost" class="p-2! hover:bg-red-50 size-11" aria-label="Remover">
-                        <x-heroicon-o-trash class="size-5!" />
-                    </x-button>
+                    <x-tooltip text="Remover item" class="shrink-0">
+                        <x-button type="button" color="danger-ghost" class="size-11! shrink-0 p-0! hover:bg-red-50" aria-label="Remover item" @click="removeItem(index)">
+                            <x-heroicon-o-trash class="size-5!" />
+                        </x-button>
+                    </x-tooltip>
                 </div>
             </div>
         </template>

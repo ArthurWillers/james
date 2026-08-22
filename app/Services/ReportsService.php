@@ -43,7 +43,7 @@ class ReportsService
     private function getUnifiedTransactions(Carbon $startDate, Carbon $endDate, ?array $accountIds = null): Collection
     {
         // 1. Real Transactions (includes future credit card installments since they are materialized)
-        $query = FinancialTransaction::with(['tags', 'items.tags', 'invoice.creditCard', 'account'])
+        $query = FinancialTransaction::with(['account', 'invoice.creditCard', 'items.tags', 'media', 'tags'])
             ->withoutDrafts()
             ->whereBetween('date', [$startDate, $endDate])
             ->forAccounts($accountIds);

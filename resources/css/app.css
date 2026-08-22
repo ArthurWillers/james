@@ -1,4 +1,11 @@
 @import 'tailwindcss';
+@import './toggle.css';
+@import './checkbox.css';
+@import './tooltip.css';
+@import './dropdown.css';
+@import './accordion.css';
+@import './learn.css';
+@import './text-swap.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -43,7 +50,7 @@
     --text-xxs: 0.625rem; /* 10px */
     --text-xxs--line-height: 0.875rem; /* 14px */
 
-    --animate-shake: shake 0.5s ease-in-out;
+    --animate-shake: shake var(--duration-very-slow) var(--ease-in-out);
 
     @keyframes shake {
 
@@ -102,6 +109,10 @@
         scrollbar-gutter: stable;
     }
 
+    html.t-modal-open {
+        background-color: rgb(23 23 23 / 50%);
+    }
+
     /* Focus global usando o sistema nativo do Tailwind para evitar conflitos com shadows.
        Excluímos inputs, selects e textareas para que mantenham seu design suave original. */
     :where(*:focus-visible):not(input, select, textarea) {
@@ -149,6 +160,53 @@
 }
 
 @layer components {
+    .t-modal-scroll {
+        scrollbar-color: var(--color-neutral-500) var(--color-neutral-900);
+        scrollbar-width: thin;
+    }
+
+    .t-modal-scroll::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .t-modal-scroll::-webkit-scrollbar-track {
+        background: var(--color-neutral-900);
+    }
+
+    .t-modal-scroll::-webkit-scrollbar-thumb {
+        border: 3px solid var(--color-neutral-900);
+        border-radius: 999px;
+        background: var(--color-neutral-500);
+    }
+
+    .t-modal-scroll::-webkit-scrollbar-thumb:hover {
+        background: var(--color-neutral-400);
+    }
+
+    .t-toast {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .t-toast::after {
+        position: absolute;
+        inset: 0 0 0 auto;
+        width: 3rem;
+        content: '';
+        pointer-events: none;
+        opacity: 0;
+        background: linear-gradient(90deg, transparent, rgb(255 255 255 / 88%));
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+        mask-image: linear-gradient(90deg, transparent, #000);
+        transition: opacity var(--duration-quick) var(--ease-smooth-out);
+    }
+
+    .t-toast.is-leaving::after {
+        opacity: 1;
+    }
+
     .markdown-content {
 
         h1,

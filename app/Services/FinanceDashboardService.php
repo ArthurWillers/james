@@ -324,7 +324,7 @@ class FinanceDashboardService
             ->withoutInvoice()
             ->expenses()
             ->withoutTransfers()
-            ->with(['tags', 'invoice.creditCard']);
+            ->with(['invoice.creditCard', 'media', 'tags']);
 
         if (! $includeInvestments) {
             $pendingTransactionsQuery->withoutInvestments();
@@ -483,7 +483,7 @@ class FinanceDashboardService
 
     public function getRecentTransactions(bool $includeInvestments = false): Collection
     {
-        $transactionsQuery = FinancialTransaction::with(['invoice', 'tags', 'recurrence'])
+        $transactionsQuery = FinancialTransaction::with(['invoice', 'media', 'recurrence', 'tags'])
             ->withoutDrafts()
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')

@@ -91,6 +91,7 @@
                         value="1"
                         :checked="$isPosted"
                         label="Transação Efetivada?"
+                        color="accent"
                         x-model="isPosted"
                         @uncheck-posted.window="isPosted = false"
                         @uncheck-posted-edit.window="isPosted = false"

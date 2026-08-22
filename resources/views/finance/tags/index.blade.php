@@ -20,14 +20,16 @@
 
         <x-table.body>
             @forelse($tags as $tag)
-                <x-table.row href="{{ route('financial.tags.show', $tag) }}" class="hidden sm:grid sm:grid-cols-[2fr_1fr_80px] group transition-all hover:bg-neutral-50" style="--tag-color: {{ $tag->color_hex }};">
+                <x-table.row href="{{ route('financial.tags.show', $tag) }}" class="t-learn hidden sm:grid sm:grid-cols-[2fr_1fr_80px] group transition-all hover:bg-neutral-50" style="--tag-color: {{ $tag->color_hex }};">
                     <x-table.cell>
                         <div class="flex items-center gap-3 w-full">
                             <x-avatar :icon="$tag->icon" class="border-transparent! text-white! w-10 h-10" style="background-color: {{ $tag->color_hex }};" />
                             <div class="flex items-center gap-2 overflow-hidden">
                                 <div class="font-semibold text-neutral-900 truncate">{{ $tag->name }}</div>
                                 @if($tag->is_protected)
-                                    <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20" title="Tag protegida pelo sistema">Protegida</span>
+                                <x-tooltip text="Tag protegida pelo sistema">
+                                    <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Protegida</span>
+                                </x-tooltip>
                                 @endif
                             </div>
                         </div>
@@ -43,7 +45,7 @@
                     </x-table.cell>
 
                     <x-table.cell align="right">
-                        <x-heroicon-m-chevron-right class="size-5 text-neutral-400 group-hover:text-accent transition-colors" />
+                        <x-heroicon-m-chevron-right class="t-learn-chevron size-5 text-neutral-400 group-hover:text-accent transition-colors" />
                     </x-table.cell>
 
                     <x-slot name="mobile">
@@ -64,7 +66,7 @@
                             </div>
                             
                             <div class="text-neutral-400 group-hover/card:text-accent transition-colors self-center pr-2">
-                                <x-heroicon-o-chevron-right class="size-5" />
+                                <x-heroicon-o-chevron-right class="t-learn-chevron size-5" />
                             </div>
                         </div>
                     </x-slot>
