@@ -29,6 +29,8 @@
         type="button"
         role="switch"
         class="{{ $buttonClass }}"
+        aria-checked="{{ $checked ? 'true' : 'false' }}"
+        data-on="{{ $checked ? 'true' : 'false' }}"
         x-ref="switch"
         :aria-checked="checked ? 'true' : 'false'"
         :data-on="checked ? 'true' : 'false'"
