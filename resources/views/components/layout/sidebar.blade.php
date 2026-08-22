@@ -26,7 +26,7 @@
                     <span
                         class="mx-2 text-sm font-medium truncate text-neutral-800/80 group-hover:text-neutral-800">{{ auth()->user()->name }}</span>
                     <div class="ms-auto text-neutral-800/80 group-hover:text-neutral-800">
-                        <x-heroicon-o-chevron-up-down class="w-6 h-6" />
+                        <x-heroicon-m-chevron-down class="h-6 w-6 transition-transform duration-200 ease-out" x-bind:class="{ 'rotate-180': open }" />
                     </div>
                 </button>
             </x-slot>
@@ -44,14 +44,14 @@
 
                 <hr class="my-1 border-neutral-300">
 
-                <a href="{{ route('settings') }}" @click="open = !open"
+                <a href="{{ route('settings') }}" @click="closeMenu()"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-200">
                     <x-heroicon-o-cog-6-tooth class="w-5 h-5" />
                     Configurações
                 </a>
                 <form method="POST" id="logout" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" @click="open = !open"
+                    <button type="submit" @click="closeMenu()"
                         class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-red-500 hover:bg-neutral-200 cursor-pointer">
                         <x-heroicon-m-arrow-right-start-on-rectangle class="w-5 h-5" />
                         Sair
@@ -77,7 +77,7 @@
                     <x-avatar :model="auth()->user()" />
 
                     <div class="ms-auto text-neutral-800/80 group-hover:text-neutral-800">
-                        <x-heroicon-m-chevron-down class="w-4 h-4" />
+                        <x-heroicon-m-chevron-up class="h-4 w-4 transition-transform duration-200 ease-out" x-bind:class="{ 'rotate-180': open }" />
                     </div>
                 </button>
             </x-slot>
@@ -95,13 +95,13 @@
 
                 <hr class="my-1 border-neutral-300">
 
-                <a href="{{ route('settings') }}" @click="open = !open"
+                <a href="{{ route('settings') }}" @click="closeMenu()"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-200">
                     <x-heroicon-o-cog-6-tooth class="w-5 h-5" />
                     Configurações
                 </a>
 
-                <button type="submit" form="logout" @click="open = !open"
+                <button type="submit" form="logout" @click="closeMenu()"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-red-500 hover:bg-neutral-200 cursor-pointer">
                     <x-heroicon-m-arrow-right-start-on-rectangle class="w-5 h-5" />
                     Sair
@@ -111,4 +111,3 @@
         </x-dropdown>
     </header>
 </div>
-
