@@ -1,11 +1,11 @@
 /* Transitions.dev tooltip open/close adapted to the James UI. */
 :root {
-    --tt-in-dur: 150ms;
+    --tt-in-dur: var(--duration-quick);
     --tt-out-dur: 50ms;
-    --tt-scale: 0.98;
-    --tt-delay: 80ms;
-    --tt-in-ease: ease-out;
-    --tt-out-ease: ease-out;
+    --tt-scale: var(--scale-small);
+    --tt-delay: var(--duration-micro);
+    --tt-in-ease: var(--ease-out);
+    --tt-out-ease: var(--ease-out);
     --tt-bg: var(--color-white);
     --tt-fg: var(--color-neutral-800);
 }
@@ -13,8 +13,6 @@
 .t-tt-wrap {
     position: relative;
     display: inline-flex;
-    --tt-bg: var(--color-white);
-    --tt-fg: var(--color-neutral-800);
 }
 
 .t-tt-wrap:hover,
@@ -69,10 +67,4 @@
 .t-tt-wrap:hover .t-tt[data-position="bottom"],
 .t-tt-wrap:focus-within .t-tt[data-position="bottom"] {
     transform: translate(-50%, 0) scale(1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .t-tt {
-        transition: none !important;
-    }
 }

@@ -1,10 +1,10 @@
 /* Transitions.dev toggle geometry, adapted to James's accent colour. */
 :root {
-    --toggle-dur: 350ms;
+    --toggle-dur: var(--duration-medium);
     --toggle-travel: 14.66px;
     --toggle-ov1: 1px;
     --toggle-ov2: 0px;
-    --toggle-track: 150ms;
+    --toggle-track: var(--duration-quick);
     --toggle-ease: cubic-bezier(0.34, 1.35, 0.64, 1);
 }
 
@@ -63,8 +63,4 @@
     55% { translate: calc(0px - var(--toggle-ov1)) 0; }
     80% { translate: var(--toggle-ov2) 0; }
     100% { translate: 0 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .t-toggle-thumb { animation: none !important; }
 }

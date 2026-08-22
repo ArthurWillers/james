@@ -1,10 +1,10 @@
 /* Transitions.dev — Accordion expand */
 
 :root {
-    --acc-expand: 250ms;
-    --acc-collapse: 250ms;
-    --acc-chevron: 250ms;
-    --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --acc-expand: var(--duration-fast);
+    --acc-collapse: var(--duration-fast);
+    --acc-chevron: var(--duration-fast);
+    --acc-ease: var(--ease-smooth-out);
 }
 
 .t-acc-panel {
@@ -24,22 +24,10 @@
     min-height: 0;
     overflow: hidden;
     opacity: 0;
-    filter: blur(2px);
+    filter: blur(var(--blur-small));
     transition:
         opacity var(--acc-collapse) var(--acc-ease),
         filter var(--acc-collapse) var(--acc-ease);
-}
-
-.t-acc-filter-inner {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--color-neutral-100);
-}
-
-.t-acc:not([data-open="true"]) .t-acc-filter-inner {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: 0;
 }
 
 .t-acc[data-open="true"] .t-acc-panel-inner {
@@ -76,17 +64,4 @@
         filter: none;
     }
 
-    .t-acc-filter-inner {
-        margin-top: 0;
-        padding-top: 0;
-        border-top: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .t-acc-panel,
-    .t-acc-panel-inner,
-    .t-acc-chevron {
-        transition: none !important;
-    }
 }
