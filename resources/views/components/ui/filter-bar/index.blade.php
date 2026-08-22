@@ -62,7 +62,10 @@
 
     <!-- Collapsible Area (Mobile) / Inline Area (Desktop) -->
     <div class="t-acc-panel t-acc-panel--desktop-open">
-        <div class="t-acc-panel-inner t-acc-filter-inner flex w-full flex-col sm:flex-row items-stretch {{ $alignClass }} sm:!flex">
+        <div
+            class="t-acc-panel-inner mt-2 flex w-full flex-col items-stretch border-t border-neutral-100 pt-2 sm:mt-0 sm:!flex sm:flex-row sm:border-t-0 sm:pt-0 {{ $alignClass }}"
+            x-bind:class="{ '!mt-0 !border-t-0 !pt-0': !expanded }"
+        >
             @if($slot->isNotEmpty())
                 @if($showSearch)
                     <div class="hidden sm:block w-px h-6 bg-neutral-200 mx-1"></div>
