@@ -101,6 +101,49 @@
     scale: var(--scale-large);
 }
 
+@utility interaction-delete {
+    transition: transform var(--duration-quick) var(--ease-smooth-out);
+
+    &:hover {
+        transform: scale(1.02);
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
+
+    &:hover svg:not(.animate-spin) {
+        animation: interaction-delete-icon 400ms ease-in-out;
+        transform-origin: center;
+        will-change: transform;
+    }
+}
+
+@keyframes interaction-delete-icon {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-2px) rotate(-10deg);
+    }
+
+    50% {
+        transform: translateY(0) rotate(10deg);
+    }
+
+    75% {
+        transform: translateY(-2px) rotate(-10deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .interaction-delete:hover svg:not(.animate-spin) {
+        animation: none;
+    }
+}
+
 [x-cloak] {
     display: none !important;
 }
