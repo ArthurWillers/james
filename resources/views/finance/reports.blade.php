@@ -1,25 +1,24 @@
 <x-layouts.financial>
     <x-page-header title="Relatórios Financeiros" icon="heroicon-o-chart-pie"></x-page-header>
 
-    <div class="pb-2" x-data="reportsPage()" x-init="initCharts()">
+    <div class="lg:hidden">
+        <x-card class="mx-auto max-w-md text-center">
+            <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                <x-heroicon-o-computer-desktop class="size-7" />
+            </div>
+            <h2 class="mt-5 text-lg font-bold text-neutral-900">Relatórios disponíveis no computador</h2>
+            <p class="mt-2 text-sm leading-6 text-neutral-500">
+                Para visualizar os gráficos e analisar os relatórios financeiros, acesse esta página pelo computador.
+            </p>
+            <x-back-button fallback="{{ route('financial.dashboard') }}" class="mt-6 w-full justify-center" />
+        </x-card>
+    </div>
 
-        <!-- Mobile Filters Toggle -->
-        <div class="sm:hidden mb-6">
-            <button @click="showFilters = !showFilters"
-                    class="w-full flex justify-between items-center bg-white p-4 rounded-xl border border-neutral-200 shadow-sm">
-                <span class="font-bold text-neutral-800">Filtros</span>
-                <span class="flex items-center gap-2 text-sm font-semibold text-neutral-600">
-                    <x-heroicon-o-funnel class="w-4 h-4" />
-                    <span x-text="showFilters ? 'Ocultar' : 'Mostrar'"></span>
-                    <x-heroicon-o-chevron-down class="w-4 h-4 transition-transform"
-                                               x-bind:class="showFilters && 'rotate-180'" />
-                </span>
-            </button>
-        </div>
+    <div class="hidden lg:block pb-2" x-data="reportsPage()" x-init="initCharts()">
 
         <!-- Filters Bar -->
-        <div class="w-full mb-6" x-bind:class="{ 'hidden sm:block': !showFilters }">
-            <x-filter-bar :show-search="false" action="{{ route('financial.reports') }}" class="pe-2 py-3" button-class="sm:w-11 h-11" align="end">
+        <div class="w-full mb-6">
+            <x-filter-bar :show-search="false" :show-mobile-toggle="false" action="{{ route('financial.reports') }}" class="pe-2 py-3" button-class="sm:w-11 h-11" align="end">
                 <div class="flex flex-col sm:flex-row items-end gap-4 px-2 py-0">
                 <div class="flex items-center gap-4 w-full md:w-auto flex-wrap sm:flex-nowrap">
                     <!-- Period -->
@@ -155,15 +154,10 @@
         </div>
     </div>
 
-    <p class="text-xs text-neutral-400 text-center mt-4 mb-8 lg:hidden">
-        Gráficos interativos e evolutivos estão disponíveis na versão desktop.
-    </p>
-
     <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('reportsPage', () => ({
             period: @json($period),
-            showFilters: false,
             selectedTagId: @js($selectedTagId),
 
             filterByTag(tagId) {
