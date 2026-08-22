@@ -30,13 +30,14 @@
              window.dispatchEvent(new CustomEvent('modal-closed', { detail: @js($name) }));
          }
      }"
+     x-effect="document.documentElement.classList.toggle('t-modal-open', open)"
      @modal-open.window="if ($event.detail === '{{ $name }}') open = true"
      @modal-close.window="if ($event.detail === '{{ $name }}') closeModal()"
      @keydown.escape.window="closeModal()"
 >
 
     <template x-teleport="body">
-        <div class="fixed inset-0 z-50 overflow-y-auto"
+        <div class="t-modal-scroll fixed inset-0 z-50 w-screen overflow-y-auto"
              style="display: none;"
              aria-labelledby="modal-title" 
              role="dialog" 
@@ -44,7 +45,7 @@
              x-show="open">
             
 
-            <div class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity"
+            <div class="absolute inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity"
                  aria-hidden="true"
                  x-show="open"
                  x-transition:enter="motion-ease-smooth-out motion-duration-fast"
@@ -56,7 +57,7 @@
                  @click="closeModal()"></div>
 
 
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative z-10 flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                 <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full {{ $maxWidth }}"
                      x-show="open"
                      x-transition:enter="motion-ease-smooth-out motion-duration-fast"
