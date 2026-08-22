@@ -57,8 +57,6 @@
         userPixKey: '{{ $pixKeys->first() ?? '' }}',
         selectedPixKey: '{{ $pixKeys->first() ?? '' }}',
         generatedText: '',
-        copied: false,
-        
         formatCurrencyJS(value) {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
         },
@@ -134,11 +132,9 @@
                         textArea.remove();
                     }
                 }
-                this.copied = true;
-                setTimeout(() => {
-                    this.copied = false;
-                    window.dispatchEvent(new CustomEvent('modal-close', { detail: 'share-modal' }));
-                }, 1500);
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: { type: 'success', message: 'Mensagem copiada!' }
+                }));
             } catch (e) {
                 console.error('Failed to copy text', e);
             }
@@ -414,8 +410,7 @@
                             <span>WhatsApp</span>
                         </x-button>
                         <x-button type="button" color="primary" class="bg-neutral-800 hover:bg-neutral-900 border-neutral-800 text-white w-full sm:w-auto" @click="executeCopy()">
-                            <span class="flex items-center gap-1.5" x-show="!copied"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
-                            <span class="flex items-center gap-1.5 text-green-400" x-show="copied" x-cloak><x-heroicon-o-check class="size-4" /> Copiado!</span>
+                            <span class="flex items-center gap-1.5"><x-heroicon-o-clipboard-document class="size-4" /> Copiar</span>
                         </x-button>
                     </div>
                 </div>
