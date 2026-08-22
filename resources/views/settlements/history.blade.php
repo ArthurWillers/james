@@ -21,7 +21,7 @@
 
     <div class="mt-6">
         <x-table>
-            <x-table.header class="hidden sm:grid grid-cols-5">
+            <x-table.header class="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
                 <x-table.column>Data</x-table.column>
                 <x-table.column>Contato</x-table.column>
                 <x-table.column>Descrição</x-table.column>
@@ -35,25 +35,37 @@
                         $isPositiveForMe = in_array($settlement->type->value, [\App\Enums\SettlementType::TheyOwe->value, \App\Enums\SettlementType::IPaid->value]);
                         $amountColor = $isPositiveForMe ? 'text-emerald-600' : 'text-red-600';
                         $amountPrefix = $isPositiveForMe ? '+' : '-';
+                        $attachmentCount = $settlement->media
+                            ->where('collection_name', 'attachments')
+                            ->count();
+
+                        if ($settlement->group) {
+                            $attachmentCount += $settlement->group->media
+                                ->where('collection_name', 'attachments')
+                                ->count();
+                        }
 
                         // Temporary placeholder for contact ledger route
                         $settlementRoute = route('settlements.show_item', $settlement);
                     @endphp
 
-                    <x-table.row href="{{ $settlementRoute }}" class="hidden sm:grid grid-cols-5">
+                    <x-table.row href="{{ $settlementRoute }}" class="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
                         <x-table.cell class="text-neutral-500">
                             {{ formatShort($settlement->date) }}
                         </x-table.cell>
                         
                         <x-table.cell>
-                            <div class="flex items-center gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
                                 <x-avatar :model="$settlement->contact" size="sm" />
-                                <span class="font-medium text-neutral-900 truncate">{{ $settlement->contact->name }}</span>
+                                <span class="min-w-0 truncate font-medium text-neutral-900">{{ $settlement->contact->name }}</span>
                             </div>
                         </x-table.cell>
 
-                        <x-table.cell>
-                            <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
+                        <x-table.cell class="overflow-visible!">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <span class="min-w-0 flex-1 truncate font-medium text-neutral-700">{{ $settlement->description }}</span>
+                                <x-media.attachment-indicator :count="$attachmentCount" />
+                            </div>
                         </x-table.cell>
 
                         <x-table.cell>
@@ -75,7 +87,8 @@
                                         <x-badge :color="$settlement->type->color()" class="flex items-center shrink-0 w-fit">
                                             <x-dynamic-component :component="$settlement->type->icon()" class="size-3.5" />
                                         </x-badge>
-                                        <span class="font-medium text-neutral-900 truncate">{{ $settlement->description }}</span>
+                                        <span class="min-w-0 flex-1 truncate font-medium text-neutral-900">{{ $settlement->description }}</span>
+                                        <x-media.attachment-indicator :count="$attachmentCount" />
 
                                     </div>
                                     <div class="flex items-center gap-2 text-sm text-neutral-500">

@@ -2,7 +2,7 @@
 
 <x-table {{ $attributes }}>
     @if($transactions->isNotEmpty())
-        <x-table.header class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr]">
+        <x-table.header class="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <x-table.column>Data</x-table.column>
             <x-table.column>Descrição</x-table.column>
             <x-table.column>Conta/Fatura</x-table.column>
@@ -25,32 +25,28 @@
             @endphp
             @php
                 $tagsIds = $transaction->relationLoaded('tags') ? $transaction->tags->pluck('id')->toJson() : '[]';
-                $hasAttachments = $transaction->relationLoaded('media')
-                    ? $transaction->media->where('collection_name', 'attachments')->isNotEmpty()
-                    : $transaction->hasMedia('attachments');
+                $attachmentCount = $transaction->relationLoaded('media')
+                    ? $transaction->media->where('collection_name', 'attachments')->count()
+                    : $transaction->getMedia('attachments')->count();
             @endphp
             <div style="display: contents"
                  x-data="{ tags: {{ $tagsIds }} }"
                  x-show="typeof selectedTagId === 'undefined' || selectedTagId === null || tags.includes(selectedTagId) || (selectedTagId === 0 && tags.length === 0)">
-                <x-table.row href="{{ $href }}" class="hidden sm:grid sm:grid-cols-[1fr_2fr_1.5fr_1fr_1fr] group transition-all">
+                <x-table.row href="{{ $href }}" class="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] group transition-all">
                     <x-table.cell>
                         <span class="font-medium text-neutral-900">{{ formatShort($transaction->date) }}</span>
                     </x-table.cell>
 
                 <x-table.cell class="overflow-visible!">
-                    <div class="flex items-center gap-2">
-                        <span class="font-semibold text-neutral-900 truncate">
+                    <div class="flex min-w-0 items-center gap-2">
+                        <span class="min-w-0 flex-1 truncate font-semibold text-neutral-900">
                             {{ $transaction->description }}
                             @if($transaction->installment_total > 1)
                                 <span class="text-neutral-500 font-normal ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                             @endif
                         </span>
-                        @if($hasAttachments)
-                            <x-tooltip text="Possui anexos" class="shrink-0">
-                                <span class="inline-flex shrink-0 text-neutral-400" aria-label="Possui anexos">
-                                    <x-heroicon-o-paper-clip class="size-4" />
-                                </span>
-                            </x-tooltip>
+                        @if($attachmentCount > 0)
+                            <x-media.attachment-indicator :count="$attachmentCount" />
                         @endif
                         @if($transaction->status !== \App\Enums\TransactionStatus::Posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                             @if($transaction->status === \App\Enums\TransactionStatus::Draft)
@@ -70,12 +66,12 @@
 
                 <x-table.cell>
                     @if($transaction->invoice)
-                        <div class="flex items-center gap-1.5 text-neutral-600 truncate">
+                        <div class="flex min-w-0 items-center gap-1.5 text-neutral-600 truncate">
                             <x-heroicon-o-credit-card class="size-4 shrink-0" />
                             <span class="truncate">{{ $transaction->invoice->creditCard->name }}</span>
                         </div>
                     @elseif($transaction->account)
-                        <div class="flex items-center gap-1.5 text-neutral-600 truncate">
+                        <div class="flex min-w-0 items-center gap-1.5 text-neutral-600 truncate">
                             <x-heroicon-o-building-library class="size-4 shrink-0" />
                             <span class="truncate">{{ $transaction->account->name }}</span>
                         </div>
@@ -94,7 +90,7 @@
                         $remainingCount = $tags->count() - $visibleTags->count();
                     @endphp
                     
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex min-w-0 items-center gap-1.5">
                         @foreach($visibleTags as $tag)
                             <x-tooltip :text="$tag->name" id="transaction-tag-tooltip-{{ $transaction->id }}-{{ $tag->id }}">
                                 <span class="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xxs font-semibold"
@@ -121,7 +117,7 @@
                 </x-table.cell>
 
                 <x-table.cell align="right">
-                    <div class="flex justify-end gap-2 w-full">
+                    <div class="flex w-full min-w-0 justify-end gap-2">
                         <span class="font-bold tracking-tight text-base {{ $transaction->type === 'expense' ? 'text-red-600' : 'text-green-600' }}">
                             {{ $transaction->type === 'expense' ? '-' : '+' }} {{ formatCurrency($transaction->amount) }}
                         </span>
@@ -138,12 +134,8 @@
                                         <span class="text-neutral-500 font-normal text-sm ml-1">({{ $transaction->installment_current }}/{{ $transaction->installment_total }})</span>
                                     @endif
                                 </span>
-                                @if($hasAttachments)
-                                    <x-tooltip text="Possui anexos" class="shrink-0">
-                                        <span class="inline-flex text-neutral-400" aria-label="Possui anexos">
-                                            <x-heroicon-o-paper-clip class="size-4" />
-                                        </span>
-                                    </x-tooltip>
+                                @if($attachmentCount > 0)
+                                    <x-media.attachment-indicator :count="$attachmentCount" />
                                 @endif
                                 @if($transaction->status !== \App\Enums\TransactionStatus::Posted && !$hidePendingBadge && empty($transaction->is_recurrence) && empty($transaction->is_invoice))
                                     @if($transaction->status === \App\Enums\TransactionStatus::Draft)

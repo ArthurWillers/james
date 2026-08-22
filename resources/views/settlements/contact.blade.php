@@ -162,7 +162,7 @@
     
     <div class="mb-12">
         <x-table>
-            <x-table.header class="hidden sm:grid grid-cols-5">
+            <x-table.header class="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
                 <x-table.column>Data</x-table.column>
                 <x-table.column>Descrição</x-table.column>
                 <x-table.column>Tipo</x-table.column>
@@ -178,28 +178,21 @@
                         $amountPrefix = $isPositiveForMe ? '+' : '-';
                     @endphp
 
-                    <x-table.row href="{{ $settlement->settlement_group_id ? route('settlements.groups.show', $settlement->settlement_group_id) : route('settlements.show_item', $settlement) }}" class="hidden sm:grid grid-cols-5">
+                    <x-table.row href="{{ $settlement->settlement_group_id ? route('settlements.groups.show', $settlement->settlement_group_id) : route('settlements.show_item', $settlement) }}" class="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
                         <x-table.cell class="text-neutral-500">
                             {{ formatShort($settlement->date) }}
                         </x-table.cell>
                         
-                        <x-table.cell>
-                            <div class="flex items-center gap-2">
-                                <span class="text-neutral-700 font-medium truncate">{{ $settlement->description }}</span>
+                        <x-table.cell class="overflow-visible!">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <span class="min-w-0 flex-1 truncate font-medium text-neutral-700">{{ $settlement->description }}</span>
                                 @php
                                     $mediaCount = $settlement->getMedia('attachments')->count();
                                     if ($settlement->group) {
                                         $mediaCount += $settlement->group->getMedia('attachments')->count();
                                     }
                                 @endphp
-                                @if($mediaCount > 0)
-                                    <x-tooltip text="{{ $mediaCount }} anexos" class="shrink-0">
-                                        <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
-                                            <x-heroicon-o-paper-clip class="size-3" />
-                                            <span>{{ $mediaCount }}</span>
-                                        </div>
-                                    </x-tooltip>
-                                @endif
+                                <x-media.attachment-indicator :count="$mediaCount" />
                             </div>
                         </x-table.cell>
 
@@ -255,12 +248,7 @@
                                                 $mediaCount += $settlement->group->getMedia('attachments')->count();
                                             }
                                         @endphp
-                                        @if($mediaCount > 0)
-                                            <div class="flex items-center gap-1 text-xs text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded shrink-0">
-                                                <x-heroicon-o-paper-clip class="size-3" />
-                                                <span>{{ $mediaCount }}</span>
-                                            </div>
-                                        @endif
+                                        <x-media.attachment-indicator :count="$mediaCount" />
                                     </div>
                                     <div class="flex items-center gap-2 text-sm text-neutral-500">
                                         <span>{{ formatShort($settlement->date) }}</span>
