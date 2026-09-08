@@ -54,16 +54,22 @@
             <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" />
         </x-page-header>
 
-        @include('finance.transactions.partials.form')
-
-        <div class="flex md:hidden mt-6">
+        <div class="mb-6 flex items-center gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 md:hidden">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                <x-heroicon-o-document-arrow-down class="size-5" />
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-neutral-900">Já tem uma NFC-e?</p>
+                <p class="text-xs text-neutral-500">Importe pela URL ou pelo QR Code.</p>
+            </div>
             <x-modal.trigger name="nfce-import-modal" class="w-full">
-                <x-button type="button" color="outline" class="w-full">
-                    <x-heroicon-o-document-arrow-down class="size-4" />
-                    <span>Importar NFC-e</span>
+                <x-button type="button" color="outline" class="shrink-0">
+                    <span>Importar</span>
                 </x-button>
             </x-modal.trigger>
         </div>
+
+        @include('finance.transactions.partials.form')
 
         <x-form-actions fallback="{{ route('financial.transactions.index') }}" form="transaction-form" mobile />
     </form>
