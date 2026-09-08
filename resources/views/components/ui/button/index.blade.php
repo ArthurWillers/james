@@ -12,8 +12,8 @@
     $colorClasses = match ($color) {
         'red' => 'bg-red-600 not-disabled:hover:bg-red-700 text-white border-transparent',
         'accent' => 'bg-accent not-disabled:hover:bg-accent-hover text-neutral-950 border-transparent',
-        'outline' => 'bg-white border border-neutral-300 not-disabled:hover:border-neutral-400 not-disabled:hover:bg-neutral-50 text-neutral-700 not-disabled:hover:text-neutral-900',
-        'danger-outline' => 'bg-white text-red-600 not-disabled:hover:text-red-700 border border-red-300 not-disabled:hover:border-red-400 not-disabled:hover:bg-red-50',
+        'outline' => 'bg-white border border-neutral-200 not-disabled:hover:border-neutral-300 not-disabled:hover:bg-neutral-100 text-neutral-700 not-disabled:hover:text-neutral-950',
+        'danger-outline' => 'bg-white text-red-600 not-disabled:hover:text-red-700 border border-red-200 not-disabled:hover:border-red-300 not-disabled:hover:bg-red-50',
         'ghost' => 'bg-transparent text-neutral-600 not-disabled:hover:text-neutral-900 not-disabled:hover:bg-neutral-100 border-transparent',
         'danger-ghost' => 'bg-transparent text-red-600 not-disabled:hover:text-red-700 not-disabled:hover:bg-red-50 border-transparent',
         'accent-ghost' => 'bg-transparent text-accent-ink not-disabled:hover:bg-accent/10 border-transparent',
