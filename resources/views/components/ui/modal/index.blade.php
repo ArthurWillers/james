@@ -57,7 +57,8 @@
                  @click="closeModal()"></div>
 
 
-            <div class="relative z-10 flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative z-10 flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+                 @click.self="closeModal()">
                 <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full {{ $maxWidth }}"
                      x-show="open"
                      x-transition:enter="motion-ease-smooth-out motion-duration-fast"
